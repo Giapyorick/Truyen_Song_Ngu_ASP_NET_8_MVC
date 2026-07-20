@@ -1,0 +1,488 @@
+@model WebTruyenTranh.Models.TblStory
+<div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card border-0 shadow-xl overflow-hidden st-detail-card" style="border-radius: 32px; background: #ffffff; max-width: 1180px; width: 100%;">
+        <div class="card-body p-4 p-lg-5">
+
+            <!-- ROW PHÍA TRÊN -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="st-top-row">
+
+                        <div class="st-image-col st-image-section">
+                            <div class="card st-panel h-100 overflow-hidden position-relative">
+                                <div class="st-image-wrapper h-100">
+                                    <img src="/@Model.Img" class="st-main-img w-100 h-100" alt="@Model.Title">
+                                    <div class="st-image-overlay d-flex align-items-center justify-content-center p-4">
+                                        <div class="px-3 text-center st-overlay-content w-100">
+                                            <span class="st-status-badge">
+                                                <span class="st-dot"></span> @Model.Status
+                                            </span>
+                                            <h2 class="st-overlay-title">@Model.Title</h2>
+                                            <div class="st-description-scroll text-white">
+                                                @Model.Description
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="position-absolute top-0 start-0 m-3" style="z-index: 10;">
+                                        <span class="badge st-badge-id">#ID @Model.StoryId</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="st-info-col st-info-section">
+                            <div class="card st-panel h-100">
+                                <div class="card-body d-flex flex-column p-4">
+            
+                                    <!-- 1. PHẦN TIÊU ĐỀ & TRẠNG THÁI -->
+                                    <div class="mb-2">
+                                        <h2 class="fw-bold fs-4 text-main mb-2"><i class="fas text-main fa-book me-1"></i> @Model.Title</h2>
+                
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <div class="st-author-tag small text-main">
+                                                <i class="fas text-main fa-user-edit me-1"></i> Tác giả: @Model.Author.AuthorName
+                                            </div>
+                   
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. PHẦN THỂ LOẠI (CATEGORIES) MỚI THÊM VÀO -->
+                                    <div class="mt-2 mb-3">
+                                        <div class="d-flex flex-wrap gap-1.5 st-category-wrapper">
+                                            <!-- Duyệt trực tiếp qua bảng trung gian TblCategoryOfStories đã được Include từ Controller -->
+                                            @if (Model.TblCategoryOfStories != null && Model.TblCategoryOfStories.Any())
+                                            {
+                                                foreach (var item in Model.TblCategoryOfStories)
+                                                {
+                                                    if (item.Category != null)
+                                                    {
+                                                        <span class="badge st-badge-cat text-xs px-2.5 py-1.5 fw-semibold">
+                                                            <i class="fas fa-tags me-1 text-muted opacity-60"></i> @item.Category.Name
+                                                        </span>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small italic">Chưa phân loại</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <hr class="text-muted opacity-10 my-2">
+
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-4 mt-2 w-100 st-stat-box-wrapper">
+
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-main fw-bold fs-6"><i class="fas text-main fa-star"></i> @Model.Rate<small class="text-muted fs-xs">/5</small></div>
+                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">@Model.CountRate đánh giá</div>
+                                        </div>
+
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-main fw-bold fs-6"><i class="fas fa-heart text-main" ></i> @Model.Likes</div>
+                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">Lượt thích</div>
+                                        </div>
+
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-main fw-bold" style="font-size: 0.85rem; padding-top: 2px; padding-bottom: 2px;">
+                                                <i class="fas fa-calendar-alt text-main"></i> @Model.PublicationDate?.ToString("dd/MM/yyyy")
+                                            </div>
+                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">Ngày đăng</div>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- 4. KHỐI NÚT HÀNH ĐỘNG Ở ĐÁY CARD -->
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-4 mt-2 w-100 st-stat-box-wrapper">
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-accepted fw-bold fs-6"><i class="fas fa-book-open text-accepted" ></i> Đọc ngay</div>
+                                            <div class="st-stat-label text-accepted opacity-75" style="font-size: 0.7rem;">120 lượt đọc</div>
+
+                                        </div>
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-wait fw-bold fs-6"><i class="fas fa-bookmark text-wait" ></i> Theo dõi</div>
+                                            <div class="st-stat-label text-wait opacity-75" style="font-size: 0.7rem;">23 lượt theo dõi</div>
+                                        </div>
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-deny fw-bold  fs-6"><i class="fas fa-exclamation text-deny" ></i> Báo cáo</div>
+                                            <div class="st-stat-label text-deny opacity-75" style="font-size: 0.7rem;">0 lượt báo cáo</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mt-5">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white  story-lower-panel" style="border-radius:20px;">
+                    <div class="card-body p-4 p-lg-5" style="border-radius:20px;">
+
+                        <div class="d-flex justify-content-center mb-4">
+                            <ul class="nav nav-pills  gap-2 p-2" id="storyTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="btn-grad"
+                                            data-bs-toggle="tab" data-bs-target="#chapters-panel" type="button" role="tab">
+                                        <i class="fas fa-list fs-5"></i>
+                                        <span>Danh sách chương</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        @await Component.InvokeAsync("ChaptersList", new { storyId = Model.StoryId })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .st-detail-card {
+        font-family: 'Inter', sans-serif !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+    .st-panel {
+        border: none;
+        border-radius: 25px !important;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,.05);
+    }
+
+    .st-top-row {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 24px;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .st-image-col,
+    .st-info-col {
+        display: flex;
+    }
+
+    .st-image-col {
+        flex: 0 0 65%;
+        max-width: 65%;
+    }
+
+    .st-info-col {
+        flex: 0 0 30%;
+        max-width: 30%;
+    }
+
+    .st-image-col .st-panel,
+    .st-info-col .st-panel {
+        width: 100%;
+        min-height: 560px;
+    }
+
+    .st-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        height: 100%;
+        min-height: 560px;
+    }
+
+    .st-main-img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .st-image-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.82);
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .st-overlay-content {
+        transform: translateY(30px);
+        transition: transform 0.5s ease;
+        text-align: center;
+    }
+
+    .st-overlay-title {
+        color: white !important;
+        font-weight: 800;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
+        font-size: 1.6rem;
+    }
+
+    .st-line-glow {
+        display: none;
+    }
+
+    .st-description-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+        line-height: 1.75;
+        font-size: 0.96rem;
+        padding: 0 15px;
+    }
+
+    /* Hover ảnh */
+    .st-image-wrapper:hover .st-main-img {
+        transform: scale(1.05);
+    }
+
+    .st-image-wrapper:hover .st-image-overlay {
+        opacity: 1;
+    }
+
+    .st-image-wrapper:hover .st-overlay-content {
+        transform: translateY(0);
+    }
+
+    .st-image-wrapper:hover .st-line-glow {
+        width: 65%;
+    }
+
+    .st-stat-card {
+        background: #ffffff;
+        padding: .75rem .5rem 1rem;
+        margin: 5px;
+        border-radius: 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.05), 0 8px 20px rgba(0,0,0,.04);
+        text-align: center;
+        transition: 0.3s;
+    }
+
+        .st-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+    .story-lower-panel {
+        border: 1px solid rgba(15, 23, 42, 0.06) !important;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .story-tabs-shell {
+        background: linear-gradient(90deg, #f8fbff 0%, #eef4ff 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .story-tab-pill {
+        color: #475569;
+        transition: all 0.25s ease;
+    }
+
+    .story-tab-pill.active {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff !important;
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
+    }
+
+    .chapter-item {
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    .chapter-item:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+        border-color: rgba(37, 99, 235, 0.2) !important;
+    }
+
+    .chapter-icon {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        background: linear-gradient(135deg, #dbeafe, #eef2ff);
+        color: #2563eb;
+        font-size: 1.1rem;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    .chapter-title {
+        font-size: 0.97rem;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .chapter-meta {
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    .chapter-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #94a3b8;
+        display: inline-block;
+    }
+
+    .chapter-badge {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #15803d;
+        font-size: 0.78rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .chapter-badge-alt {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #b45309;
+    }
+
+    .pagination-modern .page-link {
+        border: none;
+        gap: 6px;
+        border-radius: 999px;
+        margin: 0 3px;
+        color: #475569;
+        min-width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    }
+
+    .pagination-modern .page-item.active .page-link {
+        background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+        color: #fff;
+    }
+
+    .comment-form-card {
+        background: linear-gradient(135deg, #f8fbff 0%, #f5f7ff 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .comment-form-input {
+        resize: none;
+        font-size: 0.95rem;
+        min-height: 90px;
+    }
+
+    .comment-form-input:focus {
+        box-shadow: none;
+    }
+
+    .comment-card {
+        transition: all 0.25s ease;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .comment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .comment-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        font-size: 1.1rem;
+    }
+
+    .comment-action-btn {
+        background: #fff5f5;
+        border: 1px solid rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .st-text-gradient {
+        background: linear-gradient(90deg, #2d3436, #0984e3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .st-status-badge {
+        background: #e3fcef;
+        color: #00b894;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .st-dot {
+        width: 8px;
+        height: 8px;
+        background: #00b894;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+
+    .st-btn-grad, .st-btn-grad-trans {
+        border: none;
+        color: white !important;
+        font-weight: 700;
+        border-radius: 14px;
+        padding: 12px;
+        transition: all 0.4s;
+    }
+
+    .st-btn-grad {
+        background: linear-gradient(to right, #50C9C3, #96DEDA);
+    }
+
+    .st-btn-grad-trans {
+        background: linear-gradient(45deg, #ff512f, #dd2476);
+    }
+
+    .st-btn-grad-cancel {
+        background: #f1f2f6;
+        color: #666;
+    }
+
+    .st-red-section .st-panel {
+        border-left: 6px solid #ff4d4f;
+        background: linear-gradient(180deg, #fffafa, #ffffff);
+    }
+
+    .st-blue-section .st-panel {
+        border-left: 6px solid #0d6efd;
+    }
+
+    .st-green-section .st-panel {
+        border-top: 6px solid #2ed573;
+        background: linear-gradient(180deg, #f9fff9, #ffffff);
+    }
+    .nav-pills .nav-link {
+        color: #6c757d;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+    }
+
+    .hover-bg-light:hover {
+        background-color: #f8f9fa;
+    }
+
+    .chapter-item, .comment-card {
+        border-color: #f1f3f5 !important;
+    }
+
+    .text-xs {
+        font-size: 0.75rem !important;
+    }
+</style>

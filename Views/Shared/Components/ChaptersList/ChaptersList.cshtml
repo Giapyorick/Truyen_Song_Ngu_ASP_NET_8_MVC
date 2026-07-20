@@ -1,0 +1,74 @@
+﻿@model WebTruyenTranh.ViewModels.ChaptersPagedViewModel
+
+<div class="tab-content" id="storyTabsContent">
+    <div class="d-flex flex-column gap-2" id="chapter-list">
+
+        @if (Model.Chapters != null && Model.Chapters.Any())
+        {
+            foreach (var item in Model.Chapters)
+            {
+                <a href="/Paragraphs/Content?chapterId=@item.ChapterId"
+                   class="chapter-item d-flex align-items-start p-4 rounded-4 border border-light bg-white hover-elevate text-decoration-none"
+                   style="border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,.08);">
+
+                    <div class="btn-grad d-flex align-items-center justify-content-center" style="border-radius: 25px;">
+                        <i class="fas fa-book-open fs-4"></i>
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <h6 class="mb-1 fw-semibold text-main chapter-title">
+                                Chương @item.ChapterNumber: @item.Title
+                            </h6>
+                        </div>
+                        <div class="chapter-meta text-muted d-flex align-items-center gap-2 mt-2">
+                            <span class="text-info">
+                                <i class="far text-info fa-clock me-1"></i>
+                                @item.CreatedDate?.ToString("dd/MM/yyyy")
+                            </span>
+                            <span class="text-info">
+                                <i class="far text-info fa-eye me-1"></i>Tự động cập nhật
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            }
+        }
+        else
+        {
+            <div class="text-center p-4 text-muted bg-white rounded-4 border border-light" style="border-radius:20px;">
+                <p class="mb-0 small italic">Truyện hiện chưa có chương nào.</p>
+            </div>
+        }
+
+    </div>
+
+    <div style="width:100%; padding: 20px 0;">
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <nav aria-label="Chapter pagination">
+                <ul class="pagination pagination-modern mb-0" data-story-id="@Model.StoryId">
+
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage - 1)" aria-label="Previous">
+                            <span aria-hidden="true">«</span>
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link page-nav-link" href="#" data-page="@i">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage + 1)" aria-label="Next">
+                            <span aria-hidden="true">»</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,1294 @@
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+	<div class="space-y-10 m-10">
+		<div class="flex flex-col items-center gap-4">
+		<h2 class="text-2xl font-bold text-cus tracking-tight">
+			Stories Management
+		</h2>
+	</div>
+    <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+        
+        <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-40 sm:w-64">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="filterSearch" placeholder="Search by title, author..." class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
+            </div>
+			<div class="w-40">
+				<select id="filterCategory" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+
+					<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%)" value="all">Categories</option>
+				</select>
+			</div>
+
+			<div class="w-40">
+				<select id="filterStatus" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+					<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%)" value="all">Status</option>
+					<option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Completed">Completed</option>
+					<option data-color="linear-gradient(135deg, #00c6fb, #005bea)" value="Posting">Posting</option>
+					<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%)" value="Coming soon">Coming soon</option>
+				</select>
+			</div>
+
+            <div class="flex items-center gap-4">
+				
+                <button onclick="exportExcel()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-export mr-2"></i>Export</button>
+				<button onclick="openImportModal()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-import mr-2"></i>Import</button>
+				<button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
+
+				<button onclick="openModal('add')" class="flex  text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
+					<i class="fas fa-plus-circle mr-2"></i> Add
+				</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-max text-left border-collapse">
+				<thead>
+					<tr class="bg-gray-50/50 text-gray-400 text-[11px] uppercase tracking-[0.15em] border-b border-gray-100">
+						<th class="px-6 py-4 w-10">
+							<div class="flex items-center justify-center">
+								<input type="checkbox" id="selectAll" class="w-5 h-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer transition-all">
+							</div>
+						</th>
+						<th class="px-4 py-4 text-gray font-bold">Information</th>
+						<th class="px-6 py-4 text-gray font-bold">PublicationDate (y-m-d)</th>
+						<th class="px-6 py-4 text-gray font-bold">Description</th>
+						<th class="px-6 py-4 text-gray font-bold">Engagement metrics</th>
+						<th class="px-6 py-4 text-gray font-bold">Category</th>
+
+						<th class="px-6 py-4 text-gray font-bold text-center">Status</th>
+						<th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody id="user-list-body" class="divide-y divide-gray-50">
+
+    			</tbody>
+			</table>
+			
+        </div>
+		<div id="pagination-container" class="flex justify-center items-center gap-2 py-4"></div>
+    </div>
+</div>
+</main>
+@*MODAL CRUD*@
+<div id="modalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[99] transition-all duration-500">
+    
+    <div id="modalContent" class="bg-white w-full max-w-5xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
+      <div class="p-8 border-b border-gray-50 relative mx-5 mt-0 mb-0 bg-gradient-to-r from-gray-50 to-white">
+    		<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+				<h3 id="modalTitle" class="text-xl font-extrabold text-cus">Title</h3>
+				<p class="text-xs text-gray-400 mt-1">Please fill in all information</p>
+			</div>
+
+			<button onclick="closeModal()"
+				class="absolute right-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all text-2xl">
+				&times;
+			</button>
+		</div>
+
+        <form id="storyForm" enctype="multipart/form-data" class="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+			<input type="hidden" name="StoryId" id="storyId">
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+				<div class="space-y-6">
+
+					<div>
+						<div class="flex flex-col items-center gap-4 mt-2">
+							<div class="w-40 h-40 rounded-3xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+								<img onclick="openImagePreview(this.src)" id="imgPreview" src="" class="w-full h-full object-cover hidden cursor-pointer"  />
+								<i id="uploadIcon" class="fas fa-camera text-gray-300 text-2xl"></i>
+							</div>
+							<div class="w-full text-center">
+								<input type="file" name="formFile" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+								<button type="button" onclick="$('#imageInput').click()"
+										class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm text-cus font-semibold hover:bg-gray-50 transition">
+									Choose Image
+								</button>
+								<p class="text-[10px] text-gray-400 mt-1">PNG, JPG up to 2MB</p>
+							</div>
+						</div>
+					</div>
+					
+					
+				</div>
+
+				<div class="md:col-span-2">
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Title</label>
+							<input type="text" name="Title" id="storyTitle"
+								class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+								placeholder="Doraemon" required> 
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">PublicationDate</label>
+							<input type="date" name="PublicationDate" id="storyPublicationDate"
+								class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all datepicker"
+								placeholder="yyyy-mm-dd">
+						</div>
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Author</label>
+							<select name="AuthorId" id="storyAuthorName"
+								class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
+							</select>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Description</label>
+							<textarea name="Description" id="storyDescription" rows="3"
+									class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+									placeholder="Write something ..."></textarea>
+						</div>
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Categories</label>
+
+							<div id="selectedCategories"
+								onclick="openCategoryModal()"
+								class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
+								<span class="comingsoon">No category selected</span>
+							</div>
+						</div>
+
+						
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Status</label>
+							<select name="Status" id="storyStatus"
+									class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
+								<option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Completed">Completed</option>
+								<option data-color="linear-gradient(135deg, #00c6fb, #005bea)" value="Posting">Posting</option>
+								<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%)" value="Coming soon">Coming soon</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="pt-6 flex gap-4">
+				<button type="button" onclick="closeModal()"
+						class="flex-[2] py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+					Cancel
+				</button>
+				
+				<button type="submit" id="btnSave"
+						class="flex-[2] py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+					Save Changes
+				</button>
+			</div>
+		</form>
+
+    </div>
+</div>
+@*MODAL IMPORT EXCEL*@
+<div id="importModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
+    <div id="importContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-cus">Import from Excel</h3>
+                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="dropZone" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-10 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" class="absolute inset-0 opacity-0 cursor-pointer">
+                
+                <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-excel text-green-500 text-3xl"></i>
+                </div>
+                
+                <p class="text-gray-600 font-semibold" id="fileStatus">Drag and drop the file here or click to select it.</p>
+                <p class="text-xs text-gray-400 mt-2">Format support .xlsx, .xls (Tối đa 5MB)</p>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between px-2">
+                <a href="/assets/template/Story_Template.xlsx" class="text-sm text-cus text-indigo-600 font-medium hover:underline flex items-center gap-2">
+                    <i class="fas fa-download text-xs"></i> Download template here
+                </a>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button onclick="closeImportModal()" class="flex-1 py-3 btn-grad-cancel font-bold hover:bg-gray-50 rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button id="btnDoImport" onclick="executeImport()" class="flex-1 py-3 bg-indigo-600 btn-grad rounded-xl font-bold shadow-lg hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none">
+                    Confirm Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*MODAL SHOW IMAGE*@
+<div id="imageModal"
+     class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[999]">
+    
+    <img id="imageModalContent"
+         class="max-w-[90%] max-h-[90%] rounded-2xl shadow-2xl" />
+
+    <button onclick="closeImagePreview()"
+            class="absolute top-5 right-5 text-white text-3xl hover:text-red-400">
+        &times;
+    </button>
+</div>
+
+<div id="categoryModal"
+     class="fixed inset-0 bg-black/50 backdrop-blur-md hidden
+            items-center justify-center z-[999] transition-all">
+
+    <div id="categoryModalContent"
+         class="bg-white w-full max-w-3xl rounded-[2rem]
+                shadow-[0_20px_50px_rgba(0,0,0,0.3)]
+                transform translate-y-20 opacity-0
+                transition-all duration-500 ease-out">
+
+        <div class="p-6 border-b bg-gray-50 rounded-t-[2rem] text-center">
+            <h3 class="text-xl font-extrabold text-cus">
+                Select Categories
+            </h3>
+            <p class="text-xs text-gray-400 mt-1">
+                Choose one or more categories
+            </p>
+        </div>
+
+        <div class="p-6 max-h-[55vh] overflow-y-auto">
+            <div id="categoryCheckboxList"
+                 class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- JS render -->
+            </div>
+        </div>
+
+        <div class="p-6 flex justify-end gap-3 border-t bg-gray-50 rounded-b-[2rem]">
+            <button onclick="closeCategoryModal()"
+                    class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-sm font-semibold">
+                Cancel
+            </button>
+            <button onclick="applyCategories()"
+                    class="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-semibold">
+                Apply
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+	$(".datepicker").flatpickr({
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+</script>
+<script>
+	function loadAuthors(selectedId = null) {
+		fetch('/Admin/tblStories/GetAuthorsForSelect')
+			.then(res => res.json())
+			.then(data => {
+				console.log(data);
+				const select = document.getElementById('storyAuthorName');
+				select.innerHTML = `<option value="Unknow">Select author</option>`;
+
+				data.forEach(a => {
+					const selected = selectedId == a.id ? 'selected' : '';
+					select.innerHTML += `
+						<option value="${a.id}" ${selected}>
+							${a.name}
+						</option>
+					`;
+				});
+			});
+	}	
+	loadAuthors();
+
+</script>
+<script>
+    function loadCategoryFilter(selectedId = 'all') {
+        fetch('/Admin/tblStories/GetCategoriesForSelect')
+            .then(res => res.json())
+            .then(data => {
+                const $select = $('#filterCategory');
+
+                $select.empty();
+                $select.append(`<option value="all">Categories</option>`);
+
+                data.forEach(c => {
+                    $select.append(`
+                        <option value="${c.id}">
+                            ${c.name}
+                        </option>
+                    `);
+                });
+
+                $select.val(selectedId).trigger('change');
+            });
+    }
+
+    $(document).ready(function () {
+        $('#filterCategory').select2({
+            placeholder: 'Categories',
+            allowClear: true,
+            width: '100%'
+        });
+
+        loadCategoryFilter();
+    });
+</script>
+
+<script>
+	let selectedCategoryIds = new Set();
+	console.log('selectedCategoryIds', selectedCategoryIds);
+
+	function openCategoryModal() {
+		const modal = document.getElementById('categoryModal');
+		const content = document.getElementById('categoryModalContent');
+
+		modal.classList.remove('hidden');
+		modal.classList.add('flex');
+
+		setTimeout(() => {
+			content.classList.remove('translate-y-20', 'opacity-0');
+		}, 50);
+	}
+
+	function closeCategoryModal() {
+		const modal = document.getElementById('categoryModal');
+		const content = document.getElementById('categoryModalContent');
+
+		content.classList.add('translate-y-20', 'opacity-0');
+
+		setTimeout(() => {
+			modal.classList.add('hidden');
+			modal.classList.remove('flex');
+		}, 300);
+	}
+	function loadCategories() {
+		fetch('/Admin/tblStories/GetCategoriesForSelect')
+			.then(res => res.json())
+			.then(data => {
+				const container = document.getElementById('categoryCheckboxList');
+				container.innerHTML = '';
+
+				data.forEach(c => {
+					const checked = selectedCategoryIds.has(String(c.id)) ? 'checked' : '';
+
+					container.innerHTML += `
+						<label class="flex items-center gap-3 p-3 rounded-xl
+									border hover:border-indigo-500 cursor-pointer">
+							<input type="checkbox"
+								class="category-checkbox accent-indigo-600"
+								value="${c.id}"
+								data-name="${c.name}"
+								${checked}>
+							<span class="font-semibold text-gray-700">${c.name}</span>
+						</label>
+					`;
+				});
+			});
+	}
+
+
+	loadCategories();
+	function applyCategories() {
+		selectedCategoryIds.clear();
+
+		const preview = document.getElementById('selectedCategories');
+		preview.innerHTML = '';
+
+		document.querySelectorAll('.category-checkbox:checked')
+			.forEach(cb => {
+				const id = cb.value;
+				const name = cb.dataset.name;
+
+				selectedCategoryIds.add(id);
+
+				preview.innerHTML += `
+					<span class="px-3 py-1 text-xs font-semibold
+								bg-indigo-100 text-indigo-600
+								rounded-full">
+						${name}
+					</span>
+					<input type="hidden" name="CategoryIds[]" value="${id}">
+				`;
+			});
+
+		if (selectedCategoryIds.size === 0) {
+			preview.innerHTML = `<span class="text-xs text-gray-400">No category selected</span>`;
+		}
+
+		closeCategoryModal();
+	}
+</script>
+@*PREVIEW IMAGE CRUD*@
+<script>
+	function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgPreview').attr('src', e.target.result).removeClass('hidden');
+            $('#uploadIcon').addClass('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@*UI SELECT2 LIBARY FOR SELECT LIST*@
+<script>
+	$(document).ready(function() {
+		$('.select2-custom').each(function() {
+			$(this).select2({
+				width: '100%', 
+				minimumResultsForSearch: Infinity,
+				templateResult: formatState,
+				templateSelection: formatState
+			});
+		});
+	});
+	function formatState (state) {
+    if (!state.id) { return state.text; }
+    
+    const gradient = $(state.element).data('color') || 'linear-gradient(135deg, #667eea, #764ba2)';
+
+    
+    const $state = $(
+
+		'<span style="display: flex; align-items: center;">' +
+			'<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + gradient + '; margin-right:10px;"></span>' +
+			'<span style="background:' + gradient + '; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:700;">' + state.text + '</span>' +
+		'</span>'
+
+    );
+    return $state;
+};
+
+</script>
+
+<script>
+	//open modal
+function openModal(mode, id = null) {
+    const modal = $('#modalOverlay');
+    const $form = $('#storyForm');
+    const $imgPreview = $('#imgPreview');
+    const $uploadIcon = $('#uploadIcon');
+
+    // reset form
+    $form[0].reset();
+    $('#storyId').val('0');
+    $('input[name="CategoryIds"]').val('');
+    $('#selectedCategories').html('<span class="text-gray-400">No categories selected</span>');
+
+    $imgPreview.addClass('hidden').attr('src', '');
+    $uploadIcon.removeClass('hidden');
+
+    // show modal first
+    modal.removeClass('hidden').addClass('flex');
+
+    // init select2 once
+    $('.select2-custom').each(function () {
+        if (!$(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2({
+                dropdownParent: modal,
+                width: '100%'
+            });
+        }
+    });
+
+    if (mode === 'add') {
+        $('#modalTitle').text('Add story');
+    } 
+    else {
+        $('#modalTitle').text('Update story');
+
+        $.get('/Admin/tblStories/GetById/' + id, function (data) {
+			console.log('FULL DATA:', data);
+
+            $('#storyId').val(data.storyId);
+            $('#storyTitle').val(data.title);
+            $('#storyPublicationDate').val(data.publicationDate);
+
+            $('#storyAuthorName')
+                .val(data.authorId)
+                .trigger('change');
+
+            $('#storyDescription').val(data.description);
+
+            // ===== CATEGORIES =====
+            selectedCategoryIds.clear();
+
+			const preview = document.getElementById('selectedCategories');
+			preview.innerHTML = '';
+
+			if (data.categories && data.categories.length > 0) {
+				data.categories.forEach(c => {
+					selectedCategoryIds.add(String(c.categoryId));
+
+					preview.innerHTML += `
+						<span class="px-3 py-1 text-xs font-semibold
+									bg-indigo-100 text-indigo-600 rounded-full">
+							${c.name}
+						</span>
+						<input type="hidden" name="CategoryIds[]" value="${c.categoryId}">
+					`;
+				});
+			} else {
+				preview.innerHTML = `<span class="text-xs text-gray-400">No category selected</span>`;
+			}
+			console.log('Selected:',selectedCategoryIds);
+			loadCategories();
+
+
+            // ===== STATUS =====
+            $('#storyStatus')
+                .val(data.status)
+                .trigger('change');
+
+            // ===== IMAGE =====
+			const $imgPreview = $('#imgPreview');
+			const $uploadIcon = $('#uploadIcon');
+			console.log(imgPreview);
+			console.log('CATEGORIES:', data.categories);
+
+
+            if (data.img && data.img.trim() !== "") {
+				const fullPath = data.img.startsWith('/') ? data.img : '/' + data.img;
+				console.log("last image path:", fullPath);
+				
+				$imgPreview.attr('src', fullPath);
+				$imgPreview.removeClass('hidden'); 
+				$uploadIcon.addClass('hidden');    
+			} else {
+				$imgPreview.addClass('hidden').attr('src', '');
+				$uploadIcon.removeClass('hidden');
+			}
+        });
+    }
+
+    setTimeout(() => {
+        $('#modalContent').addClass('translate-y-0 opacity-100');
+    }, 10);
+}
+///////////////////////////////////////
+	// close modall
+    function closeModal() {
+        const content = $('#modalContent');
+        content.removeClass('translate-y-0 opacity-100 scale-100')
+               .addClass('translate-y-10 opacity-0 scale-95');
+        
+        setTimeout(() => {
+            $('#modalOverlay').removeClass('flex').addClass('hidden');
+        }, 300);
+    }
+//////////////////////////////////////////
+	// action delete
+    async function deleteStory(id) {
+		const confirmed = await customConfirm(
+			`Are you sure to remove this story ?<br><small class="text-red-400">This action cannot be undone.</small>`,
+			"Delete Story"
+			);
+			if (confirmed) {
+			
+			const $row = $(`button[onclick="deleteStory(${id})"]`).closest('tr');
+			
+			$row.addClass('opacity-50 pointer-events-none');
+
+			$.ajax({
+				url: '/Admin/tblStories/Delete',
+				type: 'POST',
+				data: { id: id },
+				success: function(response) {
+					if (response.success) {
+						$row.fadeOut(400, function() {
+							$(this).remove();
+							showToast(response.message, 'success');
+						});
+					} else {
+						showToast("Error: " + response.message + response.inner, 'error');
+						$row.removeClass('opacity-50 pointer-events-none');
+					}
+				},
+				error: function() {
+					showToast("Cannot connect to the server to delete.", 'error');
+					$row.removeClass('opacity-50 pointer-events-none');
+				}
+			});
+		}
+	}
+	///////////////////
+	// Action export
+	function exportExcel() {
+		const search = $('#filterSearch').val();
+		const category = $('#filterCategory').val();
+		const status = $('#filterStatus').val();
+
+		window.location.href = `/Admin/tblStories/ExportToExcel?search=${search}&status=${status}&categoryId=${category}`;
+	}
+	/////////////////////////////////////
+	// submit form
+
+	$('#storyForm').on('submit', function(e) {
+		e.preventDefault();
+		localStorage.setItem('storyPage', currentPage);
+		
+		const submitBtn = $(this).find('button[type="submit"]');
+		
+		const formData = new FormData(this); 
+		
+		const authorId = $('#storyId').val();
+		const url = (authorId == "0" || authorId == "") ? '/Admin/tblStories/Add' : '/Admin/tblStories/Update';
+		console.log('===== FORM DATA SENT TO CONTROLLER =====');
+		for (let pair of formData.entries()) {
+			console.log(pair[0] + ':', pair[1]);
+		}
+		console.log('========================================');
+
+
+		submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+
+		$.ajax({
+			url: url,
+			type: 'POST',
+			data: formData, 
+			contentType: false, 
+			processData: false, 
+			success: function(response) {
+				if (response.success) {
+					showToast(response.message, 'success');
+					closeModal();
+					const savedPage = localStorage.getItem('storyPage');
+					console.log('Page', savedPage);
+					currentPage = savedPage ? parseInt(savedPage) : 1;
+					loadStoryList(currentPage); 
+				} else {
+					showToast("Error: " + response.message, 'error');
+				}
+			},
+			error: function() {
+				showToast("Cannot connect to the server.", 'error');
+			},
+			complete: function() {
+				submitBtn.prop('disabled', false).html('Save Changes');
+			}
+		});
+	});
+
+	$('#filterSearch, #filterCategory, #filterStatus').on('change keyup', function() {
+		const savedPage = localStorage.getItem('storyPage');
+		currentPage = savedPage ? parseInt(savedPage) : 1;
+		loadStoryList(currentPage);
+	});
+	////////////////////////////////////
+	// action List and Pagination
+
+	let currentPage = 1;
+	const pageSize = 5;
+
+	function renderPagination(currentPage, totalPages) {
+		const container = $('#pagination-container');
+		container.empty();
+
+		if (totalPages <= 1) return;
+
+		const maxVisible = 2; // số trang hai bên current
+		let html = `<div class="flex items-center gap-1">`;
+
+		// ⏮ First
+		html += `
+		<button onclick="loadStoryList(1)"
+			class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
+			${currentPage === 1 ? 'disabled' : ''}>
+			⏮
+		</button>`;
+
+		// ◀ Prev
+		html += `
+		<button onclick="loadStoryList(${currentPage - 1})"
+			class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
+			${currentPage === 1 ? 'disabled' : ''}>
+			◀
+		</button>`;
+
+		// Trang đầu
+		if (currentPage > maxVisible + 1) {
+			html += pageBtn(1, currentPage);
+			html += `<span class="px-2">…</span>`;
+		}
+
+		// Các trang gần current
+		for (let i = Math.max(1, currentPage - maxVisible);
+			i <= Math.min(totalPages, currentPage + maxVisible);
+			i++) {
+			html += pageBtn(i, currentPage);
+		}
+
+		// Trang cuối
+		if (currentPage < totalPages - maxVisible) {
+			html += `<span class="px-2">…</span>`;
+			html += pageBtn(totalPages, currentPage);
+		}
+
+		// ▶ Next
+		html += `
+		<button onclick="loadStoryList(${currentPage + 1})"
+			class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
+			${currentPage === totalPages ? 'disabled' : ''}>
+			▶
+		</button>`;
+
+		// ⏭ Last
+		html += `
+		<button onclick="loadStoryList(${totalPages})"
+			class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
+			${currentPage === totalPages ? 'disabled' : ''}>
+			⏭
+		</button>`;
+
+		// 🔢 Go to page
+		html += `
+		<div class="flex items-center gap-1 ml-3">
+			<span class="text-sm">Go:</span>
+			<input type="number"
+				min="1"
+				max="${totalPages}"
+				value="${currentPage}"
+				class="w-16 px-2 py-1 border rounded text-center"
+				onkeydown="if(event.key==='Enter') gotoPage(this, ${totalPages})">
+		</div>`;
+
+		html += `</div>`;
+		container.html(html);
+	}
+	function pageBtn(page, current) {
+		const active = page === current;
+		return `
+		<button onclick="loadStoryList(${page})"
+			class="px-3 py-1 border rounded
+			${active ? 'btn-grad text-white font-bold' : 'hover:bg-gray-100'}">
+			${page}
+		</button>`;
+	}
+	function gotoPage(input, totalPages) {
+		let page = parseInt(input.value);
+		if (isNaN(page)) return;
+
+		if (page < 1) page = 1;
+		if (page > totalPages) page = totalPages;
+
+		loadStoryList(page);
+	}
+
+	function loadStoryList(page = 1) {
+		currentPage = page;
+		const $body = $('#user-list-body');
+			const statusVal = $('#filterStatus').val();
+			const categoryVal = $('#filterCategory').val();
+			const filters = {
+				search: $('#filterSearch').val(),
+				status: statusVal ==='all' ? '' : statusVal,
+				categoryId: categoryVal ==='all' ? '' : categoryVal,
+				page: currentPage,
+				pageSize: pageSize
+		};
+
+		$.ajax({
+			url: '/Admin/tblStories/List',
+			type: 'GET',
+			data: filters,
+			success: function (data) {
+				let html = '';
+				console.log("Data received from the Server:", data);
+				if (!data.stories || data.stories.length === 0) {
+					$body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+					$('#pagination-container').html('');
+					return;
+				}
+
+					data.stories.forEach(story => {
+						const avatarHtml = story.img
+							? `<img onclick="openImagePreview(this.src)"
+								src="/${story.img}"
+								class="w-11 h-11 rounded-2xl object-cover shadow-sm border border-gray-100 cursor-pointer">`
+							: `<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600
+										flex items-center justify-center text-white font-bold shadow-sm">
+								${story.title ? story.title.charAt(0).toUpperCase() : 'U'}
+							</div>`;
+
+						const statusClass =
+								story.status === "Completed" ? "active" :
+								story.status === "Posting"   ? "posting" :
+															"comingsoon";
+
+						const categoryHtml = story.categories && story.categories.length
+							? story.categories.map(c =>
+								`<span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-md text-[14px] font-semibold">${c}</span>`
+							).join(" ")
+							: `<span class="text-sm text-gray-400">No category</span>`;
+
+						html += `
+						<tr class="group hover:bg-indigo-50/30 transition-all">
+							<!-- Checkbox -->
+							<td class="px-6 py-5 text-center">
+								<input type="checkbox"
+									class="user-checkbox w-5 h-5 rounded-md border-gray-300"
+									value="${story.storyId}">
+							</td>
+
+							<!-- Information -->
+							<td class="px-4 py-5">
+								<div class="flex items-center gap-4">
+									${avatarHtml}
+									<div>
+										<div class="font-bold text-gray-700">${story.title}</div>
+										<div class="text-xs text-gray-400">${story.authorName}</div>
+									</div>
+								</div>
+							</td>
+
+							<!-- Publication Date -->
+							<td class="px-6 py-5">
+								<span class="px-3 py-1.5 bg-slate-100 text-gray-600 rounded-lg text-xs font-semibold">
+									${story.publicationDate ?? ""}
+								</span>
+							</td>
+
+							<!-- Description -->
+							<td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm">
+								${story.description ?? ""}
+							</td>
+
+							<!-- Engagement metrics -->
+							<td class="px-6 py-5">
+								<!-- Thêm grid, chia 2 cột, gap-x là khoảng cách ngang, gap-y là khoảng cách dọc -->
+								<div class="text-sm text-gray-600 leading-6 grid grid-cols-2 gap-x-4 gap-y-2">
+									<div class="flex items-center gap-2">
+										<i class="fa-solid text-deny fa-heart w-4 text-center"></i> 
+										<span>${story.likes} loves</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<i class="fa-solid text-wait fa-star w-4 text-center"></i> 
+										<span>${story.rate} rates</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<i class="fa-solid text-cus fa-comment-dollar w-4 text-center"></i> 
+										<span>${story.countRate} rated</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<i class="fa-solid text-accepted fa-users w-4 text-center"></i> 
+										<span>${story.countFolower} followers</span>
+									</div>
+								</div>
+							</td>
+
+							<!-- Category -->
+							<td class="px-6 py-5 max-w-xs truncate">
+								<div class="flex flex-wrap gap-2">
+									${categoryHtml}
+								</div>
+							</td>
+
+							<!-- Status -->
+							<td class="px-6 py-5 text-center">
+								<span class="font-bold px-3 py-1.5 ${statusClass}
+											rounded-xl text-[10px] uppercase tracking-wider">
+									${story.status}
+								</span>
+							</td>
+
+							<!-- Actions -->
+							<td class="px-8 py-5 text-right">
+								<div class="flex justify-end gap-3">
+									<button onclick="openModal('edit', ${story.storyId})"
+										class="w-7 aspect-square flex items-center justify-center
+											rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white transition">
+										<i class="fas fa-pencil-alt text-[11px]"></i>
+									</button>
+
+									<button onclick="deleteStory(${story.storyId})"
+										class="w-7 aspect-square flex items-center justify-center
+											rounded-lg bg-red-50 hover:bg-red-600 hover:text-white transition">
+										<i class="fas fa-trash-alt text-[11px]"></i>
+									</button>
+								</div>
+							</td>
+
+						</tr>`;
+					});
+
+
+				$body.html(html);
+				
+				renderPagination(data.currentPage, data.totalPages);
+				updateDeleteButton();
+			},
+			error: function (xhr) {
+				$body.html('<tr><td colspan="6" class="text-center py-10 text-red-500">Error: Input data.</td></tr>');
+			}
+		});
+	}
+
+	$(document).ready(function() {
+		const savedPage = localStorage.getItem('storyPage');
+		currentPage = savedPage ? parseInt(savedPage) : 1;
+		loadStoryList(currentPage);
+
+		$('#filterSearch').on('keyup', function() {
+			loadStoryList(1);
+		});
+
+		$('#filterCategory, #filterStatus').on('change', function() {
+			loadStoryList(1);
+		});
+	});
+</script>
+@*UPDATE DELELE BUTTON BUTTON(N)*@
+<script>
+	function updateDeleteButton() {
+		const count = $('.user-checkbox:checked').length;
+		const $btn = $('#btnDeleteSelected');
+
+		if (count > 0) {
+			$btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+			$btn.prop('disabled', false);
+			$btn.removeClass('opacity-50 cursor-not-allowed');
+		} else {
+			$btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+			$btn.prop('disabled', true);
+			$btn.addClass('opacity-50 cursor-not-allowed');
+		}
+	}
+</script>
+@*IMAGE ZOOM PREVIEW*@
+<script>
+	function openImagePreview(src) {
+		if (!src) return;
+
+		$('#imageModalContent').attr('src', src);
+		$('#imageModal').removeClass('hidden').addClass('flex');
+	}
+
+	function closeImagePreview() {
+		$('#imageModal').addClass('hidden').removeClass('flex');
+	}
+</script>
+
+@*DELETE MULTIPLE*@
+<script>
+$(document).ready(function () {
+
+    $('#selectAll').on('change', function () {
+        const isChecked = this.checked;
+
+        $('.user-checkbox').each(function () {
+            $(this).prop('checked', isChecked)
+                   .closest('tr')
+                   .toggleClass('bg-indigo-50/50', isChecked);
+				   updateDeleteButton();
+        });
+    });
+
+    $(document).on('change', '.user-checkbox', function () {
+        const total = $('.user-checkbox').length;
+        const checked = $('.user-checkbox:checked').length;
+
+        $(this)
+            .closest('tr')
+            .toggleClass('bg-indigo-50/50', this.checked);
+
+        $('#selectAll').prop('checked', total > 0 && total === checked);
+		updateDeleteButton();
+    });
+
+		$(document).on('click', '#btnDeleteSelected', async function () {
+        const ids = $('.user-checkbox:checked')
+            .map(function () {
+                return parseInt(this.value);
+            })
+            .get();
+
+        if (ids.length === 0) {
+            showToast('Please select at least one author!', 'error');
+            return;
+        }
+
+		const confirmed = await customConfirm(
+		`Are you sure you want to delete <strong>${ids.length}</strong> stories ?<br>` +
+		`<small class="text-red-400">This action cannot be undone.</small>`,
+		"Delete Multiple"
+		);
+
+		if (!confirmed) return;
+
+        $.ajax({
+            url: '/Admin/tblStories/DeleteMultiple',
+            type: 'POST',
+            traditional: true,
+            data: { ids: ids },
+            success: function (res) {
+				if (res.blocked && res.blocked.length > 0) {
+					showToast(
+						`Cannot delete this ID: ${res.blocked.join(', ')}\n` +
+						`Because it was used to link foreign keys.`,
+						'error'
+					);
+					updateDeleteButton();
+
+				}
+				if (res.deleted && res.deleted.length > 0) {
+					showToast(`Deleted ${res.deleted.length} story.`), 'error';
+				}
+				const savedPage = localStorage.getItem('storyPage');
+				currentPage = savedPage ? parseInt(savedPage) : 1;
+				loadStoryList(currentPage);
+				$('#selectAll').prop('checked', false);
+			}
+
+        });
+    });
+
+});
+</script>
+@*MODAL IMPORT*@
+<script>
+	function openImportModal() {
+		const modal = $('#importModal');
+		modal.removeClass('hidden').addClass('flex');
+		setTimeout(() => $('#importContent').addClass('scale-100 opacity-100'), 10);
+	}
+
+	function closeImportModal() {
+		$('#importContent').removeClass('scale-100 opacity-100');
+		setTimeout(() => {
+			$('#importModal').removeClass('flex').addClass('hidden');
+			resetImportForm();
+		}, 300);
+	}
+
+	$('#excelFile').on('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			$('#fileStatus').html(`<span class="text-indigo-600 font-bold italic">${file.name}</span>`);
+			$('#dropZone').addClass('border-indigo-500 bg-indigo-100/50');
+		}
+	});
+
+	function resetImportForm() {
+		$('#excelFile').val('');
+		$('#fileStatus').text('Drag and drop or click to import file');
+		$('#dropZone').removeClass('border-indigo-500 bg-indigo-100/50');
+	}
+
+	function executeImport() {
+		const fileInput = document.getElementById('excelFile');
+		if (fileInput.files.length === 0) {
+			showToast('Please choose file Excel!', 'error');
+			return;
+		}
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    const $btn = $('#btnDoImport');
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+
+    $.ajax({
+        url: '/Admin/tblStories/ImportFromExcel',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            if (res.success) {
+                showToast(res.message, 'success');
+                closeImportModal();
+                loadStoryList(1); 
+            } else {
+                let errorDetails = `${res.message || 'Import failed'}`;
+                
+                if (res.error) {
+                    errorDetails += `<br><small class="opacity-90">Error: ${res.error}</small>`;
+                }
+                if (res.stack) {
+                    errorDetails += `<br><small class="opacity-75">Detail: ${res.stack}</small>`;
+                }
+                
+                showToast(errorDetails, 'error'); 
+            }
+        },
+		error: function(xhr) {
+		let errorMsg = 'Error during import file!';
+
+		if (xhr.responseJSON) {
+		const res = xhr.responseJSON;
+		errorMsg += `<br><small class="opacity-90">Error: ${res.error || res.message}</small>`;
+		if (res.stack) {
+		errorMsg += `<br><small class="opacity-75">Detail: ${res.stack}</small>`;
+		}
+		}
+		else if (xhr.responseText) {
+		let rawError = xhr.responseText;
+
+		if (rawError.includes("<i>") && rawError.includes("</i>")) {
+		rawError = rawError.split("<i>")[1].split("</i>")[0];
+		} else if (rawError.length > 150) {
+		rawError = rawError.substring(0, 150) + "...";
+		}
+
+		errorMsg += `<br><small class="opacity-80">Server Crash: ${rawError}</small>`;
+		}
+		else {
+		errorMsg += `<br><small class="opacity-75">Status: ${xhr.status} (${xhr.statusText})</small>`;
+		}
+
+		showToast(errorMsg, 'error');
+		}
+    });
+}
+</script>
+<script>
+	$.ajax({
+    url: '/Admin/tblStories/ImportFromExcel',
+    type: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function (res) {
+        console.log('SERVER RESPONSE:', res);
+
+        if (!res.success) {
+            showToast(
+                'Error Import\n' +
+                (res.message ?? '') + '\n' +
+                (res.error ?? '') + '\n' +
+                (res.inner ?? '') +
+                (res.row ? `\nLine: ${res.row}` : ''),
+				'error'
+            );
+            return;
+        }
+
+		showToast('Import success', 'success');
+    },
+    error: function (xhr) {
+        console.error('HTTP ERROR:', xhr.responseText);
+		showToast('error HTTP check in console', 'error');
+    }
+});
+
+</script>
+}
+
+<style>
+.active{   @*completed*@
+	background: linear-gradient(135deg, #93F9B9, #1D976C);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.inactive{
+    background: linear-gradient(135deg, #F45C43, #EB3349);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.posting{
+    background: linear-gradient(135deg, #00c6fb, #005bea);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.comingsoon{
+    background:linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.male{
+	background: linear-gradient(135deg, #4facfe, #00f2fe);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.female{
+	background: linear-gradient(135deg, #ff758c, #ff7eb3);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.select2-container--open {
+    z-index: 999999999 !important;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-selection__rendered {
+    line-height: 45px !important;
+    padding-left: 15px !important;
+    font-size: 14px;
+}
+.select2-container--default .select2-selection--single {
+	border: 2px solid #edf2f7 !important;
+	border-radius: 12px !important;
+	height: 50px !important;
+	display: flex;
+	align-items: center;
+	transition: all 0.3s ease;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--open .select2-selection--single {
+	border-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+	box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1) !important;
+}
+
+.status-dot {
+	height: 10px;
+	width: 10px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: normal !important;
+	padding-left: 15px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 48px !important;
+	right: 10px !important;
+}
+
+.select2-dropdown {
+	border: none !important;
+	border-radius: 12px !important;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+	overflow: hidden;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+	background-color: #f3f0ff !important;
+	color: #201f21 !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered span {
+	display: flex;
+	align-items: center;
+}
+
+.select2-results__option {
+	padding: 10px 15px !important;
+}
+
+
+</style>

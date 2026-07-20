@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilingual Manga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/_Layout.css" asp-append-version="true">    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+            tailwind.config = {
+                darkMode: 'class'
+            }
+    </script>
+</head>
+<body class="bg-white">
+
+    <header>
+        <div class="logo text-wait" style="text-shadow: 0 4px 12px rgba(255, 255, 255, 0.6);">BILINGUAL NOVEL</div>
+        <nav>
+            <ul>
+                <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Trang chủ</a></li>
+                <li><a href="#" class="text-wait" style="text-shadow: 0 4px 12px rgba(255, 255, 255, 0.6);">Song ngữ EN-VI</a></li>
+                <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Thể loại</a></li>
+                <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Xếp hạng</a></li>
+            </ul>
+        </nav>
+        <div class="user-action">
+            <button class="btn-grad-login">Đăng nhập</button>
+        </div>
+    </header>
+
+    <section class="hero-slideshow">
+        <div class="slides-container">
+            <!-- Slide 1 -->
+            <div class="slide active">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <span class="badge">Hot Trend</span>
+                    <h1 class="banner-title">Shadow Slave</h1>
+                    <p class="banner-desc">Cuộc hành trình sinh tồn khắc nghiệt trong thế giới mộng mị. Bản song ngữ độc quyền.</p>
+                    <div class="banner-actions">
+                        <a href="#" class="btn-grad">Đọc ngay</a>
+                        <a href="#" class="btn-grad-trans">Thêm thư viện</a>
+                    </div>
+                </div>
+                <div class="banner-visual">
+                    <img src="\assets\image\Anime\aira-shiratori-5120x3400-24621.jpg" alt="Slide 1">
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <span class="badge">Đề cử</span>
+                    <h1 class="banner-title">Omniscient Reader</h1>
+                    <p class="banner-desc">Khi thế giới bạn đang sống biến thành tình tiết trong một cuốn tiểu thuyết.</p>
+                    <div class="banner-actions">
+                        <a href="#" class="btn-grad">Đọc ngay</a>
+                        <a href="#" class="btn-grad-trans">Thêm thư viện</a>
+                    </div>
+                </div>
+                <div class="banner-visual">
+                    <img src="\assets\image\Anime\lumine-intertwined-3840x2160-26732.jpg" alt="Slide 2">
+                </div>
+            </div>
+            <div class="slide">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <span class="badge">Đề cử</span>
+                    <h1 class="banner-title">Omniscient Reader</h1>
+                    <p class="banner-desc">Khi thế giới bạn đang sống biến thành tình tiết trong một cuốn tiểu thuyết.</p>
+                    <div class="banner-actions">
+                        <a href="#" class="btn-grad">Đọc ngay</a>
+                        <a href="#" class="btn-grad-trans">Thêm thư viện</a>
+                    </div>
+                </div>
+                <div class="banner-visual">
+                    <img src="\assets\image\Anime\mylivewallpapers-com-Elementalist-Lux-Depth-Parallax-4K.jpg" alt="Slide 3">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <section class="primary-content">
+            @RenderBody()
+        </section>
+
+        <aside class="hot-sidebar">
+            <h3 class="sidebar-title">TRUYỆN HOT TUẦN</h3>
+            <div class="hot-list">
+                <div class="hot-item">
+                    <span class="rank">1</span>
+                    <div class="hot-item-info">
+                        <a href="#" class="hot-item-title">Võ Luyện Đỉnh Phong</a>
+                        <span class="hot-item-view">1.2M views</span>
+                    </div>
+                </div>
+
+                <div class="hot-item">
+                    <span class="rank">2</span>
+                    <div class="hot-item-info">
+                        <a href="#" class="hot-item-title">Toàn Trí Độc Giả</a>
+                        <span class="hot-item-view">950K views</span>
+                    </div>
+                </div>
+
+                <div class="hot-item">
+                    <span class="rank">3</span>
+                    <div class="hot-item-info">
+                        <a href="#" class="hot-item-title">Sự Trở Lại Của Anh Hùng</a>
+                        <span class="hot-item-view">800K views</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <h4 class="text-cus">Về chúng tôi</h4>
+                <p style="max-width: 250px; font-size: 0.9rem; color: #cbd5e1;">Nền tảng đọc truyện song ngữ hàng đầu, giúp bạn vừa giải trí vừa nâng cao trình độ ngoại ngữ.</p>
+            </div>
+            <div class="footer-col">
+                <h4 class="text-info">Liên kết</h4>
+                <ul style="list-style: none; font-size: 0.9rem; color: #cbd5e1; display:flex; flex-direction:column; gap:8px;">
+                    <li><a href="#" style="color: inherit;">Điều khoản dịch vụ</a></li>
+                    <li><a href="#" style="color: inherit;">Chính sách bảo mật</a></li>
+                    <li><a href="#" style="color: inherit;">Liên hệ quảng cáo</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="text-wait">Theo dõi</h4>
+                <p style="color: #cbd5e1;">Facebook | Discord | Youtube</p>
+            </div>
+        </div>
+        <div class="copyright">
+            © 2024 <span class="text-info">BilingualManga</span>. All rights reserved. Design with ❤️
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    @RenderSection("Scripts", required: false)
+    <div id="toast-container"></div>
+
+    <script>
+                $(document).ready(function() {
+            let currentSlide = 0;
+                    const slides = $('.slide');
+            const dots = $('.dot');
+                    const slideInterval = 5000;
+
+                    function nextSlide() {
+                        slides.eq(currentSlide).removeClass('active');
+                        dots.eq(currentSlide).removeClass('active');
+                        currentSlide = (currentSlide + 1) % slides.length;
+                        slides.eq(currentSlide).addClass('active');
+                        dots.eq(currentSlide).addClass('active');
+                    }
+
+                    let timer = setInterval(nextSlide, slideInterval);
+
+                    dots.click(function() {
+                        clearInterval(timer);
+                const index = $(this).index();
+                        slides.eq(currentSlide).removeClass('active');
+                dots.eq(currentSlide).removeClass('active');
+                        currentSlide = index;
+                        slides.eq(currentSlide).addClass('active');
+                dots.eq(currentSlide).addClass('active');
+                        timer = setInterval(nextSlide, slideInterval);
+                    });
+                });
+
+                function showToast(message, type = 'success', duration = 4000) {
+                    const container = document.getElementById('toast-container');
+                    if (!container) return;
+
+                    const toast = document.createElement('div');
+                toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
+                    toast.innerHTML = `
+                    <span class="toast-message">${message}</span>
+                        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                    `;
+
+                    container.appendChild(toast);
+                    setTimeout(() => { toast.classList.add('show'); }, 10);
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => { toast.remove(); }, 500);
+                    }, duration);
+                }
+    </script>
+
+    <style>
+            /* Làm sạch nền trang */
+            body {
+                background-color: #ffffff !important;
+                color: #334155 !important;
+            }
+
+            .text-info-btn {
+                background: none;
+                border: 1px solid #667eea;
+                padding: 5px 15px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-weight: 600;
+                color: #4f46e5;
+                transition: all 0.3s ease;
+            }
+
+                .text-info-btn:hover {
+                    background: #4f46e5;
+                    color: #ffffff;
+                }
+
+            /* Đổi Slideshow thành Tông sáng thanh lịch */
+            .hero-slideshow {
+                position: relative;
+                margin: 2rem 5%;
+                height: 400px;
+                border-radius: 24px;
+                overflow: hidden;
+                background: #f8fafc; 
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+                border: 1px solid #f1f5f9;
+            }
+
+            .slides-container {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            .slide {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 1s ease-in-out, visibility 1s;
+                display: flex;
+                align-items: center;
+            }
+
+                .slide.active {
+                    opacity: 1;
+                    visibility: visible;
+                }
+            /* Overlay chuyển tone sáng mượt mà */
+            .banner-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to right, #ffffff ffffff 45%, rgba(255, 255, 255, 0.2) 100%);
+                z-index: 2;
+            }
+
+            .banner-content {
+                position: relative;
+                z-index: 3;
+                padding-left: 4rem;
+                max-width: 500px;
+                transform: translateY(20px);
+                transition: 0.8s all ease;
+                opacity: 0;
+            }
+
+            .slide.active .banner-content {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .badge {
+                background: #e0e7ff;
+                color: #4f46e5;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                display: inline-block;
+                margin-bottom: 1rem;
+            }
+
+            .banner-title {
+                font-size: 2.8rem;
+                font-weight: 800;
+                color: #0f172a;
+                line-height: 1.2;
+                margin-bottom: 1rem;
+            }
+
+            .banner-desc {
+                color: #475569;
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .banner-actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            .btn-main {
+                background: #4f46e5;
+                color: white !important;
+                padding: 12px 28px;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+                transition: 0.3s;
+            }
+
+                .btn-main:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+                }
+
+            .btn-sub {
+                background: #ffffff;
+                color: #475569 !important;
+                border: 1px solid #cbd5e1;
+                padding: 12px 28px;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: 0.3s;
+            }
+
+                .btn-sub:hover {
+                    background: #f8fafc;
+                    border-color: #94a3b8;
+                }
+
+            .banner-visual {
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: 60%;
+                height: 100%;
+                z-index: 1;
+            }
+
+                .banner-visual img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+            .slide-dots {
+                position: absolute;
+                bottom: 25px;
+                left: 4rem;
+                z-index: 4;
+                display: flex;
+                gap: 8px;
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+            .dot.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                width: 24px;
+                border-radius: 10px;
+            }
+
+            .btn-grad-login {
+                background-image: linear-gradient(to right, #D1913C 0%, #FFD194 51%, #D1913C 100%);
+            }
+
+            .btn-grad-login {
+                margin: 5px;
+                padding: 10px 30px;
+                text-align: center;
+                text-transform: uppercase;
+                transition: 0.5s;
+                background-size: 200% auto;
+                color: white;
+                border-radius: 10px;
+                display: block;
+                outline: none;
+                border: none;
+            }
+
+            .btn-grad-login:hover {
+                background-position: right center;
+                color: #fff;
+                text-decoration: none;
+            }
+    </style>
+</body>
+</html>

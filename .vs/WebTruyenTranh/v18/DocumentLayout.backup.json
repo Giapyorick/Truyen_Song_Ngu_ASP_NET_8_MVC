@@ -1,0 +1,144 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\ASP.NET\\WebTruyenTranh\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\views\\paragraphs\\content.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:views\\paragraphs\\content.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\wwwroot\\css\\_layout.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:wwwroot\\css\\_layout.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\views\\stories\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:views\\stories\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\views\\shared\\components\\chapterslist\\chapterslist.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:views\\shared\\components\\chapterslist\\chapterslist.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\components\\storieslistcomponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:components\\storieslistcomponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\controllers\\storiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:controllers\\storiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|d:\\asp.net\\webtruyentranh\\components\\chapterslistconponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6FB27A22-DFDC-44FA-902F-A74E80BA6F72}|WebTruyenTranh.csproj|solutionrelative:components\\chapterslistconponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "_Layout.css",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\wwwroot\\css\\_Layout.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\_Layout.css",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\wwwroot\\css\\_Layout.css",
+              "RelativeToolTip": "wwwroot\\css\\_Layout.css",
+              "ViewState": "AgIAAEEBAAAAAAAAAAAAADIBAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-07-19T17:41:52.125Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Content.cshtml",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Paragraphs\\Content.cshtml",
+              "RelativeDocumentMoniker": "Views\\Paragraphs\\Content.cshtml",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Paragraphs\\Content.cshtml",
+              "RelativeToolTip": "Views\\Paragraphs\\Content.cshtml",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAEYBAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-20T09:32:54.135Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "StoriesListComponent.cs",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Components\\StoriesListComponent.cs",
+              "RelativeDocumentMoniker": "Components\\StoriesListComponent.cs",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Components\\StoriesListComponent.cs",
+              "RelativeToolTip": "Components\\StoriesListComponent.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAYwCMAAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-20T09:28:54.205Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ChaptersList.cshtml",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Shared\\Components\\ChaptersList\\ChaptersList.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\Components\\ChaptersList\\ChaptersList.cshtml",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Shared\\Components\\ChaptersList\\ChaptersList.cshtml",
+              "RelativeToolTip": "Views\\Shared\\Components\\ChaptersList\\ChaptersList.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-20T08:48:41.873Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ChaptersListConponent.cs",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Components\\ChaptersListConponent.cs",
+              "RelativeDocumentMoniker": "Components\\ChaptersListConponent.cs",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Components\\ChaptersListConponent.cs",
+              "RelativeToolTip": "Components\\ChaptersListConponent.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAC8AAABZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-20T08:46:14.976Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Detail.cshtml",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Stories\\Detail.cshtml",
+              "RelativeDocumentMoniker": "Views\\Stories\\Detail.cshtml",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Views\\Stories\\Detail.cshtml",
+              "RelativeToolTip": "Views\\Stories\\Detail.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEIAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-18T17:43:14.117Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "StoriesController.cs",
+              "DocumentMoniker": "D:\\ASP.NET\\WebTruyenTranh\\Controllers\\StoriesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StoriesController.cs",
+              "ToolTip": "D:\\ASP.NET\\WebTruyenTranh\\Controllers\\StoriesController.cs",
+              "RelativeToolTip": "Controllers\\StoriesController.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAiwEMAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-19T07:34:54.506Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

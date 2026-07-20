@@ -1,0 +1,51 @@
+@using WebTruyenTranh.ViewModels
+@model IList<StoryListViewModel>
+
+@foreach (var t in Model)
+{
+    <div class="story-card">
+        <div class="cover-box">
+            <img src="@t.Img" alt="@t.Title" />
+            <div class="gray-overlay"></div>
+        </div>
+
+        <div class="content">
+            <a href="/Stories/Detail?id=@t.StoryID"
+               class="story-name text-info text-center block font-bold mt-2">
+                @t.Title
+            </a>
+
+            <div class="meta-info text-center mt-1">
+                @if (t.HasProgress)
+                {
+                    <span class="text-cus">
+                        Đang đọc chương @t.LastChapterId
+                    </span>
+                }
+                else
+                {
+                    <span class="text-wait">
+                        Chưa đọc
+                    </span>
+                }
+            </div>
+
+            <div class="action-buttons flex gap-2 mt-4">
+                <a href="/Stories/Detail?id=@t.StoryID"
+                   class="flex-1 flex items-center justify-center btn-grad-base1 btn-grad1 gap-2 py-2.5 text-indigo-600 font-bold rounded-xl hover:text-white transition-all duration-300 active:scale-95 shadow-sm">
+                    
+                    <span class="text-white">Đọc</span>
+                </a>
+
+                @if (t.HasProgress)
+                {
+                    <a href="/Paragraphs/Content?chapterId=@t.LastChapterId"
+                       class="flex-1 flex items-center justify-center btn-grad-base1 btn-grad-trans1 gap-2 py-2.5 text-white font-bold rounded-xl shadow-xl shadow-indigo-200 hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+                      
+                        <span class="text-white">Tiếp tục</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}

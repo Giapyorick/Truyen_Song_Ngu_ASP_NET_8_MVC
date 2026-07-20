@@ -1,0 +1,507 @@
+@model WebTruyenTranh.ViewModels.UsersViewModel;
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <h2 class="text-cus">Login</h2>
+        <p class="subtitle text-field">Welcome back to our website</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="text-cus">Email</label>
+                <input asp-for="Email" class="form-control text-black" placeholder="example@email.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="text-cus">Passwork</label>
+                <input asp-for="Passwork" type="password" class="form-control text-black" placeholder="••••••••" />
+                <span asp-validation-for="Passwork" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <span class="btn-text">Login</span>
+            </button>
+            <p id="loginError" class="error-text"></p>
+            <div class="mt-4 text-center">
+                <p class="text-gray-500 text-sm">Don't have an account?</p>
+                <button type="button" onclick="openRegisterModal()" class="text-field font-bold hover:underline">
+                    <i class="fas fa-user-plus mr-1"></i> Create New Account
+                </button>
+            </div>
+           
+        </form>
+    </div>
+    
+</div>
+
+
+<div id="modalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden items-center justify-center z-[99] transition-all duration-500">
+    <div id="modalContent" class="bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500">
+        <div class="p-6 border-b border-gray-50 relative bg-gradient-to-r from-purple-50 to-white">
+            <div class="text-center">
+                <h3 class="text-2xl font-extrabold text-cus">Join Us!</h3>
+            </div>
+            <button onclick="closeModal()" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+        </div>
+
+        <form id="userForm" class="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+			<input type="hidden" name="UserId" id="userId">
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+				<div class="space-y-6">
+
+					<div>
+						<div class="flex flex-col items-center gap-4 mt-2">
+							<div class="w-40 h-40 rounded-3xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+								<img onclick="openImagePreview(this.src)" id="imgPreview" src="" class="w-full h-full object-cover hidden cursor-pointer"  />
+								<i id="uploadIcon" class="fas fa-camera text-gray-300 text-2xl"></i>
+							</div>
+							<div class="w-full text-center">
+								<input type="file" name="formFile" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+								<button type="button" onclick="$('#imageInput').click()"
+										class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm text-cus font-semibold hover:bg-gray-50 transition">
+									Choose Image
+								</button>
+								<p class="text-[10px] text-gray-400 mt-1">PNG, JPG up to 2MB</p>
+							</div>
+						</div>
+					</div>
+					
+					
+				</div>
+
+				<div class="md:col-span-2">
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Full Name</label>
+							<input type="text" name="Name" id="userName"
+								class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+								placeholder="Nguyễn Văn A" required> 
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Phone</label>
+							<input type="text" name="Phone" id="userPhone"
+								class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+								placeholder="036xxxxxxx">
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Date of Birth (y-m-d)</label>
+							<input type="date" name="DoB" id="userDoB"
+								class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all datepicker"
+								placeholder="yyyy-mm-dd">
+						</div>
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Email</label>
+							<input type="email" name="Email" id="userEmail"
+								class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+								placeholder="abc@gmail.com" required>
+						</div>
+						<div class="space-y-1" id="passwordContainer">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Password</label>
+							<input type="password" name="Passwork" id="userPassword"
+								class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+								placeholder="********">
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-cus uppercase ml-1">Gender</label>
+							<select name="Gender" id="userGender"
+									class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
+								<option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="Male">Male</option>
+								<option data-color="linear-gradient(135deg, #ff758c, #ff7eb3)" value="Female">Female</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="pt-6 flex gap-4">
+				<button type="button" onclick="closeModal()"
+						class="flex-[2] py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+					Cancel
+				</button>
+				
+				<button type="submit" id="btnSave"
+						class="flex-[2] py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+					Save Changes
+				</button>
+			</div>
+		</form>
+    </div>
+</div>
+@section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+	$(".datepicker").flatpickr({
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+</script>
+<script>
+	$(document).ready(function() {
+		$('.select2-custom').each(function() {
+			$(this).select2({
+				width: '100%', 
+				minimumResultsForSearch: Infinity,
+				templateResult: formatState,
+				templateSelection: formatState
+			});
+		});
+	});
+	function formatState (state) {
+    if (!state.id) { return state.text; }
+    
+    const gradient = $(state.element).data('color') || 'linear-gradient(135deg, #667eea, #764ba2)';
+
+    
+    const $state = $(
+
+		'<span style="display: flex; align-items: center;">' +
+			'<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + gradient + '; margin-right:10px;"></span>' +
+			'<span style="background:' + gradient + '; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:700;">' + state.text + '</span>' +
+		'</span>'
+
+    );
+    return $state;
+};
+
+</script>
+<script>
+$(document).ready(function () {
+
+    $('#loginForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const $btn = $('.btn-login');
+        const $error = $('#loginError');
+
+        $btn.prop('disabled', true);
+        $btn.find('.btn-text').text('Logining...');
+        $error.hide();
+
+        $.ajax({
+            url: '/Login/Login',
+            type: 'POST',
+            data: {
+                Email: $('#Email').val(),
+                Passwork: $('#Passwork').val()
+            },
+            success: function (res) {
+                if (res.success) {
+                    window.location.href = res.redirectUrl;
+                } else {
+                    $error.text(res.message).show();
+                }
+            },
+            error: function () {
+                $error.text('An error occurred, please try again later').show();
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                $btn.find('.btn-text').text('Login');
+            }
+        });
+    });
+
+    $('#userForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const $btn = $(this).find('button[type="submit"]');
+        const formData = new FormData(this);
+
+        $btn.prop('disabled', true).text('Creating...');
+
+        $.ajax({
+            url: '/Admin/tblUsers/Add',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('Registration successful! Please login.');
+                    closeModal();
+                } else {
+                    alert(res.message || 'Error');
+                }
+            },
+            error: function () {
+                alert('Connection error');
+            },
+            complete: function () {
+                $btn.prop('disabled', false).text('Create Account');
+            }
+        });
+    });
+});
+
+
+function openRegisterModal() {
+    const $overlay = $('#modalOverlay');
+    const $content = $('#modalContent');
+    const $form = $('#userForm');
+
+    $form[0].reset();
+    $('#userId').val(0);
+
+    $('#imgPreview').attr('src', '').addClass('hidden');
+    $('#uploadIcon').removeClass('hidden');
+
+    $overlay.removeClass('hidden').addClass('flex');
+
+    setTimeout(() => {
+        $content
+            .removeClass('translate-y-20 opacity-0 scale-95')
+            .addClass('translate-y-0 opacity-100 scale-100');
+    }, 10);
+
+    $('.select2-custom').val(null).trigger('change');
+}
+
+function closeModal() {
+    const $overlay = $('#modalOverlay');
+    const $content = $('#modalContent');
+
+    $content
+        .removeClass('translate-y-0 opacity-100 scale-100')
+        .addClass('translate-y-20 opacity-0 scale-95');
+
+    setTimeout(() => {
+        $overlay.removeClass('flex').addClass('hidden');
+    }, 300);
+}
+
+
+function previewImage(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        $('#imgPreview')
+            .attr('src', e.target.result)
+            .removeClass('hidden');
+        $('#uploadIcon').addClass('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+</script>
+}
+
+<style>
+.text-cus {
+	background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+	-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.1);
+}
+.text-field {
+	background: linear-gradient(135deg, #0250c5 0%, #d43f8d 100%);
+	-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.text-wait {
+	background: linear-gradient(135deg, #FF8008, #FFC837);
+	-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.text-accepted {
+	background: linear-gradient(135deg, #93F9B9, #1D976C);
+	-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.text-deny {
+	background: linear-gradient(135deg, #F45C43, #EB3349);
+	-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+:root {
+    --primary-color: #b421c7; /* Màu đỏ chủ đạo cho web truyện */
+    --primary-hover: #b633c7;
+    --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --text-dark: #2f3542;
+}
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-gradient);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+}
+
+.login-card h2 {
+    color: var(--text-dark);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.subtitle {
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #edeff2;
+    border-radius: 8px;
+    outline: none;
+    color: black;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%);
+    text-align: center;
+	transition: 0.5s;
+	background-size: 200% auto;
+	color: white;            
+	box-shadow: 0 0 20px #eee;
+	cursor: pointer;
+	border: none;
+	border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.btn-login:hover {
+	background-position: right center; 
+	color: #fff;
+	text-decoration: none;
+}
+
+.error-text {
+    color: #ff4757;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 1rem;
+    min-height: 20px;
+}
+.active{
+	background: linear-gradient(135deg, #93F9B9, #1D976C);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.inactive{
+    background: linear-gradient(135deg, #F45C43, #EB3349);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.male{
+	background: linear-gradient(135deg, #4facfe, #00f2fe);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.female{
+	background: linear-gradient(135deg, #ff758c, #ff7eb3);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.select2-container--open {
+    z-index: 999999999 !important;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-selection__rendered {
+    line-height: 45px !important;
+    padding-left: 15px !important;
+    font-size: 14px;
+}
+.select2-container--default .select2-selection--single {
+	border: 2px solid #edf2f7 !important;
+	border-radius: 12px !important;
+	height: 50px !important;
+	display: flex;
+	align-items: center;
+	transition: all 0.3s ease;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--open .select2-selection--single {
+	border-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+	box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1) !important;
+}
+
+.status-dot {
+	height: 10px;
+	width: 10px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: normal !important;
+	padding-left: 15px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 48px !important;
+	right: 10px !important;
+}
+
+.select2-dropdown {
+	border: none !important;
+	border-radius: 12px !important;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+	overflow: hidden;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+	background-color: #f3f0ff !important;
+	color: #201f21 !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered span {
+	display: flex;
+	align-items: center;
+}
+
+.select2-results__option {
+	padding: 10px 15px !important;
+}
+</style>

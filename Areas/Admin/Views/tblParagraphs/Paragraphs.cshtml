@@ -1,0 +1,934 @@
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+	<div class="space-y-10 m-10">
+		<div class="flex flex-col items-center gap-4">
+		<h2 class="text-2xl font-bold text-cus tracking-tight">
+			Chapters Management
+		</h2>
+	</div>
+    <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+        
+        <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-40 sm:w-64">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="filterSearch" placeholder="Search by vietnamese..." class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
+            </div>
+			<div class="w-60">
+				<select id="filterStory" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+
+					<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA  51%, #50C9C3  100%)" value="all">Stories</option>
+				</select>
+			</div>
+			<div class="w-60">
+				<select id="filterChapter" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+
+					<option data-color="linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%), radial-gradient(at top center, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.40) 120%) #989898;" value="all">Chapter</option>
+				</select>
+			</div>
+            <div class="flex items-center gap-4">
+				
+                <button onclick="exportExcel()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-export mr-2"></i>Export</button>
+				<button onclick="openParagraphModal()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-import mr-2"></i>Import</button>
+				<button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
+            </div>
+        </div>
+
+       <div class="overflow-x-auto">
+            <table class="min-w-max text-left border-collapse">
+				<thead>
+					<tr class="bg-gray-50/50 text-gray-400 text-[11px] uppercase tracking-[0.15em] border-b border-gray-100">
+						<th class="px-6 py-4 w-10">
+							<div class="flex items-center justify-center">
+								<input type="checkbox" id="selectAll" class="w-5 h-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer transition-all">
+							</div>
+						</th>
+						<th class="px-4 py-4 text-gray font-bold text-left">Information</th>
+						<th class="px-6 py-4 text-gray font-bold text-left">English</th>
+						<th class="px-6 py-4 text-gray font-bold text-left">Vietnamese</th>
+						<th class="px-6 py-4 text-gray font-bold text-left">Oder</th>
+						<th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody id="user-list-body" class="divide-y divide-gray-50">
+
+    			</tbody>
+			</table>
+			
+        </div>
+		<div id="pagination-container" class="flex justify-center items-center gap-2 py-4"></div>
+    </div>
+</div>
+</main>
+@*MODAL CRUD*@
+<div id="importParagraphModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
+	<div id="importContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[80vh] transform scale-95 opacity-0 transition-all duration-300">
+
+		<!-- Header -->
+		<div class="p-8 border-b border-gray-100 flex justify-between items-center">
+			<!-- Đổi tiêu đề cho bao quát cả Text và Excel -->
+			<h3 class="text-2xl font-bold text-cus">Import Paragraphs</h3>
+			<button onclick="closeParagraphModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+				<i class="fas fa-times text-xl"></i>
+			</button>
+		</div>
+
+		<!-- Body -->
+		<div class="p-8 space-y-6 overflow-y-auto flex-1">
+			<div class="space-y-1">
+				<label class="text-[11px] font-bold text-cus uppercase ml-1">Stories</label>
+				<select id="storySelect"
+						class="w-full px-4 py-2.5 bg-gray-100
+					border-2 border-transparent focus:border-purple-200
+					rounded-xl outline-none transition-all">
+				</select>
+			</div>
+			<div class="space-y-1">
+				<label class="text-[11px] font-bold text-cus uppercase ml-1">Chapters</label>
+				<select id="chapterSelect"
+						class="w-full px-4 py-2.5 bg-gray-100
+					border-2 border-transparent focus:border-purple-200
+					rounded-xl outline-none transition-all">
+				</select>
+			</div>
+
+			<!-- VÙNG FILE TIẾNG VIỆT -->
+			<div>
+				<div id="dropZoneVN" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
+					<input type="file" id="fileVietnamese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer">
+
+					<div class="w-14 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 mb-3 group-hover:scale-110 transition-transform px-2">
+						<i class="fas fa-file-excel text-green-500 text-xl"></i>
+						<i class="fas fa-file-alt text-blue-500 text-xl"></i>
+					</div>
+
+					<p class="text-gray-600 font-semibold text-sm text-center" id="fileStatusVN"> Drag & drop Vietnamese file (Excel or TXT) </p>
+					<p class="text-xs text-gray-400 mt-1"> .xlsx, .xls, .txt (Max 5MB) </p>
+				</div>
+				<div class="mt-2 px-2 flex flex-wrap justify-center items-center gap-4">
+					<a href="/assets/template/Story_Vietnamese_Template.xlsx" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
+						<i class="fas fa-download text-xs"></i> Download Excel template
+					</a>
+					<a href="/assets/template/Story_Vietnamese_Template.txt" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
+						<i class="fas fa-download text-xs"></i> Download text template
+					</a>
+				</div>
+			</div>
+
+			<!-- VÙNG FILE TIẾNG ANH -->
+			<div>
+				<div id="dropZoneEN" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
+					<input type="file" id="fileEnglish" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer">
+
+					<div class="w-14 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 mb-3 group-hover:scale-110 transition-transform px-2">
+						<i class="fas fa-file-excel text-green-500 text-xl"></i>
+						<i class="fas fa-file-alt text-blue-500 text-xl"></i>
+					</div>
+
+					<p class="text-gray-600 font-semibold text-sm text-center" id="fileStatusEN"> Drag & drop English file (Excel or TXT) </p>
+					<p class="text-xs text-gray-400 mt-1"> .xlsx, .xls, .txt (Max 5MB) </p>
+				</div>
+				<div class="mt-2 px-2 flex flex-wrap justify-center items-center gap-4">
+					<a href="/assets/template/Story_English_Template.xlsx" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
+						<i class="fas fa-download text-xs"></i> Download Excel template
+					</a>
+					<a href="/assets/template/Story_English_Template.txt" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
+						<i class="fas fa-download text-xs"></i> Download text template
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Footer Buttons -->
+		<div class="p-6 border-t border-gray-100 flex gap-4">
+			<button onclick="closeParagraphModal()" class="flex-1 py-3 btn-grad-cancel font-bold rounded-xl active:scale-95 transition-all">
+				Cancel
+			</button>
+			<button id="btnImport" class="flex-1 py-3 btn-grad rounded-xl font-bold shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none">
+				Confirm Import
+			</button>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+$(document).ready(function () {
+
+    // ===== LOAD STORIES KHI MỞ MODAL =====
+    window.openParagraphModal = function () {
+        const modal = $('#importParagraphModal');
+
+        modal.removeClass('hidden').addClass('flex');
+
+        setTimeout(() => {
+            $('#importContent').addClass('scale-100 opacity-100');
+        }, 10);
+
+        loadStories();
+    };
+
+    // ===== ĐÓNG MODAL =====
+    window.closeParagraphModal = function () {
+        $('#importContent').removeClass('scale-100 opacity-100');
+
+        setTimeout(() => {
+            $('#importParagraphModal').removeClass('flex').addClass('hidden');
+            resetImportForm();
+        }, 300);
+    };
+
+    // ===== LOAD STORY =====
+    function loadStories() {
+        $('#storySelect')
+            .html('<option value="">-- Chọn truyện --</option>');
+
+        $('#chapterSelect')
+            .html('<option value="">-- Chọn chương --</option>');
+
+        $.get('/Admin/tblParagraphs/GetStoriesForSelect', function (data) {
+            data.forEach(x => {
+                $('#storySelect').append(
+                    `<option value="${x.id}">${x.name}</option>`
+                );
+            });
+        });
+    }
+
+    // ===== KHI CHỌN STORY → LOAD CHAPTER =====
+    $('#storySelect').on('change', function () {
+        let storyId = $(this).val();
+
+        $('#chapterSelect')
+            .html('<option value="">-- Chọn chương --</option>');
+
+        if (!storyId) return;
+
+        $.get('/Admin/tblParagraphs/GetChaptersForSelect',
+            { id: storyId },
+            function (data) {
+                data.forEach(x => {
+                    $('#chapterSelect').append(
+                        `<option value="${x.id}">${x.name}</option>`
+                    );
+                });
+            }
+        );
+    });
+	$('#fileEnglish').on('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			$('#fileStatusEN').html(`<span class="text-indigo-600 font-bold italic">${file.name}</span>`);
+			$('#dropZone').addClass('border-indigo-500 bg-indigo-100/50');
+		}
+	});
+	$('#fileVietnamese').on('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			$('#fileStatusVN').html(`<span class="text-indigo-600 font-bold italic">${file.name}</span>`);
+			$('#dropZone').addClass('border-indigo-500 bg-indigo-100/50');
+		}
+	});
+
+    // ===== IMPORT =====
+    $('#btnImport').on('click', function () {
+        let chapId = $('#chapterSelect').val();
+        let fileEnglish = $('#fileEnglish')[0].files[0];
+        let fileVietnamese = $('#fileVietnamese')[0].files[0];
+
+        if (!chapId || !fileEnglish || !fileVietnamese) {
+            alert('Vui lòng chọn chương và đủ 2 file Excel');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('chapId', chapId);
+        formData.append('fileEnglish', fileEnglish);
+        formData.append('fileVietnamese', fileVietnamese);
+
+        $.ajax({
+            url: '/Admin/tblParagraphs/ImportExcel',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('Import thành công 🎉');
+                    closeParagraphModal();
+                } else {
+                    alert(res.message);
+                }
+            },
+            error: function () {
+                alert('Có lỗi xảy ra khi import!');
+            }
+        });
+    });
+
+    // ===== RESET FORM =====
+    function resetImportForm() {
+        $('#storySelect').val('');
+        $('#chapterSelect').val('');
+        $('#fileEnglish').val('');
+        $('#fileVietnamese').val('');
+    }
+
+});
+</script>
+
+<script>
+	$(".datepicker").flatpickr({
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+</script>
+
+<script>
+	// StorySelectBox  StoryId -> ChapterSelectBox -> ChapterId in SearchFilter
+function loadStories() {
+    $.get('/Admin/tblParagraphs/GetStoriesForSelect', function (data) {
+        const $story = $('#filterStory');
+
+        $story.html('<option value="all">Stories</option>');
+
+        data.forEach(s => {
+            $story.append(`<option value="${s.id}">${s.name}</option>`);
+        });
+
+        $story.trigger('change.select2');
+    });
+}
+function loadChaptersByStory(storyId) {
+    const $chapter = $('#filterChapter');
+
+    if (!storyId || storyId === 'all') {
+        $chapter.html('<option value="all">Chapter</option>');
+        $chapter.trigger('change.select2');
+        return;
+    }
+
+    $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId }, function (data) {
+        $chapter.html('<option value="all">Chapter</option>');
+
+        data.forEach(c => {
+            $chapter.append(`<option value="${c.id}">${c.name}</option>`);
+        });
+
+        $chapter.trigger('change.select2');
+    });
+}
+$('#filterStory').on('change', function () {
+    const storyId = $(this).val();
+    loadChaptersByStory(storyId);
+
+    currentPage = 1;
+    loadParagraphList(1);
+});
+
+$('#filterChapter').on('change', function () {
+    currentPage = 1;
+    loadParagraphList(1);
+});
+$(document).ready(function () {
+    $('.select2-custom').select2();
+
+    loadStories();
+
+    loadParagraphList();
+});
+
+</script>
+
+@*UI SELECT2 LIBARY FOR SELECT LIST*@
+<script>
+	$(document).ready(function() {
+		$('.select2-custom').each(function() {
+			$(this).select2({
+				width: '100%', 
+				minimumResultsForSearch: Infinity,
+				templateResult: formatState,
+				templateSelection: formatState
+			});
+		});
+	});
+	function formatState (state) {
+    if (!state.id) { return state.text; }
+    
+    const gradient = $(state.element).data('color') || 'linear-gradient(135deg, #667eea, #764ba2)';
+
+    
+    const $state = $(
+
+		'<span style="display: flex; align-items: center;">' +
+			'<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + gradient + '; margin-right:10px;"></span>' +
+			'<span style="background:' + gradient + '; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:700;">' + state.text + '</span>' +
+		'</span>'
+
+    );
+    return $state;
+};
+
+</script>
+
+<script>
+	//open modal
+    function openModal(mode, id) {
+    const modal = $('#modalOverlay');
+    $('#paragraphForm')[0].reset();
+
+    if (mode !== 'edit') return;
+
+    $('#modalTitle').text('Update paragraph');
+    modal.removeClass('hidden').addClass('flex');
+
+    $('.select2-custom').each(function () {
+        if (!$(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2({ dropdownParent: modal });
+        }
+    });
+
+    $.get('/Admin/tblParagraphs/GetById/' + id, function (data) {
+        console.log('Paragraph data:', data);
+
+        $('#paragraphId').val(data.paragraphId);
+        $('#paragraphOrder').val(data.paragraphOrder);
+        $('#paragraphEnglish').val(data.english);
+        $('#paragraphVietnamese').val(data.vietnamese);
+
+        $('#storySelect')
+            .val(data.chapter.storyId)
+            .trigger('change');
+
+        setTimeout(() => {
+            $('#chapterSelect')
+                .val(data.chapter.chapterId)
+                .trigger('change');
+        }, 300);
+    });
+
+    setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
+}
+
+///////////////////////////////////////
+	// close modall
+    function closeModal() {
+        const content = $('#modalContent');
+        content.removeClass('translate-y-0 opacity-100 scale-100')
+               .addClass('translate-y-10 opacity-0 scale-95');
+        
+        setTimeout(() => {
+            $('#modalOverlay').removeClass('flex').addClass('hidden');
+        }, 300);
+    }
+//////////////////////////////////////////
+	// action delete
+    function deleteParagraph(id) {
+		if (confirm('Are you sure to remove this paragraph? this action cannot undone.')) {
+			
+			const $row = $(`button[onclick="deleteParagraph(${id})"]`).closest('tr');
+			
+			$row.addClass('opacity-50 pointer-events-none');
+
+			$.ajax({
+				url: '/Admin/tblParagraphs/Delete',
+				type: 'POST',
+				data: { id: id },
+				success: function(response) {
+					if (response.success) {
+						$row.fadeOut(400, function() {
+							$(this).remove();
+							alert(response.message);
+						});
+					} else {
+						alert("Lỗi: " + response.message);
+						$row.removeClass('opacity-50 pointer-events-none');
+					}
+				},
+				error: function() {
+					alert("Cannot connect to the server to delete.");
+					$row.removeClass('opacity-50 pointer-events-none');
+				}
+			});
+		}
+	}
+	///////////////////
+	// Action export
+	function exportExcel() {
+		const search = $('#filterSearch').val();
+		const chapterId = $('#filterChapter').val();
+
+		window.location.href = `/Admin/tblParagraphs/ExportToExcel?search=${search}&chapterId=${chapterId}`;
+	}
+	/////////////////////////////////////
+	// submit form
+
+	$('#paragraphForm').on('submit', function (e) {
+    e.preventDefault();
+
+    // lưu lại trang hiện tại
+    localStorage.setItem('storyPage', currentPage);
+
+    const submitBtn = $(this).find('button[type="submit"]');
+    const formData = new FormData(this);
+
+    submitBtn.prop('disabled', true)
+        .html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+
+    $.ajax({
+        url: '/Admin/tblParagraphs/Update',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (res) {
+            if (res.success) {
+                alert(res.message);
+                closeModal();
+
+                const savedPage = localStorage.getItem('storyPage');
+                loadParagraphList(savedPage ? parseInt(savedPage) : 1);
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function () {
+            alert('Cannot connect to server');
+        },
+        complete: function () {
+            submitBtn.prop('disabled', false).html('Save Changes');
+        }
+    });
+});
+
+
+$('#filterSearch').on('keyup', function () {
+    currentPage = 1;
+    loadParagraphList(1);
+});
+
+$('#filterChapter').on('change', function () {
+    currentPage = 1;
+    loadParagraphList(1);
+});
+
+	////////////////////////////////////
+	// action List and Pagination
+
+	let currentPage = 1;
+	const pageSize = 10;
+
+	function renderPagination(currentPage, totalPages) {
+	const container = $('#pagination-container');
+	container.empty();
+
+	if (totalPages <= 1) return;
+
+	const maxVisible = 2; // số trang hai bên current
+	let html = `<div class="flex items-center gap-1">`;
+
+	// ⏮ First
+	html += `
+	<button onclick="loadParagraphList(1)"
+		class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
+		${currentPage === 1 ? 'disabled' : ''}>
+		⏮
+	</button>`;
+
+	// ◀ Prev
+	html += `
+	<button onclick="loadParagraphList(${currentPage - 1})"
+		class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
+		${currentPage === 1 ? 'disabled' : ''}>
+		◀
+	</button>`;
+
+	// Trang đầu
+	if (currentPage > maxVisible + 1) {
+		html += pageBtn(1, currentPage);
+		html += `<span class="px-2">…</span>`;
+	}
+
+	// Các trang gần current
+	for (let i = Math.max(1, currentPage - maxVisible);
+		 i <= Math.min(totalPages, currentPage + maxVisible);
+		 i++) {
+		html += pageBtn(i, currentPage);
+	}
+
+	// Trang cuối
+	if (currentPage < totalPages - maxVisible) {
+		html += `<span class="px-2">…</span>`;
+		html += pageBtn(totalPages, currentPage);
+	}
+
+	// ▶ Next
+	html += `
+	<button onclick="loadParagraphList(${currentPage + 1})"
+		class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
+		${currentPage === totalPages ? 'disabled' : ''}>
+		▶
+	</button>`;
+
+	// ⏭ Last
+	html += `
+	<button onclick="loadParagraphList(${totalPages})"
+		class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
+		${currentPage === totalPages ? 'disabled' : ''}>
+		⏭
+	</button>`;
+
+	// 🔢 Go to page
+	html += `
+	<div class="flex items-center gap-1 ml-3">
+		<span class="text-sm">Go:</span>
+		<input type="number"
+			min="1"
+			max="${totalPages}"
+			value="${currentPage}"
+			class="w-16 px-2 py-1 border rounded text-center"
+			onkeydown="if(event.key==='Enter') gotoPage(this, ${totalPages})">
+	</div>`;
+
+	html += `</div>`;
+	container.html(html);
+}
+function pageBtn(page, current) {
+	const active = page === current;
+	return `
+	<button onclick="loadParagraphList(${page})"
+		class="px-3 py-1 border rounded
+		${active ? 'btn-grad text-white font-bold' : 'hover:bg-gray-100'}">
+		${page}
+	</button>`;
+}
+function gotoPage(input, totalPages) {
+	let page = parseInt(input.value);
+	if (isNaN(page)) return;
+
+	if (page < 1) page = 1;
+	if (page > totalPages) page = totalPages;
+
+	loadParagraphList(page);
+}
+
+
+	function loadParagraphList(page = 1) {
+	currentPage = page;
+	const $body = $('#user-list-body');
+
+	const filters = {
+		search: $('#filterSearch').val(),
+		cstoryId: $('#filterStory').val(),
+        chapterId: $('#filterChapter').val(),
+		page: currentPage,
+		pageSize: pageSize
+	};
+
+	$.ajax({
+		url: '/Admin/tblParagraphs/List',
+		type: 'GET',
+		data: filters,
+		success: function (data) {
+			let html = '';
+
+			if (!data.paragraphs || data.paragraphs.length === 0) {
+				$body.html(`
+					<tr>
+						<td colspan="6" class="text-center py-10 text-gray-500">
+							Not found any results.
+						</td>
+					</tr>
+				`);
+				$('#pagination-container').html('');
+				return;
+			}
+
+			data.paragraphs.forEach(p => {
+				html += `
+				<tr class="group hover:bg-indigo-50/30 transition-all">
+					<td class="px-6 py-5">
+						<input type="checkbox"
+							class="user-checkbox w-5 h-5"
+							value="${p.paragraphId}">
+					</td>
+
+					<td class="px-4 py-5">
+						<div class="text-xs text-gray-400 mb-1">
+							${p.storyTitle} → ${p.chapterTitle}
+						</div>
+					</td>
+					<td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm">
+						${p.english}
+					</td>
+
+					<td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm">
+						${p.vietnamese}
+					</td>
+
+					<td class="px-6 py-5 text-center">
+						<span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">
+							${p.paragraphOrder}
+						</span>
+					</td>
+
+					<td class="px-8 py-5 text-right">
+						<div class="flex justify-end gap-3">
+							<button onclick="openModal('edit', ${p.paragraphId})"
+								class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white">
+								<i class="fas fa-pencil-alt text-[11px]"></i>
+							</button>
+
+							<button onclick="deleteParagraph(${p.paragraphId})"
+								class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 hover:text-white">
+								<i class="fas fa-trash-alt text-[11px]"></i>
+							</button>
+						</div>
+					</td>
+				</tr>`;
+			});
+
+			$body.html(html);
+			renderPagination(data.currentPage, data.totalPages);
+		},
+		error: function () {
+			$body.html(`
+				<tr>
+					<td colspan="6" class="text-center py-10 text-red-500">
+						Error loading data.
+					</td>
+				</tr>
+			`);
+		}
+	});
+}
+$(document).ready(function () {
+	const savedPage = localStorage.getItem('paragraphPage');
+	currentPage = savedPage ? parseInt(savedPage) : 1;
+
+	loadParagraphList(currentPage);
+
+	$('#filterSearch').on('keyup', function () {
+		loadParagraphList(1);
+	});
+
+	$('#filterChapter').on('change', function () {
+		loadParagraphList(1);
+	});
+});
+</script>
+@*UPDATE DELELE BUTTON BUTTON(N)*@
+<script>
+	function updateDeleteButton() {
+		const count = $('.user-checkbox:checked').length;
+		const $btn = $('#btnDeleteSelected');
+
+		if (count > 0) {
+			$btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+			$btn.prop('disabled', false);
+			$btn.removeClass('opacity-50 cursor-not-allowed');
+		} else {
+			$btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+			$btn.prop('disabled', true);
+			$btn.addClass('opacity-50 cursor-not-allowed');
+		}
+	}
+</script>
+@*IMAGE ZOOM PREVIEW*@
+<script>
+	function openImagePreview(src) {
+		if (!src) return;
+
+		$('#imageModalContent').attr('src', src);
+		$('#imageModal').removeClass('hidden').addClass('flex');
+	}
+</script>
+
+@*DELETE MULTIPLE*@
+<script>
+$(document).ready(function () {
+
+    $('#selectAll').on('change', function () {
+        const isChecked = this.checked;
+
+        $('.user-checkbox').each(function () {
+            $(this).prop('checked', isChecked)
+                   .closest('tr')
+                   .toggleClass('bg-indigo-50/50', isChecked);
+				   updateDeleteButton();
+        });
+    });
+
+    $(document).on('change', '.user-checkbox', function () {
+        const total = $('.user-checkbox').length;
+        const checked = $('.user-checkbox:checked').length;
+
+        $(this)
+            .closest('tr')
+            .toggleClass('bg-indigo-50/50', this.checked);
+
+        $('#selectAll').prop('checked', total > 0 && total === checked);
+		updateDeleteButton();
+    });
+
+    $(document).on('click', '#btnDeleteSelected', function () {
+        const ids = $('.user-checkbox:checked')
+            .map(function () {
+                return parseInt(this.value);
+            })
+            .get();
+
+        if (ids.length === 0) {
+            alert('Please select at least one chapter!');
+            return;
+        }
+
+        if (!confirm(`Delete ${ids.length} paragraph(s)?`)) return;
+
+        $.ajax({
+            url: '/Admin/tblParagraphs/DeleteMultiple',
+            type: 'POST',
+            traditional: true,
+            data: { ids: ids },
+            success: function (res) {
+				if (res.blocked && res.blocked.length > 0) {
+					alert(
+						`Cannot delete this ID: ${res.blocked.join(', ')}\n` +
+						`Because it was used to link foreign keys.`
+					);
+				}
+				if (res.deleted && res.deleted.length > 0) {
+					alert(`Deleted ${res.deleted.length} paragraph.`);
+				}
+				const savedPage = localStorage.getItem('storyPage');
+				currentPage = savedPage ? parseInt(savedPage) : 1;
+				loadParagraphList(); 
+				$('#selectAll').prop('checked', false);
+			}
+
+        });
+    });
+
+});
+</script>
+}
+
+<style>
+.active{
+	background: linear-gradient(135deg, #93F9B9, #1D976C);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.inactive{
+    background: linear-gradient(135deg, #F45C43, #EB3349);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.male{
+	background: linear-gradient(135deg, #4facfe, #00f2fe);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+.female{
+	background: linear-gradient(135deg, #ff758c, #ff7eb3);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.select2-container--open {
+    z-index: 999999999 !important;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-selection__rendered {
+    line-height: 45px !important;
+    padding-left: 15px !important;
+    font-size: 14px;
+}
+.select2-container--default .select2-selection--single {
+	border: 2px solid #edf2f7 !important;
+	border-radius: 12px !important;
+	height: 50px !important;
+	display: flex;
+	align-items: center;
+	transition: all 0.3s ease;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--open .select2-selection--single {
+	border-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+	box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1) !important;
+}
+
+.status-dot {
+	height: 10px;
+	width: 10px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: normal !important;
+	padding-left: 15px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 48px !important;
+	right: 10px !important;
+}
+
+.select2-dropdown {
+	border: none !important;
+	border-radius: 12px !important;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+	overflow: hidden;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+	background-color: #f3f0ff !important;
+	color: #201f21 !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered span {
+	display: flex;
+	align-items: center;
+}
+
+.select2-results__option {
+	padding: 10px 15px !important;
+}
+#fileInfo .alert {
+    margin-bottom: 0;
+    padding: 10px 15px;
+}
+
+.input-group .btn-outline-secondary {
+    border-color: #ced4da;
+    border-left: 0;
+}
+
+.input-group .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+}
+
+/* Loading spinner */
+.spinner-border {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+</style>
