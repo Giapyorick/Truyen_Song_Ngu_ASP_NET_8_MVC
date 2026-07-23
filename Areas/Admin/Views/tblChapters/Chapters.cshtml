@@ -326,8 +326,12 @@
     }
 //////////////////////////////////////////
 	// action delete
-    function deleteChapter(id) {
-		if (confirm('Are you sure to remove this chapter? this action cannot undone.')) {
+    async function deleteChapter(id) {
+			const confirmed = await customConfirm(
+				`Are you sure to remove this chapter ?<br><small class="text-red-400">This action cannot be undone.</small>`,
+				"Delete Chapter"
+			);
+			if (confirmed) {
 			
 			const $row = $(`button[onclick="deleteChapter(${id})"]`).closest('tr');
 			
@@ -341,15 +345,15 @@
 					if (response.success) {
 						$row.fadeOut(400, function() {
 							$(this).remove();
-							alert(response.message);
+							showToast(response.message, 'succes');
 						});
 					} else {
-						alert("Lỗi: " + response.message);
+						showToast("Lỗi: " + response.message, 'error');
 						$row.removeClass('opacity-50 pointer-events-none');
 					}
 				},
 				error: function() {
-					alert("Cannot connect to the server to delete.");
+					showToast("Cannot connect to the server to delete.", 'error');
 					$row.removeClass('opacity-50 pointer-events-none');
 				}
 			});
@@ -387,17 +391,17 @@
 			processData: false, 
 			success: function(response) {
 				if (response.success) {
-					alert(response.message);
+					showToast(response.message, 'succes');
 					closeModal();
 					const savedPage = localStorage.getItem('storyPage');
 					currentPage = savedPage ? parseInt(savedPage) : 1;
 					loadChapterList(); 
 				} else {
-					alert("Error: " + response.message);
+					showToast("Error: " + response.message, 'error');
 				}
 			},
 			error: function() {
-				alert("Cannot connect to the server.");
+				showToast("Cannot connect to the server.", 'error');
 			},
 			complete: function() {
 				submitBtn.prop('disabled', false).html('Save Changes');
@@ -664,7 +668,7 @@ $(document).ready(function () {
 		updateDeleteButton();
     });
 
-    $(document).on('click', '#btnDeleteSelected', function () {
+    $(document).on('click', '#btnDeleteSelected', async function () {
         const ids = $('.user-checkbox:checked')
             .map(function () {
                 return parseInt(this.value);
@@ -672,11 +676,17 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            alert('Please select at least one chapter!');
+            showToast('Please select at least one chapter!', 'error');
             return;
         }
 
-        if (!confirm(`Delete ${ids.length} chapter(s)?`)) return;
+        const confirmed = await customConfirm(
+		`Are you sure you want to delete <strong>${ids.length}</strong> chapters ?<br>` +
+		`<small class="text-red-400">This action cannot be undone.</small>`,
+		"Delete Multiple"
+		);
+
+		if (!confirmed) return;
 
         $.ajax({
             url: '/Admin/tblChapters/DeleteMultiple',
@@ -685,13 +695,14 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
 				if (res.blocked && res.blocked.length > 0) {
-					alert(
+					showToast(
 						`Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-						`Because it was used to link foreign keys.`
+						`Because it was used to link foreign keys.`,
+						'error'
 					);
 				}
 				if (res.deleted && res.deleted.length > 0) {
-					alert(`Deleted ${res.deleted.length} chapter.`);
+					showToast(`Deleted ${res.deleted.length} chapter.`, 'error');
 				}
 				const savedPage = localStorage.getItem('storyPage');
 				currentPage = savedPage ? parseInt(savedPage) : 1;
@@ -737,7 +748,7 @@ $(document).ready(function () {
 	function executeImport() {
 		const fileInput = document.getElementById('excelFile');
 		if (fileInput.files.length === 0) {
-			alert('Please choose file Excel!');
+			showToast('Please choose file Excel!','error');
 			return;
 		}
 
@@ -755,15 +766,15 @@ $(document).ready(function () {
         contentType: false,
         success: function(res) {
             if (res.success) {
-                alert(res.message);
+                showToast(response.message, 'succes');
                 closeImportModal();
                 loadChapterList(1); 
             } else {
-                alert(res.message);
+                showToast(res.message, 'error');
             }
         },
         error: function() {
-            alert('Error during import file!');
+            showToast('Error during import file!', 'error');
         },
         complete: function() {
             $btn.prop('disabled', false).text('Confirm Import');

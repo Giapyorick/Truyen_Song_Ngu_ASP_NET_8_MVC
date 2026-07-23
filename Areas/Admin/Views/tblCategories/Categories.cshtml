@@ -235,8 +235,12 @@
     }
 //////////////////////////////////////////
 	// action delete
-    function deleteCategory(id) {
-		if (confirm('Are you sure to remove this member? this action cannot undone.')) {
+    async function deleteCategory(id) {
+			const confirmed = await customConfirm(
+				`Are you sure to remove this category ?<br><small class="text-red-400">This action cannot be undone.</small>`,
+				"Delete Category"
+			);
+			if (confirmed) {
 			
 			const $row = $(`button[onclick="deleteCategory(${id})"]`).closest('tr');
 			
@@ -250,15 +254,15 @@
 					if (response.success) {
 						$row.fadeOut(400, function() {
 							$(this).remove();
-							alert(response.message);
+							showToast(response.message, 'success');
 						});
 					} else {
-						alert("Lỗi: " + response.message);
+						showToast("Lỗi: " + response.message, 'error');
 						$row.removeClass('opacity-50 pointer-events-none');
 					}
 				},
 				error: function() {
-					alert("Cannot connect to the server to delete.");
+					showToast("Cannot connect to the server to delete.", 'error');
 					$row.removeClass('opacity-50 pointer-events-none');
 				}
 			});
@@ -295,15 +299,15 @@
 			processData: false, 
 			success: function(response) {
 				if (response.success) {
-					alert(response.message);
+					showToast(response.message, 'success');
 					closeModal();
 					loadCategoryList(); 
 				} else {
-					alert("Error: " + response.message);
+					showToast("Error: " + response.message, 'error');
 				}
 			},
 			error: function() {
-				alert("Cannot connect to the server.");
+				showToast("Cannot connect to the server.", 'error');
 			},
 			complete: function() {
 				submitBtn.prop('disabled', false).html('Save Changes');
@@ -555,7 +559,7 @@ $(document).ready(function () {
 		updateDeleteButton();
     });
 
-    $(document).on('click', '#btnDeleteSelected', function () {
+    $(document).on('click', '#btnDeleteSelected', async function () {
         const ids = $('.user-checkbox:checked')
             .map(function () {
                 return parseInt(this.value);
@@ -563,11 +567,17 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            alert('Please select at least one category!');
+            showToast('Please select at least one category!', 'error');
             return;
         }
 
-        if (!confirm(`Delete ${ids.length} category(s)?`)) return;
+        const confirmed = await customConfirm(
+		`Are you sure you want to delete <strong>${ids.length}</strong> categories ?<br>` +
+		`<small class="text-red-400">This action cannot be undone.</small>`,
+		"Delete Multiple"
+		);
+
+		if (!confirmed) return;
 
         $.ajax({
             url: '/Admin/tblCategories/DeleteMultiple',
@@ -576,13 +586,14 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
 				if (res.blocked && res.blocked.length > 0) {
-					alert(
+					showToast(
 						`Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-						`Because it was used to link foreign keys.`
+						`Because it was used to link foreign keys.`,
+						'error'
 					);
 				}
 				if (res.deleted && res.deleted.length > 0) {
-					alert(`Deleted ${res.deleted.length} category.`);
+					showToast(`Deleted ${res.deleted.length} category.`, 'error');
 				}
 				loadCategoryList();
 				$('#selectAll').prop('checked', false);
@@ -626,7 +637,7 @@ $(document).ready(function () {
 	function executeImport() {
 		const fileInput = document.getElementById('excelFile');
 		if (fileInput.files.length === 0) {
-			alert('Please choose file Excel!');
+			showToast('Please choose file Excel!', 'error');
 			return;
 		}
 
@@ -644,15 +655,15 @@ $(document).ready(function () {
         contentType: false,
         success: function(res) {
             if (res.success) {
-                alert(res.message);
+                showToast(res.message, 'success');
                 closeImportModal();
                 loadCategoryList(1); 
             } else {
-                alert(res.message);
+                showToast(res.message, 'error');
             }
         },
         error: function() {
-            alert('Error during import file!');
+            showToast('Error during import file!', 'error');
         },
         complete: function() {
             $btn.prop('disabled', false).text('Confirm Import');

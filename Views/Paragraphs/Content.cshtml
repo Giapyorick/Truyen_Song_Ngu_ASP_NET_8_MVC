@@ -7,72 +7,84 @@
 }
 
 <div class="reading-wrapper transition-all duration-300" id="mainWrapper">
-    <div class="reading-header">
-        <div class="toolbar flex flex-wrap items-center justify-between gap-4 p-4 bg-gray-50 border-b border-gray-100 rounded-t-2xl">
-            <span class="hint text-xs text-gray-500 font-medium">
-                <i class="fa-solid fa-circle-info me-1 text-blue-500"></i> Double-click on each sentence to translate it individually.
-            </span>
-
-            <!-- Cụm điều khiển thanh công cụ chỉnh chữ và màu nền -->
-            <div id="readingControls" class="flex items-center gap-4 text-sm font-medium transition-all duration-300">
-                <!-- Bộ tăng giảm font chữ -->
-                <div class="flex items-center gap-1 border border-gray-200 bg-white rounded-xl p-1 shadow-sm">
-                    <button onclick="changeFontSize(-2)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-100 rounded-lg active:scale-95 transition" title="Decrease size">A-</button>
-                    <span id="fontSizeDisplay" class="px-2 text-xs text-gray-400 border-x border-gray-100">18px</span>
-                    <button onclick="changeFontSize(2)" class="px-2.5 py-1 text-gray-600 hover:bg-gray-100 rounded-lg active:scale-95 transition" title="Increase size">A+</button>
-                </div>
-
-                <!-- Bộ đổi màu nền -->
-                <div class="flex items-center gap-1.5 border border-gray-200 bg-white rounded-xl p-1 shadow-sm">
-                    <button onclick="changeTheme('light')" class="w-6 h-6 rounded-full border border-gray-300 bg-white" title="Light theme"></button>
-                    <button onclick="changeTheme('sepia')" class="w-6 h-6 rounded-full border border-yellow-700/20 bg-[#f4ecd8]" title="Sepia theme"></button>
-                    <button onclick="changeTheme('dark')" class="w-6 h-6 rounded-full border border-gray-700 bg-[#1e293b]" title="Dark theme"></button>
-                </div>
-            </div>
-        </div>
+    <!-- KHỐI TIÊU ĐỀ TRUYỆN VÀ CHƯƠNG -->
+    <div id="storyChapterHeader" class="text-center py-6 px-4 border-b border-gray-100 bg-white rounded-t-2xl">
+        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight mb-2">
+            Đang tải tên truyện...
+        </h1>
+        <h2 id="txtChapterTitle" class="text-base md:text-lg font-medium text-teal-600">
+            Đang tải chương...
+        </h2>
     </div>
 
-    <article id="paragraphList" class="reading-content p-8 min-h-[50vh] transition-all duration-300" style="font-size: 18px;">
-        <!-- Nội dung truyện tự động load ở đây -->
+    <!-- Hướng dẫn nháy chuột dịch câu -->
+    <div class="text-center py-3 bg-gray-50 border-b border-gray-100 hint-bar">
+        <span class="hint text-xs text-gray-500 font-medium">
+            <i class="fa-solid fa-circle-info me-1 text-blue-500"></i> Nháy chuột 2 lần trên câu để dịch truyện.
+        </span>
+    </div>
+
+    <article id="paragraphList" class="reading-content p-8 min-h-[50vh] transition-all duration-300 pb-28" style="font-size: 18px;">
     </article>
 </div>
 
-<!-- Khay chứa thanh cấu hình dịch chuyển khi bật Focus (BẮT BUỘC ĐỂ NGOÀI) -->
-<div id="focusToolbarContainer"></div>
+<!-- THANH CÔNG CỤ CỐ ĐỊNH Ở ĐÁY MÀN HÌNH (Bình thường ghim giữa, khi Focus sẽ nhảy dạt góc phải) -->
+<div id="fixedBottomBar" class="fixed bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 p-2 bg-white/90 backdrop-blur-md border border-gray-200 rounded-2xl shadow-xl z-[1010] transition-all duration-300 max-w-[95vw] overflow-x-auto" style="background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);">
+    <!-- 1. Thanh chuyển chương -->
+    <div id="chapterNavigation" class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl p-1 text-sm shrink-0">
+        <button onclick="goToChapter('first')" class="p-1.5 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Chương đầu">
+            <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button onclick="goToChapter('prev')" class="p-1.5 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Chương trước">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
 
-<!-- Cụm nút bấm Action cố định ở góc phải công cộng -->
-<!-- Khối chứa tiện ích tổng hợp duy nhất ở góc phải dưới -->
+        <select id="chapterSelect" onchange="onChapterSelectChange(this.value)" class="bg-transparent text-xs font-semibold text-gray-700 py-1 px-1 focus:outline-none cursor-pointer max-w-[120px]">
+            <option value="">Đang tải...</option>
+        </select>
+
+        <button onclick="goToChapter('next')" class="p-1.5 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Chương sau">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button onclick="goToChapter('last')" class="p-1.5 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Chương cuối">
+            <i class="fa-solid fa-forward-step"></i>
+        </button>
+    </div>
+
+    <!-- 2. Bộ chỉnh kích thước chữ -->
+    <div class="flex items-center gap-1 border border-gray-200 bg-gray-50 rounded-xl p-1 text-sm shrink-0">
+        <button onclick="changeFontSize(-2)" class="px-2.5 py-1 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Decrease size">A-</button>
+        <span id="fontSizeDisplay" class="px-2 text-xs text-gray-400 border-x border-gray-200">18px</span>
+        <button onclick="changeFontSize(2)" class="px-2.5 py-1 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Increase size">A+</button>
+    </div>
+
+    <!-- 3. Bộ chọn Theme màu nền -->
+    <div id="themeSelectorGroup" class="flex items-center gap-1.5 border border-gray-200 bg-gray-50 rounded-xl p-1 text-sm shrink-0">
+        <button onclick="changeTheme('light')" class="w-6 h-6 rounded-full border border-gray-300 bg-white" title="Light theme"></button>
+        <button onclick="changeTheme('sepia')" class="w-6 h-6 rounded-full border border-yellow-700/20 bg-[#f4ecd8]" title="Sepia theme"></button>
+        <button onclick="changeTheme('dark')" class="w-6 h-6 rounded-full border border-gray-700 bg-[#1e293b]" title="Dark theme"></button>
+    </div>
+</div>
+
+<!-- CỤM NÚT ACTION GÓC PHẢI -->
 <div id="rightActionControls" class="fixed bottom-5 right-5 flex items-center gap-3 z-[1010]">
-    
-    <!-- Nút Chế độ tập trung (Focus Mode) -->
-    <button id="btnFocusMode" onclick="toggleFocusMode()"
-            class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap"
-            title="Focus Mode">
+    <button id="btnFocusMode" onclick="toggleFocusMode()" class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Focus Mode">
         <i class="fa-solid fa-eye-slash text-amber-500"></i>
         <span class="btn-text">Focus Mode</span>
     </button>
 
-    <!-- Nút Dịch tất cả -->
-    <button id="btnTranslateAll"
-            class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap"
-            title="Translate all">
+    <button id="btnTranslateAll" class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Translate all">
         <i class="fa-solid fa-language text-blue-600"></i>
         <span class="btn-text">Translate all</span>
     </button>
 
-    <!-- Khay chứa trung gian cho thanh Font & Theme (Để JS nhận diện) -->
-    <div id="controlsBridge"></div>
-
-    <!-- Nút Chat AI (Quả địa cầu) -->
-    <button onclick="toggleChat()" id="chat-button"
-            class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap"
-            title="Chat bot assistant">
+    <button onclick="toggleChat()" id="chat-button" class="flex items-center gap-2 btn-grad border border-gray-200 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Chat bot assistant">
         <span class="btn-text text-2xl leading-none">🌍</span>
     </button>
 </div>
 
-<!-- Khung Chat AI Assistant -->
-<div id="chat-box" class="fixed bottom-24 right-5 w-[400px] max-h-[600px] h-[70vh] bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100 flex flex-col font-sans transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none z-50" style = "z-index: 1011;">
+<!-- KHUNG CHAT AI -->
+<div id="chat-box" class="fixed bottom-24 right-5 w-[400px] max-h-[600px] h-[70vh] bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100 flex flex-col font-sans transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none z-50" style="z-index: 1011;">
     <div class="btn-grad p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center gap-3">
             <div class="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
@@ -98,10 +110,10 @@
     </div>
 </div>
 
-<!-- Lớp phủ Hộp Đọc Tập Trung Focus Mode -->
+<!-- LỚP PHỦ FOCUS MODE -->
 <div id="focusModeOverlay" class="fixed inset-0 z-40 hidden transition-all duration-300">
     <div class="max-w-[800px] mx-auto h-full overflow-y-auto px-4 py-12">
-        <div id="focusContentContainer" class="bg-white rounded-3xl p-8 shadow-xl min-h-full font-serif reading-content"></div>
+        <div id="focusContentContainer" class="bg-white rounded-3xl p-8 shadow-xl min-h-full font-serif reading-content pb-28"></div>
     </div>
 </div>
 
@@ -109,173 +121,250 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    .ai-content h3 {
-        font-weight: bold;
-        color: #1e293b;
-        margin-top: 10px;
-        font-size: 1.1rem;
-        font-family: 'Lora', serif;
-    }
-
-    .ai-content blockquote {
-        border-left: 4px solid #0a0a0a;
-        padding-left: 10px;
-        margin: 10px 0;
-        font-family: 'Lora', serif;
-        background: #f0fdfa;
-    }
-
-    .ai-content ul {
-        padding-left: 20px;
-        list-style-type: disc;
-    }
-
-    .reading-content {
-        line-height: 2 !important;
-        font-family: 'Lora', serif !important;
-    }
-
-    /* ĐÃ SỬA: Loại bỏ hiệu ứng hover làm nổi bật câu văn và giữ nguyên con trỏ văn bản thông thường */
-    .text-segment {
-        cursor: text !important;
-        background-color: transparent !important;
-        transition: none !important;
-    }
-    .text-segment:hover {
-        background-color: transparent !important;
-        color: inherit !important;
-    }
-
-    /* ĐÃ SỬA: Ép các câu dịch (is-translated) giữ nguyên màu chữ của theme nền, không đổi màu xanh/đỏ */
-    .is-translated {
-        color: inherit !important;
-    }
-
-    /* ĐÃ SỬA: Tách biệt z-index để lớp phủ ẩn không chặn click chuột ở màn hình gốc */
-    #focusModeOverlay {
-        z-index: -1 !important;
-        pointer-events: none;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
-    }
-    #focusModeOverlay::-webkit-scrollbar {
-        display: none !important;
-    }
-    #focusModeOverlay.block {
-        z-index: 1000 !important; /* Đè lên mức 50 của header khi kích hoạt */
-        pointer-events: auto;
-    }
-
-    #focusModeOverlay.theme-light {
-        background-color: #f1f5f9;
-    }
-
-    #focusModeOverlay.theme-sepia {
-        background-color: #eaddca;
-    }
-
-    #focusModeOverlay.theme-dark {
-        background-color: #020617;
-    }
-
-    #focusModeOverlay.theme-light #focusContentContainer {
-        background-color: #ffffff;
-        color: #1e293b;
-    }
-
-    #focusModeOverlay.theme-sepia #focusContentContainer {
-        background-color: #fdf6e3;
-        color: #433422;
-    }
-
-    #focusModeOverlay.theme-dark #focusContentContainer {
-        background-color: #1e293b;
-        color: #f1f5f9;
-        border: 1px solid #334155;
-    }
-    /* --- BỔ SUNG: Định nghĩa màu nền cho trang gốc khi KHÔNG bật Focus --- */
-    #mainWrapper.theme-light {
-        background-color: #ffffff !important;
-        color: #1e293b !important;
-    }
-    #mainWrapper.theme-sepia {
-        background-color: #fbf7ee !important; /* Màu nền giấy ố nhẹ dịu mắt */
-        color: #433422 !important;
-    }
-    #mainWrapper.theme-dark {
-        background-color: #1e293b !important; /* Màu nền tối bảo vệ mắt ban đêm */
-        color: #f1f5f9 !important;
-    }
-
-    /* Đảm bảo thanh toolbar gốc ở đầu trang cũng chuyển màu mượt mà theo theme */
-    #mainWrapper.theme-dark .toolbar {
-        background-color: #111827 !important;
-        border-color: #374151 !important;
-    }
-    #mainWrapper.theme-dark .toolbar button {
-        color: #9ca3af !important;
-    }
-    #mainWrapper.theme-sepia .toolbar {
-        background-color: #f4ecd8 !important;
-        border-color: #e4dcbc !important;
-    }
-    #mainWrapper.theme-dark .text-segment {
-        color: #f1f5f9 !important;
-    }
-
-    #mainWrapper.theme-sepia .text-segment {
-        color: #433422 !important;
-    }
-
-    #mainWrapper.theme-light .text-segment {
-        color: #1e293b !important;
-    }
-
-/* --- TRẠNG THÁI FIXED TOOLBAR KHI Ở FOCUS MODE --- */
-.fixed-focus-toolbar {
-    display: flex !important;
-    flex-direction: column !important; /* Đổi thành cột dọc */
-    gap: 12px !important;
-    padding: 16px !important;
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.15);
-    border: 1px solid #e2e8f0;
-    align-items: center !important;
+.ai-content h3 {
+font-weight: bold;
+color: #1e293b;
+margin-top: 10px;
+font-size: 1.1rem;
+font-family: 'Lora', serif;
 }
 
-/* Đồng bộ màu panel theo theme */
-.theme-dark .fixed-focus-toolbar { background: #1e293b !important; border-color: #334155 !important; }
-.theme-sepia .fixed-focus-toolbar { background: #f4ecd8 !important; border-color: #e4dcbc !important; }
-
-/* Khi Focus bật: Ép toàn bộ chiếc khay tổng hợp xếp thành hàng dọc, căn lề sang bên phải */
-.focus-layout-active {
-    flex-direction: column !important;
-    align-items: flex-end !important; /* Đẩy sát tất cả nút về bên phải màn hình */
-    gap: 16px !important;
+.ai-content blockquote {
+border-left: 4px solid #0a0a0a;
+padding-left: 10px;
+margin: 10px 0;
+font-family: 'Lora', serif;
+background: #f0fdfa;
 }
 
-/* Đảm bảo khi xếp dọc, các nút text dài không bị co rúm */
-.focus-layout-active button {
-    width: fit-content !important;
-}
-/* Bảo vệ hình dáng của các nút tròn màu không bị bóp méo khi xếp dọc */
-.fixed-focus-toolbar div div button, 
-#readingControls div:last-child button {
-    width: 24px !important;       /* Giữ nguyên chiều rộng */
-    height: 24px !important;      /* Giữ nguyên chiều cao */
-    flex-shrink: 0 !important;    /* Tuyệt đối không cho trình duyệt bóp nhỏ (Fix lỗi vạch dọc) */
-    border-radius: 50% !important;/* Đảm bảo luôn luôn tròn trịa */
+.ai-content ul {
+padding-left: 20px;
+list-style-type: disc;
 }
 
-/* Đảm bảo cái khung viền bọc ngoài 3 nút tròn không bị bóp nghẹt */
-#readingControls div:last-child {
-    display: flex !important;
-    flex-direction: row !important; /* Bên trong cụm màu luôn xếp hàng ngang */
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    min-width: 90px !important;    /* Đặt chiều rộng tối thiểu cho khay chứa màu */
+.reading-content {
+line-height: 2 !important;
+font-family: 'Lora', serif !important;
+}
+
+.text-segment {
+cursor: text !important;
+background-color: transparent !important;
+transition: none !important;
+}
+
+.text-segment:hover {
+background-color: transparent !important;
+color: inherit !important;
+}
+
+.is-translated {
+color: inherit !important;
+}
+
+#focusModeOverlay {
+z-index: -1 !important;
+pointer-events: none;
+scrollbar-width: none !important;
+-ms-overflow-style: none !important;
+}
+
+#focusModeOverlay::-webkit-scrollbar {
+display: none !important;
+}
+
+#focusModeOverlay.block {
+z-index: 1000 !important;
+pointer-events: auto;
+}
+
+#focusModeOverlay.theme-light {
+background-color: #f1f5f9;
+}
+
+#focusModeOverlay.theme-sepia {
+background-color: #eaddca;
+}
+
+#focusModeOverlay.theme-dark {
+background-color: #020617;
+}
+
+#focusModeOverlay.theme-light #focusContentContainer {
+background-color: #ffffff;
+color: #1e293b;
+}
+
+#focusModeOverlay.theme-sepia #focusContentContainer {
+background-color: #fdf6e3;
+color: #433422;
+}
+
+#focusModeOverlay.theme-dark #focusContentContainer {
+background-color: #1e293b;
+color: #f1f5f9;
+border: 1px solid #334155;
+}
+
+#mainWrapper.theme-light {
+background-color: #ffffff !important;
+color: #1e293b !important;
+}
+
+#mainWrapper.theme-sepia {
+background-color: #fbf7ee !important;
+color: #433422 !important;
+}
+
+#mainWrapper.theme-dark {
+background-color: #1e293b !important;
+color: #f1f5f9 !important;
+}
+
+#mainWrapper.theme-dark .text-segment {
+color: #f1f5f9 !important;
+}
+
+#mainWrapper.theme-sepia .text-segment {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-light .text-segment {
+color: #1e293b !important;
+}
+
+#themeSelectorGroup button {
+width: 24px !important;
+height: 24px !important;
+flex-shrink: 0 !important;
+border-radius: 50% !important;
+}
+
+#fixedBottomBar::-webkit-scrollbar {
+display: none !important;
+}
+
+.theme-dark #fixedBottomBar {
+background-color: rgba(30, 41, 59, 0.95) !important;
+border-color: #334155 !important;
+}
+
+.theme-dark #fixedBottomBar div {
+background-color: #0f172a !important;
+border-color: #334155 !important;
+color: #f1f5f9 !important;
+}
+
+.theme-dark #chapterSelect, .theme-dark #fixedBottomBar button {
+color: #f1f5f9 !important;
+}
+
+.theme-sepia #fixedBottomBar {
+background-color: rgba(244, 236, 216, 0.95) !important;
+border-color: #e4dcbc !important;
+}
+
+.theme-sepia #fixedBottomBar div {
+background-color: #fbf7ee !important;
+border-color: #e4dcbc !important;
+color: #433422 !important;
+}
+
+.theme-sepia #chapterSelect, .theme-sepia #fixedBottomBar button {
+color: #433422 !important;
+}
+
+.theme-dark .hint-bar {
+background-color: #1e293b !important;
+border-color: #334155 !important;
+}
+
+#mainWrapper.theme-dark #storyChapterHeader {
+background-color: #0f172a !important;
+border-color: #1e293b !important;
+}
+
+#mainWrapper.theme-dark #txtStoryTitle {
+color: #f8fafc !important;
+}
+
+#mainWrapper.theme-dark #txtChapterTitle {
+color: #38bdf8 !important;
+}
+
+#mainWrapper.theme-sepia #storyChapterHeader {
+background-color: #f4ecd8 !important;
+border-color: #e4dcbc !important;
+}
+
+#mainWrapper.theme-sepia #txtStoryTitle {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia #txtChapterTitle {
+color: #854d0e !important;
+}
+
+#focusContentContainer #storyChapterHeader {
+padding-top: 0 !important;
+border-bottom: 1px solid #e2e8f0;
+margin-bottom: 24px;
+background: transparent !important;
+}
+
+#fixedBottomBar.focus-layout-active {
+left: auto !important;
+right: 20px !important;
+bottom: 250px !important; 
+transform: none !important;
+flex-direction: column !important;
+align-items: center !important; 
+justify-content: center !important;
+gap: 12px !important;
+padding: 16px !important;
+background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+border-radius: 24px !important;
+box-shadow: 0 10px 40px rgba(0,0,0,.15) !important;
+border: 1px solid #e2e8f0 !important;
+max-width: none !important;
+overflow: visible !important;
+}
+
+/* Ép từng ô con (Chương, Font, Theme) nằm giữa bảng trắng */
+#fixedBottomBar.focus-layout-active > div {
+width: 100% !important;
+display: flex !important;
+justify-content: center !important;
+align-items: center !important;
+}
+
+/* --- 2. CỤM NÚT ACTION (EXIT FOCUS, TRANSLATE, CHAT): NẰM PHÍA DƯỚI LỀ PHẢI --- */
+#rightActionControls.focus-layout-active {
+bottom: 20px !important; /* Ghim sát mép dưới */
+right: 20px !important; /* Ghim sát mép phải */
+flex-direction: column !important; /* Xếp thành cột dọc */
+align-items: flex-end !important; /* Căn thẳng hàng lề phải */
+gap: 10px !important;
+}
+
+#rightActionControls.focus-layout-active button {
+width: fit-content !important;
+}
+
+/* Đảm bảo màu sắc panel dạt phải khớp theme khi Focus */
+.theme-dark #fixedBottomBar.focus-layout-active {
+background-color: #1e293b !important;
+border-color: #334155 !important;
+}
+
+.theme-sepia #fixedBottomBar.focus-layout-active {
+background-color: #f4ecd8 !important;
+border-color: #e4dcbc !important;
+}
+
+/* Đảm bảo cụm nút Action và Chat AI luôn đè trên Overlay */
+#rightActionControls, #chat-box {
+z-index: 1010 !important;
 }
 </style>
 
@@ -346,24 +435,68 @@
     </script>
 
     <script>
-        // --- CORE LOGIC ĐỌC TRUYỆN SONG NGỮ ---
-        const chapterId = @chapterId;
+        // --- CORE LOGIC TRUYỆN SONG NGỮ & ĐIỀU HƯỚNG ---
+        let chapterId = @chapterId;
         let currentFontSize = 18;
         let currentTheme = 'light';
         let isFocusMode = false;
         let isAllVietnamese = false;
+        let chapterList = [];
 
         $(document).ready(function() {
+            loadChapterList();
             loadParagraphs();
         });
+
+        function loadChapterList() {
+            $.ajax({
+                url: '/Paragraphs/GetListByChapter',
+                type: 'GET',
+                data: { chapterId: chapterId },
+                success: function(response) {
+                    chapterList = response.chapters || response;
+
+                    if (response.storyTitle) {
+                        $('#txtStoryTitle').text(response.storyTitle);
+                    }
+
+                    renderChapterSelect();
+                    updateChapterTitleText();
+                },
+                error: function() {
+                    console.error('Không thể tải danh sách chương');
+                }
+            });
+        }
+
+        function renderChapterSelect() {
+            let html = '';
+            chapterList.forEach(c => {
+                const selected = c.chapterId == chapterId ? 'selected' : '';
+                html += `<option value="${c.chapterId}" ${selected}>Chương ${c.chapterNumber}</option>`;
+            });
+            $('#chapterSelect').html(html);
+        }
+
+        function updateChapterTitleText() {
+            const currentChapter = chapterList.find(c => c.chapterId == chapterId);
+            if (currentChapter) {
+                const titleText = `Chương ${currentChapter.chapterNumber}: ${currentChapter.title || ''}`;
+                $('#txtChapterTitle').text(titleText);
+            }
+        }
 
         function loadParagraphs() {
             $.ajax({
                 url: '/Paragraphs/GetByChapter',
                 type: 'GET',
-                data: { chapterId },
+                data: { chapterId: chapterId },
                 success: function(data) {
                     renderParagraphs(data);
+                    if (isFocusMode) {
+                        const headerHtml = $('#storyChapterHeader').prop('outerHTML');
+                        $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
+                    }
                 },
                 error: function() {
                     console.error('Content cannot be loaded');
@@ -371,16 +504,50 @@
             });
         }
 
+        function onChapterSelectChange(newChapterId) {
+            if (!newChapterId || newChapterId == chapterId) return;
+            switchChapter(newChapterId);
+        }
+
+        function goToChapter(action) {
+            if (!chapterList || chapterList.length === 0) return;
+            const currentIndex = chapterList.findIndex(c => c.chapterId == chapterId);
+            let targetIndex = -1;
+
+            if (action === 'first') targetIndex = 0;
+            else if (action === 'prev') targetIndex = currentIndex - 1;
+            else if (action === 'next') targetIndex = currentIndex + 1;
+            else if (action === 'last') targetIndex = chapterList.length - 1;
+
+            if (targetIndex >= 0 && targetIndex < chapterList.length) {
+                switchChapter(chapterList[targetIndex].chapterId);
+            }
+        }
+
+        function switchChapter(newChapterId) {
+            chapterId = newChapterId;
+            $('#chapterSelect').val(chapterId);
+            updateChapterTitleText();
+
+            window.history.pushState({}, '', `?chapterId=${chapterId}`);
+            loadParagraphs();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (isFocusMode) {
+                $('#focusModeOverlay > div').scrollTop(0);
+            }
+        }
+
         function renderParagraphs(paragraphs) {
             let html = '';
             paragraphs.forEach(p => {
                 html += `
-                        <span class="text-segment"
-                              data-lang="en"
-                              data-en="${escapeHtml(p.english)}"
-                              data-vi="${escapeHtml(p.vietnamese)}">
-                            ${escapeHtml(p.english)}
-                        </span> `;
+                            <span class="text-segment"
+                                  data-lang="en"
+                                  data-en="${escapeHtml(p.english)}"
+                                  data-vi="${escapeHtml(p.vietnamese)}">
+                                ${escapeHtml(p.english)}
+                            </span> `;
             });
 
             $('#paragraphList').html(html);
@@ -424,7 +591,8 @@
                 });
 
                 if (isFocusMode) {
-                    $('#focusContentContainer').html($('#paragraphList').html());
+                    const headerHtml = $('#storyChapterHeader').prop('outerHTML');
+                    $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
                 }
 
                 $btn.find('.btn-text').text(isAllVietnamese ? 'Show English' : 'Translate all');
@@ -460,51 +628,43 @@
             $overlay.removeClass('theme-light theme-sepia theme-dark').addClass('theme-' + themeName);
         }
 
-function toggleFocusMode() {
-    isFocusMode = !isFocusMode;
-    const $overlay = $('#focusModeOverlay');
-    const $container = $('#focusContentContainer');
-    const $controls = $('#readingControls');
-    const $btn = $('#btnFocusMode');
-    const $actionBox = $('#rightActionControls'); // Chiếc khay tổng hợp chứa nút
+        // HÀM XỬ LÝ NHẢY DẠT SANG BÊN PHẢI KHI BẬT FOCUS MODE
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            const $overlay = $('#focusModeOverlay');
+            const $container = $('#focusContentContainer');
+            const $btn = $('#btnFocusMode');
+            const $fixedBar = $('#fixedBottomBar');
+            const $actionControls = $('#rightActionControls');
 
-    if (isFocusMode) {
-        changeTheme('light'); // Ép nền trắng khi vào Focus
+            if (isFocusMode) {
+                changeTheme('light');
 
-        // 1. Copy nội dung truyện sang lớp phủ
-        $container.html($('#paragraphList').html()).css('font-size', currentFontSize + 'px');
-        
-        // 2. Chuyển đổi thanh chỉnh font/theme thành dạng panel nhỏ gọn
-        $controls.addClass('fixed-focus-toolbar');
-        
-        // 3. Chèn thanh chỉnh font/theme vào giữa (nằm ngay trước nút Chat quả địa cầu)
-        $controls.insertBefore('#chat-button');
-        
-        // 4. Kích hoạt class ép toàn bộ các nút xếp thành một hàng dọc đứng
-        $actionBox.addClass('focus-layout-active');
+                const headerHtml = $('#storyChapterHeader').prop('outerHTML');
+                $container.html(headerHtml + $('#paragraphList').html()).css('font-size', currentFontSize + 'px');
 
-        // Hiển thị lớp phủ và chặn cuộn trang gốc
-        $overlay.removeClass('hidden').addClass('block');
-        $('body').addClass('overflow-hidden');
+                // 🔥 Kích hoạt đẩy khay trắng lên trên và xoay dọc cụm nút dưới
+                $fixedBar.addClass('focus-layout-active');
+                $actionControls.addClass('focus-layout-active');
 
-        $btn.addClass('bg-amber-500 text-white').find('.btn-text').text('Exit Focus');
-        $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
-    } else {
-        // 1. Gỡ bỏ class hàng dọc, đưa cụm nút hành động về nằm ngang mặc định
-        $actionBox.removeClass('focus-layout-active');
+                $overlay.removeClass('hidden').addClass('block');
+                $('body').addClass('overflow-hidden');
 
-        // 2. Trả thanh chỉnh font/theme thoát khỏi cột dọc, đưa về vị trí toolbar đầu trang
-        $controls.removeClass('fixed-focus-toolbar').appendTo('.reading-header .toolbar');
+                $btn.addClass('bg-amber-500 text-white').find('.btn-text').text('Exit Focus');
+                $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+            } else {
+                // Trả về vị trí ban đầu khi tắt Focus Mode
+                $fixedBar.removeClass('focus-layout-active');
+                $actionControls.removeClass('focus-layout-active');
 
-        // 3. Ẩn lớp phủ, xóa bản copy dữ liệu
-        $overlay.removeClass('block').addClass('hidden');
-        $container.empty();
-        $('body').removeClass('overflow-hidden');
+                $overlay.removeClass('block').addClass('hidden');
+                $container.empty();
+                $('body').removeClass('overflow-hidden');
 
-        $btn.removeClass('bg-amber-500 text-white').find('.btn-text').text('Focus Mode');
-        $btn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
-    }
-}
+                $btn.removeClass('bg-amber-500 text-white').find('.btn-text').text('Focus Mode');
+                $btn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+            }
+        }
 
         $(document).on('keydown', function(e) {
             if (e.key === "Escape" && isFocusMode) {

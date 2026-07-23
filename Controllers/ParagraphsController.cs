@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebTruyenTranh.Models;
 
 public class ParagraphsController : Controller
@@ -31,5 +32,35 @@ public class ParagraphsController : Controller
             .ToList();
 
         return Json(data);
+    }
+    [HttpGet]
+    public IActionResult GetListByChapter(int chapterId)
+    {
+        var currentChapter = _context.TblChapters
+            .Include(c => c.Story)
+            .FirstOrDefault(c => c.ChapterId == chapterId);
+
+        if (currentChapter == null)
+        {
+            return NotFound(new { message = "Không tìm thấy chương hiện tại." });
+        }
+
+        var chaptersList = _context.TblChapters
+            .Where(c => c.StoryId == currentChapter.StoryId)
+            .OrderBy(c => c.ChapterNumber)
+            .Select(c => new
+            {
+                c.ChapterId,
+                c.ChapterNumber,
+                c.Title
+            })
+            .ToList();
+
+        return Json(new
+        {
+            storyTitle = currentChapter.Story?.Title ?? "Truyện Song Ngữ",
+            currentChapterTitle = $"Chương {currentChapter.ChapterNumber}: {currentChapter.Title}",
+            chapters = chaptersList
+        });
     }
 }

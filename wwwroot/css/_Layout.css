@@ -324,7 +324,6 @@ main {
 
     .btn-grad:hover, .btn-grad-cancel:hover, .btn-grad-trans:hover, .btn-grad-gray:hover {
         background-position: right center;
-        color: #fff;
     }
 
 .ai-assistant {
