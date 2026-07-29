@@ -852,3 +852,4 @@ D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.pdb
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.genruntimeconfig.cache
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\ref\WebTruyenTranh.dll
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.sourcelink.json

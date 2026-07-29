@@ -98,29 +98,7 @@
         <aside class="hot-sidebar">
             <h3 class="sidebar-title">TRUYỆN HOT TUẦN</h3>
             <div class="hot-list">
-                <div class="hot-item">
-                    <span class="rank">1</span>
-                    <div class="hot-item-info">
-                        <a href="#" class="hot-item-title">Võ Luyện Đỉnh Phong</a>
-                        <span class="hot-item-view">1.2M views</span>
-                    </div>
-                </div>
-
-                <div class="hot-item">
-                    <span class="rank">2</span>
-                    <div class="hot-item-info">
-                        <a href="#" class="hot-item-title">Toàn Trí Độc Giả</a>
-                        <span class="hot-item-view">950K views</span>
-                    </div>
-                </div>
-
-                <div class="hot-item">
-                    <span class="rank">3</span>
-                    <div class="hot-item-info">
-                        <a href="#" class="hot-item-title">Sự Trở Lại Của Anh Hùng</a>
-                        <span class="hot-item-view">800K views</span>
-                    </div>
-                </div>
+                @await Component.InvokeAsync("TopViewList")
             </div>
         </aside>
     </main>
@@ -404,6 +382,141 @@
                 background-position: right center;
                 color: #fff;
                 text-decoration: none;
+            }
+            /* Container chính của Sidebar */
+            .hot-sidebar {
+                background-color: #ffffff;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                max-width: 360px;
+            }
+
+            /* Tiêu đề Sidebar */
+            .sidebar-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #e63946;
+                text-transform: uppercase;
+                margin-bottom: 16px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #e63946;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            /* Danh sách truyện */
+            .hot-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            /* Mỗi item truyện */
+            .hot-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px;
+                border-radius: 8px;
+                transition: background-color 0.2s ease, transform 0.2s ease;
+            }
+
+                .hot-item:hover {
+                    background-color: #f8f9fa;
+                    transform: translateX(4px);
+                }
+
+                /* Số thứ tự (Rank) */
+                .hot-item .rank {
+                    font-size: 1.1rem;
+                    font-weight: 800;
+                    min-width: 28px;
+                    height: 28px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    background-color: #e9ecef;
+                    color: #495057;
+                    flex-shrink: 0;
+                }
+
+                /* Nổi bật Top 3 rank */
+                .hot-item:nth-child(1) .rank {
+                    background-color: #ff4d4f;
+                    color: #ffffff;
+                }
+
+                .hot-item:nth-child(2) .rank {
+                    background-color: #ff7a45;
+                    color: #ffffff;
+                }
+
+                .hot-item:nth-child(3) .rank {
+                    background-color: #ffa940;
+                    color: #ffffff;
+                }
+
+            /* Khung chứa ảnh bìa */
+            .hot-item-img {
+                width: 50px;
+                height: 65px;
+                flex-shrink: 0;
+                overflow: hidden;
+                border-radius: 6px;
+            }
+
+                .hot-item-img img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s ease;
+                }
+
+            .hot-item:hover .hot-item-img img {
+                transform: scale(1.08);
+            }
+
+            /* Thông tin truyện */
+            .hot-item-info {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 3px;
+                overflow: hidden;
+            }
+
+            /* Tên truyện */
+            .hot-item-title {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: #2b2b2b;
+                text-decoration: none;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                transition: color 0.2s ease;
+            }
+
+                .hot-item-title:hover {
+                    color: #e63946;
+                }
+
+            /* Tên tác giả */
+            .hot-item-author {
+                font-size: 0.8rem;
+                color: #6c757d;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* Lượt xem */
+            .hot-item-view {
+                font-size: 0.75rem;
+                color: #8c8c8c;
             }
     </style>
 </body>
