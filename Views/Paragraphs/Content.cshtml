@@ -9,7 +9,7 @@
 <div class="reading-wrapper transition-all duration-300" id="mainWrapper">
     <!-- KHỐI TIÊU ĐỀ TRUYỆN VÀ CHƯƠNG -->
     <div id="storyChapterHeader" class="text-center py-6 px-4 border-b border-gray-100 bg-white rounded-t-2xl">
-        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight mb-2">
+        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-2">
             Đang tải tên truyện...
         </h1>
         <h2 id="txtChapterTitle" class="text-base md:text-lg font-medium text-teal-600">
@@ -49,6 +49,18 @@
         <button onclick="goToChapter('last')" class="p-1.5 text-gray-600 hover:bg-white rounded-lg active:scale-95 transition" title="Chương cuối">
             <i class="fa-solid fa-forward-step"></i>
         </button>
+    </div>
+    <div id="languageSelectorGroup" class="hidden items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl p-1 text-xs shrink-0">
+        <div class="flex items-center gap-1 px-1">
+            <i class="fa-solid fa-globe text-teal-600"></i>
+            <select id="srcLangSelect" onchange="changeLanguageMode()" class="bg-transparent font-semibold text-gray-700 py-0.5 focus:outline-none cursor-pointer">
+            </select>
+        </div>
+        <span class="text-gray-400 font-bold">➔</span>
+        <div class="flex items-center gap-1 px-1">
+            <select id="targetLangSelect" onchange="changeLanguageMode()" class="bg-transparent font-semibold text-gray-700 py-0.5 focus:outline-none cursor-pointer">
+            </select>
+        </div>
     </div>
 
     <!-- 2. Bộ chỉnh kích thước chữ -->
@@ -366,6 +378,28 @@ border-color: #e4dcbc !important;
 #rightActionControls, #chat-box {
 z-index: 1010 !important;
 }
+
+.theme-dark #languageSelectorGroup {
+background-color: #0f172a !important;
+border-color: #334155 !important;
+color: #f1f5f9 !important;
+}
+
+.theme-dark #srcLangSelect, .theme-dark #targetLangSelect {
+color: #f1f5f9 !important;
+background-color: #0f172a !important;
+}
+
+.theme-sepia #languageSelectorGroup {
+background-color: #fbf7ee !important;
+border-color: #e4dcbc !important;
+color: #433422 !important;
+}
+
+.theme-sepia #srcLangSelect, .theme-sepia #targetLangSelect {
+color: #433422 !important;
+background-color: #fbf7ee !important;
+}
 </style>
 
 @section Scripts {
@@ -385,8 +419,10 @@ z-index: 1010 !important;
             const text = inputElement.value.trim();
             if (!text) return;
 
-            appendMessage('user', text);
             inputElement.value = '';
+            inputElement.disabled = true;
+
+            appendMessage('user', text);
 
             const loadingId = 'loading-' + Date.now();
             appendMessage('ai', '...', loadingId);
@@ -398,11 +434,33 @@ z-index: 1010 !important;
                     body: JSON.stringify({ Text: text })
                 });
 
+                if (!response.ok) {
+                    let errorDetail = `Lỗi Server (${response.status}: ${response.statusText})`;
+                    const rawText = await response.text();
+
+                    if (rawText) {
+                        try {
+                            const errData = JSON.parse(rawText);
+                            errorDetail = errData.message || errData.title || errData.result || rawText;
+                        } catch {
+                            errorDetail = rawText.substring(0, 150);
+                        }
+                    }
+
+                    updateMessage(loadingId, ` Lỗi [HTTP ${response.status}]: ${errorDetail}`);
+                    return;
+                }
+
                 const data = await response.json();
-                const resultText = data.translatedText || data.result;
+                const resultText = data.translatedText || data.result || "Không có phản hồi từ AI";
                 updateMessage(loadingId, resultText);
+
             } catch (error) {
-                updateMessage(loadingId, "Error connection to server!");
+                console.error("Fetch Exception:", error);
+                updateMessage(loadingId, ` Lỗi kết nối: ${error.message}`);
+            } finally {
+                inputElement.disabled = false;
+                inputElement.focus();
             }
         }
 
@@ -435,19 +493,33 @@ z-index: 1010 !important;
     </script>
 
     <script>
-        // --- CORE LOGIC TRUYỆN SONG NGỮ & ĐIỀU HƯỚNG ---
+        // --- CORE LOGIC TRUYỆN SONG NGỮ, NGÔN NGỮ ĐỘNG & ĐIỀU HƯỚNG ---
         let chapterId = @chapterId;
         let currentFontSize = 18;
         let currentTheme = 'light';
         let isFocusMode = false;
-        let isAllVietnamese = false;
+        let isAllTranslated = false;
         let chapterList = [];
+
+        // Ánh xạ mã ngôn ngữ -> Cờ & Tên
+        const LANG_MAP = {
+            'en': '🇺🇸 EN',
+            'vi': '🇻🇳 VN',
+            'zh': '🇨🇳 ZH',
+            'ja': '🇯🇵 JP',
+            'fr': '🇫🇷 FR'
+        };
+
+        let currentSrcLang = 'en';
+        let currentTargetLang = 'vi';
+        let rawParagraphData = [];
 
         $(document).ready(function() {
             loadChapterList();
             loadParagraphs();
         });
 
+        // QUẢN LÝ DANH SÁCH CHƯƠNG
         function loadChapterList() {
             $.ajax({
                 url: '/Paragraphs/GetListByChapter',
@@ -486,24 +558,6 @@ z-index: 1010 !important;
             }
         }
 
-        function loadParagraphs() {
-            $.ajax({
-                url: '/Paragraphs/GetByChapter',
-                type: 'GET',
-                data: { chapterId: chapterId },
-                success: function(data) {
-                    renderParagraphs(data);
-                    if (isFocusMode) {
-                        const headerHtml = $('#storyChapterHeader').prop('outerHTML');
-                        $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
-                    }
-                },
-                error: function() {
-                    console.error('Content cannot be loaded');
-                }
-            });
-        }
-
         function onChapterSelectChange(newChapterId) {
             if (!newChapterId || newChapterId == chapterId) return;
             switchChapter(newChapterId);
@@ -538,15 +592,107 @@ z-index: 1010 !important;
             }
         }
 
-        function renderParagraphs(paragraphs) {
+        // TẢI VÀ XỬ LÝ NỘI DUNG ĐOẠN VĂN
+        function loadParagraphs() {
+            $.ajax({
+                url: '/Paragraphs/GetByChapter',
+                type: 'GET',
+                data: { chapterId: chapterId },
+                success: function(data) {
+                    rawParagraphData = data;
+                    detectAvailableLanguages(data);
+                    renderParagraphs();
+
+                    if (isFocusMode) {
+                        const headerHtml = $('#storyChapterHeader').prop('outerHTML');
+                        $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
+                    }
+                },
+                error: function() {
+                    console.error('Content cannot be loaded');
+                }
+            });
+        }
+
+        // Kiểm tra và render ô chọn ngôn ngữ động
+        function detectAvailableLanguages(data) {
+            if (!data || data.length === 0) {
+                $('#languageSelectorGroup').addClass('hidden').removeClass('flex');
+                return;
+            }
+
+            const availableLangs = [];
+
+            if (data.some(x => x.english && x.english.trim() !== '')) availableLangs.push('en');
+            if (data.some(x => x.vietnamese && x.vietnamese.trim() !== '')) availableLangs.push('vi');
+            if (data.some(x => x.chinese && x.chinese.trim() !== '')) availableLangs.push('zh');
+            if (data.some(x => x.japanese && x.japanese.trim() !== '')) availableLangs.push('ja');
+            if (data.some(x => x.french && x.french.trim() !== '')) availableLangs.push('fr');
+
+            if (availableLangs.length <= 1) {
+                $('#languageSelectorGroup').addClass('hidden').removeClass('flex');
+                currentSrcLang = availableLangs[0] || 'en';
+                return;
+            }
+
+            $('#languageSelectorGroup').removeClass('hidden').addClass('flex');
+
+            if (!availableLangs.includes(currentSrcLang)) currentSrcLang = availableLangs[0];
+            if (!availableLangs.includes(currentTargetLang) || currentTargetLang === currentSrcLang) {
+                currentTargetLang = availableLangs.find(l => l !== currentSrcLang) || availableLangs[1];
+            }
+
+            let srcOptionsHtml = '';
+            let targetOptionsHtml = '';
+
+            availableLangs.forEach(langCode => {
+                const label = LANG_MAP[langCode] || langCode.toUpperCase();
+                srcOptionsHtml += `<option value="${langCode}" ${langCode === currentSrcLang ? 'selected' : ''}>${label}</option>`;
+                targetOptionsHtml += `<option value="${langCode}" ${langCode === currentTargetLang ? 'selected' : ''}>${label}</option>`;
+            });
+
+            $('#srcLangSelect').html(srcOptionsHtml);
+            $('#targetLangSelect').html(targetOptionsHtml);
+        }
+
+        function changeLanguageMode() {
+            const newSrc = $('#srcLangSelect').val();
+            const newTarget = $('#targetLangSelect').val();
+
+            if (newSrc === newTarget) {
+                alert("Ngôn ngữ dịch phải khác ngôn ngữ hiển thị ban đầu!");
+                $('#srcLangSelect').val(currentSrcLang);
+                $('#targetLangSelect').val(currentTargetLang);
+                return;
+            }
+
+            currentSrcLang = newSrc;
+            currentTargetLang = newTarget;
+            isAllTranslated = false;
+
+            $('#btnTranslateAll').removeClass('active').find('.btn-text').text('Translate all');
+
+            renderParagraphs();
+
+            if (isFocusMode) {
+                const headerHtml = $('#storyChapterHeader').prop('outerHTML');
+                $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
+            }
+        }
+
+        function renderParagraphs() {
             let html = '';
-            paragraphs.forEach(p => {
+
+            rawParagraphData.forEach(p => {
+                const srcText = getParagraphTextByLang(p, currentSrcLang);
+                const targetText = getParagraphTextByLang(p, currentTargetLang);
+
                 html += `
                             <span class="text-segment"
-                                  data-lang="en"
-                                  data-en="${escapeHtml(p.english)}"
-                                  data-vi="${escapeHtml(p.vietnamese)}">
-                                ${escapeHtml(p.english)}
+                                  data-lang="${currentSrcLang}"
+                                  data-src="${escapeHtml(srcText)}"
+                                  data-target="${escapeHtml(targetText)}">
+                                ${escapeHtml(srcText)}
                             </span> `;
             });
 
@@ -554,7 +700,19 @@ z-index: 1010 !important;
             bindEvents();
         }
 
+        function getParagraphTextByLang(pObj, langCode) {
+            switch (langCode) {
+                case 'en': return pObj.english || '';
+                case 'vi': return pObj.vietnamese || '';
+                case 'zh': return pObj.chinese || '';
+                case 'ja': return pObj.japanese || '';
+                case 'fr': return pObj.french || '';
+                default: return pObj.english || '';
+            }
+        }
+
         function escapeHtml(text) {
+            if (!text) return '';
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
@@ -576,17 +734,17 @@ z-index: 1010 !important;
             });
 
             $('#btnTranslateAll').off('click').on('click', function() {
-                isAllVietnamese = !isAllVietnamese;
+                isAllTranslated = !isAllTranslated;
                 const $btn = $(this);
-                $btn.toggleClass('active', isAllVietnamese);
+                $btn.toggleClass('active', isAllTranslated);
 
                 $('.text-segment').each(function() {
                     const $el = $(this);
                     const currentLang = $el.data('lang');
-                    if (isAllVietnamese && currentLang === 'en') {
-                        toggleLanguage($el, 'vi');
-                    } else if (!isAllVietnamese && currentLang === 'vi') {
-                        toggleLanguage($el, 'en');
+                    if (isAllTranslated && currentLang === currentSrcLang) {
+                        toggleLanguage($el, currentTargetLang);
+                    } else if (!isAllTranslated && currentLang === currentTargetLang) {
+                        toggleLanguage($el, currentSrcLang);
                     }
                 });
 
@@ -595,20 +753,23 @@ z-index: 1010 !important;
                     $('#focusContentContainer').html(headerHtml + $('#paragraphList').html());
                 }
 
-                $btn.find('.btn-text').text(isAllVietnamese ? 'Show English' : 'Translate all');
+                const srcLabel = LANG_MAP[currentSrcLang] || currentSrcLang.toUpperCase();
+                $btn.find('.btn-text').text(isAllTranslated ? `Show ${srcLabel}` : 'Translate all');
             });
         }
 
         function toggleLanguage($el, targetLang = null) {
             const currentLang = $el.data('lang');
-            const nextLang = targetLang || (currentLang === 'en' ? 'vi' : 'en');
+            const nextLang = targetLang || (currentLang === currentSrcLang ? currentTargetLang : currentSrcLang);
             if (currentLang === nextLang) return;
 
-            $el.text(nextLang === 'vi' ? $el.data('vi') : $el.data('en'));
+            const newText = nextLang === currentTargetLang ? $el.data('target') : $el.data('src');
+            $el.text(newText);
             $el.data('lang', nextLang);
-            $el.toggleClass('is-translated', nextLang === 'vi');
+            $el.toggleClass('is-translated', nextLang === currentTargetLang);
         }
 
+        // THAY ĐỔI THEME, FONT VÀ FOCUS MODE
         function changeFontSize(step) {
             currentFontSize += step;
             if (currentFontSize < 14) currentFontSize = 14;
@@ -628,7 +789,6 @@ z-index: 1010 !important;
             $overlay.removeClass('theme-light theme-sepia theme-dark').addClass('theme-' + themeName);
         }
 
-        // HÀM XỬ LÝ NHẢY DẠT SANG BÊN PHẢI KHI BẬT FOCUS MODE
         function toggleFocusMode() {
             isFocusMode = !isFocusMode;
             const $overlay = $('#focusModeOverlay');
@@ -643,7 +803,6 @@ z-index: 1010 !important;
                 const headerHtml = $('#storyChapterHeader').prop('outerHTML');
                 $container.html(headerHtml + $('#paragraphList').html()).css('font-size', currentFontSize + 'px');
 
-                // 🔥 Kích hoạt đẩy khay trắng lên trên và xoay dọc cụm nút dưới
                 $fixedBar.addClass('focus-layout-active');
                 $actionControls.addClass('focus-layout-active');
 
@@ -653,7 +812,6 @@ z-index: 1010 !important;
                 $btn.addClass('bg-amber-500 text-white').find('.btn-text').text('Exit Focus');
                 $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
             } else {
-                // Trả về vị trí ban đầu khi tắt Focus Mode
                 $fixedBar.removeClass('focus-layout-active');
                 $actionControls.removeClass('focus-layout-active');
 

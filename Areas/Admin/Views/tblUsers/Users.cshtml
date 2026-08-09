@@ -821,9 +821,22 @@ $(document).ready(function () {
                 alert(res.message);
             }
         },
-        error: function() {
-            alert('Error during import file!');
-        },
+		error: function(xhr) {
+			// Try to parse JSON error returned by server (we return { message, detail } on 500)
+			var errMsg = 'Error during import file!';
+			try {
+				var res = JSON.parse(xhr.responseText);
+				if (res) {
+					if (res.message) errMsg = res.message;
+					if (res.detail) errMsg += '\n\nDetails:\n' + res.detail;
+				}
+			} catch (e) {
+				// ignore parse errors
+			}
+
+			alert(errMsg);
+			console.error('ImportExcel error', xhr);
+		},
         complete: function() {
             $btn.prop('disabled', false).text('Confirm Import');
         }

@@ -76,8 +76,18 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
                 var data = await query
                     .OrderByDescending(u => u.UserId)
-                    .Skip((page - 1) * pageSize) 
-                    .Take(pageSize)              
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(u => new {
+                        u.UserId,
+                        u.Name,
+                        u.Email,
+                        u.Phone,
+                        u.Gender,
+                        u.Img,
+                        u.Status,
+                        DoB = u.DoB.HasValue ? u.DoB.Value.ToString("yyyy-MM-dd") : ""
+                    })
                     .ToListAsync();
 
                 return Json(new {
@@ -413,10 +423,15 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
-                using (var package = new ExcelPackage(stream))
+                try
                 {
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; 
-                    int rowCount = worksheet.Dimension.Rows;
+                    using (var package = new ExcelPackage(stream))
+                    {
+                        ExcelWorksheet worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                        if (worksheet == null || worksheet.Dimension == null)
+                            return Json(new { success = false, message = "The Excel file is empty or has no worksheet." });
+
+                        int rowCount = worksheet.Dimension.Rows;
                     var userList = new List<TblUser>();
 
                     for (int row = 6; row <= rowCount; row++)
@@ -445,9 +460,11 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                             Name = worksheet.Cells[row, 1].Value?.ToString(),
                             DoB = dob,
                             Email = worksheet.Cells[row, 3].Value?.ToString(),
-                            Phone = '0' + worksheet.Cells[row, 4].Value?.ToString(),
+                            Phone = "0" + worksheet.Cells[row, 4].Value?.ToString(),
                             Gender = worksheet.Cells[row, 5].Value?.ToString(),      
                             Status = worksheet.Cells[row, 6].Value?.ToString(),
+                            // Ensure non-null password for non-nullable DB column. Use default '123456' (hashed).
+                            Passwork = PasswordHasher.Hash("123456"),
                             CreateAd = DateTime.Now
                         };
 
@@ -457,14 +474,20 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                         }
                     }
 
-                    if (userList.Count > 0)
-                    {
-                        _context.TblUsers.AddRange(userList);
-                        await _context.SaveChangesAsync();
-                        return Json(new { success = true, message = $"Imported {userList.Count} members successfully!" });
+                        if (userList.Count > 0)
+                        {
+                            _context.TblUsers.AddRange(userList);
+                            await _context.SaveChangesAsync();
+                            return Json(new { success = true, message = $"Imported {userList.Count} members successfully!" });
+                        }
+
+                        return Json(new { success = false, message = "No valid data was found in the file." });
                     }
-                    
-                    return Json(new { success = false, message = "No valid data was found in the file." });
+                }
+                catch (Exception ex)
+                {
+                    // Return detailed error to help debugging the 500 from client
+                    return StatusCode(500, new { success = false, message = ex.Message, detail = ex.ToString() });
                 }
             }
         }

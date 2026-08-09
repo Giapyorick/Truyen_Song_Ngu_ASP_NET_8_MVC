@@ -23,11 +23,13 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly TruyenSongNguContext _context;
+        private readonly IAiTranslationService _aiService;
 
-        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment)
+        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment, IAiTranslationService aiService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _aiService = aiService;
         }
         [HttpGet]
         public IActionResult Paragraphs()
@@ -69,6 +71,9 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     p.ParagraphOrder,
                     p.Vietnamese,
                     p.English,
+                    p.Chinese,
+                    p.Japanese,
+                    p.French,
 
                     Chapter = new
                     {
@@ -84,35 +89,54 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List( string? search, int? chapterId, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> List(string? search, int? storyId, int? cstoryId, int? chapterId, int page = 1, int pageSize = 10)
         {
             try
             {
+                // Lấy storyId từ 1 trong 2 tham số gửi lên
+                int? filterStoryId = storyId ?? cstoryId;
+
                 var query = _context.TblParagraphs
                     .AsNoTracking()
                     .Select(p => new
                     {
                         p.ParagraphId,
                         p.ParagraphOrder,
-                        p.English,
-                        p.Vietnamese,
+                        // Dùng ?? "" để đảm bảo không bị null khi serialization
+                        English = p.English ?? "",
+                        Vietnamese = p.Vietnamese ?? "",
+                        Chinese = p.Chinese ?? "",
+                        Japanese = p.Japanese ?? "",
+                        French = p.French ?? "",
 
                         ChapterId = p.ChapterId,
-                        ChapterTitle = p.Chap.Title,
+                        // Bọc kiểm tra null an toàn cho navigation property
+                        ChapterTitle = p.Chap != null ? p.Chap.Title : "N/A",
 
-                        StoryId = p.Chap.StoryId,
-                        StoryTitle = p.Chap.Story.Title
+                        StoryId = (p.Chap != null && p.Chap.Story != null) ? (int?)p.Chap.StoryId : null,
+                        StoryTitle = (p.Chap != null && p.Chap.Story != null) ? p.Chap.Story.Title : "N/A"
                     })
                     .AsQueryable();
 
+                // 1. Lọc theo chuỗi tìm kiếm
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(x =>
-                        x.English.Contains(search) ||
-                        x.Vietnamese.Contains(search)
+                        (x.English != null && x.English.Contains(search)) ||
+                        (x.Vietnamese != null && x.Vietnamese.Contains(search)) ||
+                        (x.Chinese != null && x.Chinese.Contains(search)) ||
+                        (x.Japanese != null && x.Japanese.Contains(search)) ||
+                        (x.French != null && x.French.Contains(search))
                     );
                 }
 
+                // 2. Lọc theo StoryId (Bổ sung thêm)
+                if (filterStoryId.HasValue && filterStoryId.Value > 0)
+                {
+                    query = query.Where(x => x.StoryId == filterStoryId.Value);
+                }
+
+                // 3. Lọc theo ChapterId
                 if (chapterId.HasValue && chapterId.Value > 0)
                 {
                     query = query.Where(x => x.ChapterId == chapterId.Value);
@@ -139,28 +163,51 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                // Trả về lỗi chi tiết để debug thay vì chỉ trả về 500 chung chung
+                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message });
             }
         }
-
         [HttpPost]
-        public async Task<IActionResult> ImportExcel(int chapId, IFormFile fileEnglish, IFormFile fileVietnamese)
+        public async Task<IActionResult> ImportExcel(
+            int chapId,
+            IFormFile? fileEnglish,
+            IFormFile? fileVietnamese,
+            IFormFile? fileChinese,
+            IFormFile? fileJapanese,
+            IFormFile? fileFrench)
         {
-            if (fileEnglish == null || fileVietnamese == null)
+            var files = new Dictionary<string, IFormFile?>
             {
-                return Json(new { success = false, message = "Vui lòng chọn đầy đủ cả 2 file Anh và Việt!" });
+                { "English", fileEnglish },
+                { "Vietnamese", fileVietnamese },
+                { "Chinese", fileChinese },
+                { "Japanese", fileJapanese },
+                { "French", fileFrench }
+            };
+
+            var activeFiles = files.Where(f => f.Value != null && f.Value.Length > 0).ToDictionary(f => f.Key, f => f.Value!);
+
+            if (activeFiles.Count == 0)
+            {
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 file dữ liệu để import!" });
             }
 
-            // Tự động nhận diện và đọc dữ liệu dựa trên đuôi file (.xlsx/.xls hoặc .txt)
-            var listEnglish = ProcessFileImport(fileEnglish);
-            var listVietnamese = ProcessFileImport(fileVietnamese);
-
-            if (listEnglish.Count != listVietnamese.Count)
+            var parsedData = new Dictionary<string, List<string>>();
+            foreach (var item in activeFiles)
             {
+                parsedData[item.Key] = ProcessFileImport(item.Value);
+            }
+
+            int expectedCount = parsedData.First().Value.Count;
+            var mismatched = parsedData.Where(p => p.Value.Count != expectedCount).ToList();
+
+            if (mismatched.Any())
+            {
+                string details = string.Join(", ", parsedData.Select(p => $"{p.Key}: {p.Value.Count} câu"));
                 return Json(new
                 {
                     success = false,
-                    message = $"Số lượng câu không khớp! File Anh: {listEnglish.Count} câu, File Việt: {listVietnamese.Count} câu."
+                    message = $"Số lượng câu giữa các file không đồng bộ! Chi tiết: ({details})"
                 });
             }
 
@@ -169,20 +216,24 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 .Select(p => (int?)p.ParagraphOrder)
                 .MaxAsync() ?? 0;
 
-            for (int i = 0; i < listEnglish.Count; i++)
+            for (int i = 0; i < expectedCount; i++)
             {
                 var paragraph = new TblParagraph
                 {
                     ChapterId = chapId,
                     ParagraphOrder = currentMaxOrder + i + 1,
-                    English = listEnglish[i].Trim(),
-                    Vietnamese = listVietnamese[i].Trim()
+                    English = parsedData.ContainsKey("English") ? parsedData["English"][i].Trim() : null,
+                    Vietnamese = parsedData.ContainsKey("Vietnamese") ? parsedData["Vietnamese"][i].Trim() : null,
+                    Chinese = parsedData.ContainsKey("Chinese") ? parsedData["Chinese"][i].Trim() : null,
+                    Japanese = parsedData.ContainsKey("Japanese") ? parsedData["Japanese"][i].Trim() : null,
+                    French = parsedData.ContainsKey("French") ? parsedData["French"][i].Trim() : null
                 };
+
                 _context.TblParagraphs.Add(paragraph);
             }
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true });
+            return Json(new { success = true, message = $"Đã nhập thành công {expectedCount} đoạn văn!" });
         }
 
         private List<string> ProcessFileImport(IFormFile file)
@@ -232,8 +283,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
                 if (!string.IsNullOrEmpty(fileContent))
                 {
-                    var splitContent = Regex.Split(fileContent, @"(?<=[.!?])\s*")
-                                            .Where(s => !string.IsNullOrWhiteSpace(s));
+                    var splitContent = Regex.Split(fileContent, @"(?<=[.!?。！？])\s*")
+                        .Where(s => !string.IsNullOrWhiteSpace(s));
 
                     sentences.AddRange(splitContent);
                 }
@@ -382,7 +433,62 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 $"Paragraphs_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
             );
         }
+        [HttpPost]
+        public async Task<IActionResult> TranslateEnglishFileWithAI(IFormFile fileEnglish, string targetLanguage)
+        {
+            try
+            {
+                if (fileEnglish == null || fileEnglish.Length == 0)
+                    return Json(new { success = false, message = "Vui lòng chọn file Tiếng Anh!" });
 
+                List<string> englishLines = ProcessFileImport(fileEnglish);
+                if (!englishLines.Any())
+                    return Json(new { success = false, message = "File Tiếng Anh rỗng!" });
 
-	}
+                // Chuyển mảng câu thành JSON
+                string jsonInput = System.Text.Json.JsonSerializer.Serialize(englishLines);
+
+                // PROMPT SIÊU NGHIÊM NGẶT - ÉP AI KHÔNG ĐƯỢC GỘP CÂU
+                string prompt = $@"You are an exact line-by-line translator.
+Translate the following JSON array of sentences from English into {targetLanguage}.
+
+STRICT RULES:
+1. Output MUST be a valid JSON array of strings.
+2. The output JSON array MUST contain EXACTLY {englishLines.Count} elements, matching the input count 1-to-1.
+3. NEVER merge sentences. Never combine multiple input lines into one line.
+4. Return ONLY the raw JSON array. Do NOT wrap in markdown like ```json ... ```.
+
+Input JSON:
+{jsonInput}";
+
+                string resultText = await _aiService.GetAiResponse(prompt);
+
+                // Làm sạch mã markdown nếu AI vô tình trả về
+                resultText = resultText.Replace("```json", "").Replace("```", "").Trim();
+
+                var translatedLines = System.Text.Json.JsonSerializer.Deserialize<List<string>>(resultText);
+
+                // Kiểm tra xem AI có dịch đủ số dòng hay không
+                if (translatedLines == null || translatedLines.Count != englishLines.Count)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"AI dịch lệch số câu! (Đầu vào: {englishLines.Count} câu, AI trả về: {translatedLines?.Count ?? 0} câu). Vui lòng thử lại!"
+                    });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    translatedData = translatedLines,
+                    message = $"Đã dịch thành công chuẩn {translatedLines.Count} câu sang {targetLanguage}!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi AI: {ex.Message}" });
+            }
+        }
+    }
 }

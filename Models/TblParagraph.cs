@@ -15,5 +15,10 @@ public partial class TblParagraph
 
     public string Vietnamese { get; set; } = null!;
 
+    public string Chinese { get; set; } = null!;
+
+    public string Japanese { get; set; } = null!;
+
+    public string French { get; set; } = null!;
     public virtual TblChapter Chap { get; set; } = null!;
 }

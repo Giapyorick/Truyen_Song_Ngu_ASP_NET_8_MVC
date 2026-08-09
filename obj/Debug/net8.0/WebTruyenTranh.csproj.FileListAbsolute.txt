@@ -851,5 +851,16 @@ D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\refint\WebTruyenTranh.dll
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.pdb
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.genruntimeconfig.cache
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\ref\WebTruyenTranh.dll
-D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\WebTruyenTranh.sourcelink.json
+D:\ASP.NET\WebTruyenTranh\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\OpenAI.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\System.IO.Pipelines.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\System.Net.ServerSentEvents.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\System.Text.Encodings.Web.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\System.Text.Json.dll
+D:\ASP.NET\WebTruyenTranh\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll

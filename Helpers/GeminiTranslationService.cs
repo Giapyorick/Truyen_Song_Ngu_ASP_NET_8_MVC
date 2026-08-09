@@ -1,7 +1,7 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using WebTruyenTranh.Helpers;
+
 public class GeminiTranslationService : IAiTranslationService
 {
     private readonly HttpClient _http;
@@ -10,32 +10,39 @@ public class GeminiTranslationService : IAiTranslationService
     public GeminiTranslationService(HttpClient http, IConfiguration config)
     {
         _http = http;
-        _apiKey = config["Gemini:ApiKey"]!;
+        _apiKey = config["Groq:ApiKey"] ?? throw new ArgumentNullException("Chưa cấu hình Groq:ApiKey trong appsettings.json!");
     }
 
-    public async Task<string> GetAiResponse(string prompt) // Đổi tên cho tổng quát
-{
-    var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
-
-    var payload = new
+    public async Task<string> GetAiResponse(string prompt)
     {
-        contents = new[]
+        var url = "https://api.groq.com/openai/v1/chat/completions";
+
+        var payload = new
         {
-            new { parts = new[] { new { text = prompt } } } // Gửi trực tiếp prompt từ Controller
+            model = "llama-3.3-70b-versatile",
+            messages = new[]
+            {
+                new { role = "system", content = "You are a professional translator for stories and comics. Translate the input accurately and naturally." },
+                new { role = "user", content = prompt }
+            },
+            temperature = 0.3
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+        request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _http.SendAsync(request);
+        var result = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Lỗi Groq API [{response.StatusCode}]: {result}");
         }
-    };
 
-    var json = JsonSerializer.Serialize(payload);
-    var content = new StringContent(json, Encoding.UTF8, "application/json");
-    var response = await _http.PostAsync(url, content);
-    
-    response.EnsureSuccessStatusCode();
-    var result = await response.Content.ReadAsStringAsync();
-
-    using var doc = JsonDocument.Parse(result);
-    return doc.RootElement.GetProperty("candidates")[0]
-              .GetProperty("content")
-              .GetProperty("parts")[0]
-              .GetProperty("text").GetString()!;
-}
+        using var doc = JsonDocument.Parse(result);
+        return doc.RootElement.GetProperty("choices")[0]
+                  .GetProperty("message")
+                  .GetProperty("content").GetString() ?? "";
+    }
 }

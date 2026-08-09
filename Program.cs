@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using WebTruyenTranh.Models;
 using OfficeOpenXml;
 using WebTruyenTranh.Helpers;
+using WebTruyenTranh.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
@@ -9,6 +9,7 @@ builder.Services.AddDbContext<TruyenSongNguContext>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
+builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddDistributedSqlServerCache(options =>
 {
     options.ConnectionString = "Data Source=DESKTOP-8T25JED;Initial Catalog=TruyenSongNgu;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
@@ -41,11 +42,12 @@ app.UseSession();
 
 app.UseAuthorization();
 
+// Register area routes first so that requests to /{area}/{controller}/{action} are handled
 app.MapControllerRoute(
-    name : "areas",
-    pattern : "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-    );
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
+// Default route for non-area controllers
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

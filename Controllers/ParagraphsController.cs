@@ -26,8 +26,11 @@ public class ParagraphsController : Controller
             .Select(x => new
             {
                 x.ParagraphId,
-                x.English,
-                x.Vietnamese
+                English = x.English ?? "",
+                Vietnamese = x.Vietnamese ?? "",
+                Chinese = x.Chinese ?? "",
+                Japanese = x.Japanese ?? "",
+                French = x.French ?? ""
             })
             .ToList();
 
@@ -63,4 +66,5 @@ public class ParagraphsController : Controller
             chapters = chaptersList
         });
     }
+
 }

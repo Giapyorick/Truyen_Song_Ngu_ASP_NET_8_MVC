@@ -48,9 +48,12 @@
 							</div>
 						</th>
 						<th class="px-4 py-4 text-gray font-bold text-left">Information</th>
+                        <th class="px-6 py-4 text-gray font-bold text-left">Order</th>
 						<th class="px-6 py-4 text-gray font-bold text-left">English</th>
 						<th class="px-6 py-4 text-gray font-bold text-left">Vietnamese</th>
-						<th class="px-6 py-4 text-gray font-bold text-left">Oder</th>
+                        <th class="px-6 py-4 text-gray font-bold text-left">Chinese</th>
+                        <th class="px-6 py-4 text-gray font-bold text-left">Japanese</th>
+                        <th class="px-6 py-4 text-gray font-bold text-left">French</th>
 						<th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
 					</tr>
 				</thead>
@@ -64,97 +67,156 @@
     </div>
 </div>
 </main>
-@*MODAL CRUD*@
+@*MODAL IMPORT PARAGRAPHS WITH AI GENERATE*@
 <div id="importParagraphModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
-	<div id="importContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[80vh] transform scale-95 opacity-0 transition-all duration-300">
+    <div id="importContent" class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] transform scale-95 opacity-0 transition-all duration-300">
 
-		<!-- Header -->
-		<div class="p-8 border-b border-gray-100 flex justify-between items-center">
-			<!-- Đổi tiêu đề cho bao quát cả Text và Excel -->
-			<h3 class="text-2xl font-bold text-cus">Import Paragraphs</h3>
-			<button onclick="closeParagraphModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-				<i class="fas fa-times text-xl"></i>
-			</button>
-		</div>
+        <!-- Header -->
+        <div class="px-8 py-5 border-b border-teal-100/60 flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-cus">Import Paragraphs</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Tải file Tiếng Anh lên để kích hoạt AI dịch sang các ngôn ngữ khác</p>
+            </div>
+            <button onclick="closeParagraphModal()" class="text-gray-400 hover:text-teal-600 transition-colors p-2 rounded-full hover:bg-teal-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
 
-		<!-- Body -->
-		<div class="p-8 space-y-6 overflow-y-auto flex-1">
-			<div class="space-y-1">
-				<label class="text-[11px] font-bold text-cus uppercase ml-1">Stories</label>
-				<select id="storySelect"
-						class="w-full px-4 py-2.5 bg-gray-100
-					border-2 border-transparent focus:border-purple-200
-					rounded-xl outline-none transition-all">
-				</select>
-			</div>
-			<div class="space-y-1">
-				<label class="text-[11px] font-bold text-cus uppercase ml-1">Chapters</label>
-				<select id="chapterSelect"
-						class="w-full px-4 py-2.5 bg-gray-100
-					border-2 border-transparent focus:border-purple-200
-					rounded-xl outline-none transition-all">
-				</select>
-			</div>
+        <!-- Body -->
+        <div class="p-8 space-y-6 overflow-y-auto flex-1">
+            <!-- Select Stories & Chapters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-teal-50/30 p-4 rounded-2xl border border-teal-100">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-cus uppercase ml-1">Stories</label>
+                    <select id="storySelect" class="w-full px-4 py-2.5 bg-white border border-teal-200 focus:border-[#50C9C3] focus:ring-1 focus:ring-[#50C9C3] rounded-xl outline-none transition-all text-sm font-medium">
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-cus uppercase ml-1">Chapters</label>
+                    <select id="chapterSelect" class="w-full px-4 py-2.5 bg-white border border-teal-200 focus:border-[#50C9C3] focus:ring-1 focus:ring-[#50C9C3] rounded-xl outline-none transition-all text-sm font-medium">
+                    </select>
+                </div>
+            </div>
 
-			<!-- VÙNG FILE TIẾNG VIỆT -->
-			<div>
-				<div id="dropZoneVN" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
-					<input type="file" id="fileVietnamese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer">
+            <!-- Danh sách Ngôn Ngữ -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-cus uppercase tracking-wider">File ngôn ngữ nguồn & Bản dịch</span>
+                    <span class="text-xs text-gray-400">Định dạng hỗ trợ: .xlsx, .xls, .txt (Max 5MB)</span>
+                </div>
 
-					<div class="w-14 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 mb-3 group-hover:scale-110 transition-transform px-2">
-						<i class="fas fa-file-excel text-green-500 text-xl"></i>
-						<i class="fas fa-file-alt text-blue-500 text-xl"></i>
-					</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-					<p class="text-gray-600 font-semibold text-sm text-center" id="fileStatusVN"> Drag & drop Vietnamese file (Excel or TXT) </p>
-					<p class="text-xs text-gray-400 mt-1"> .xlsx, .xls, .txt (Max 5MB) </p>
-				</div>
-				<div class="mt-2 px-2 flex flex-wrap justify-center items-center gap-4">
-					<a href="/assets/template/Story_Vietnamese_Template.xlsx" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
-						<i class="fas fa-download text-xs"></i> Download Excel template
-					</a>
-					<a href="/assets/template/Story_Vietnamese_Template.txt" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
-						<i class="fas fa-download text-xs"></i> Download text template
-					</a>
-				</div>
-			</div>
+                    <!-- 1. TIẾNG ANH (NGÔN NGỮ NGUỒN CHÍNH) -->
+                    <div class="p-4 border-2 border-[#50C9C3] bg-teal-50/20 rounded-2xl space-y-3 relative">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-cus flex items-center gap-2">
+                                🇺🇸 Tiếng Anh <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] px-2.5 py-0.5 rounded-full font-semibold shadow-sm">File gốc</span>
+                            </span>
+                            <a href="/assets/template/Story_English_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
+                        </div>
 
-			<!-- VÙNG FILE TIẾNG ANH -->
-			<div>
-				<div id="dropZoneEN" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
-					<input type="file" id="fileEnglish" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <div id="dropZoneEN" class="relative border-2 border-dashed border-teal-300 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group shadow-sm">
+                            <input type="file" id="fileEnglish" name="fileEnglish" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-cloud-upload-alt text-[#50C9C3] text-lg group-hover:scale-110 transition-transform"></i>
+                                <span id="fileStatusEN" class="text-xs font-semibold text-gray-600 truncate max-w-[150px]">Tải file Tiếng Anh lên...</span>
+                            </div>
+                            <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] text-white px-3 py-1 rounded-md font-semibold shadow-sm">Browse</span>
+                        </div>
+                    </div>
 
-					<div class="w-14 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 mb-3 group-hover:scale-110 transition-transform px-2">
-						<i class="fas fa-file-excel text-green-500 text-xl"></i>
-						<i class="fas fa-file-alt text-blue-500 text-xl"></i>
-					</div>
+                    <!-- 2. TIẾNG VIỆT -->
+                    <div class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-cus flex items-center gap-2">🇻🇳 Tiếng Việt</span>
+                            <a href="/assets/template/Story_Vietnamese_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
+                        </div>
+                        <div id="dropZoneVN" class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <input type="file" id="fileVietnamese" name="fileVietnamese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
+                                <span id="fileStatusVN" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file VN...</span>
+                            </div>
+                            <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
+                        </div>
+                        <button type="button" onclick="generateAI('Vietnamese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        </button>
+                    </div>
 
-					<p class="text-gray-600 font-semibold text-sm text-center" id="fileStatusEN"> Drag & drop English file (Excel or TXT) </p>
-					<p class="text-xs text-gray-400 mt-1"> .xlsx, .xls, .txt (Max 5MB) </p>
-				</div>
-				<div class="mt-2 px-2 flex flex-wrap justify-center items-center gap-4">
-					<a href="/assets/template/Story_English_Template.xlsx" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
-						<i class="fas fa-download text-xs"></i> Download Excel template
-					</a>
-					<a href="/assets/template/Story_English_Template.txt" class="text-xs text-indigo-600 font-medium hover:underline flex items-center gap-2">
-						<i class="fas fa-download text-xs"></i> Download text template
-					</a>
-				</div>
-			</div>
-		</div>
+                    <!-- 3. TIẾNG TRUNG -->
+                    <div class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-cus flex items-center gap-2">🇨🇳 Tiếng Trung</span>
+                            <a href="/assets/template/Story_Chinese_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
+                        </div>
+                        <div id="dropZoneZH" class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <input type="file" id="fileChinese" name="fileChinese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
+                                <span id="fileStatusZH" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file CN...</span>
+                            </div>
+                            <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
+                        </div>
+                        <button type="button" onclick="generateAI('Chinese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        </button>
+                    </div>
 
-		<!-- Footer Buttons -->
-		<div class="p-6 border-t border-gray-100 flex gap-4">
-			<button onclick="closeParagraphModal()" class="flex-1 py-3 btn-grad-cancel font-bold rounded-xl active:scale-95 transition-all">
-				Cancel
-			</button>
-			<button id="btnImport" class="flex-1 py-3 btn-grad rounded-xl font-bold shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none">
-				Confirm Import
-			</button>
-		</div>
-	</div>
+                    <!-- 4. TIẾNG NHẬT -->
+                    <div class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-cus flex items-center gap-2">🇯🇵 Tiếng Nhật</span>
+                            <a href="/assets/template/Story_Japanese_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
+                        </div>
+                        <div id="dropZoneJA" class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <input type="file" id="fileJapanese" name="fileJapanese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
+                                <span id="fileStatusJA" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file JP...</span>
+                            </div>
+                            <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
+                        </div>
+                        <button type="button" onclick="generateAI('Japanese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        </button>
+                    </div>
+
+                    <!-- 5. TIẾNG PHÁP -->
+                    <div class="p-4 border border-cus bg-teal-50/10 rounded-2xl space-y-3 md:col-span-2 hover:border-teal-200 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-teal-900 flex items-center gap-2">🇫🇷 Tiếng Pháp</span>
+                            <a href="/assets/template/Story_French_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
+                        </div>
+                        <div id="dropZoneFR" class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <input type="file" id="fileFrench" name="fileFrench" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
+                                <span id="fileStatusFR" class="text-xs font-medium text-gray-600 truncate">Chọn hoặc thả file FR...</span>
+                            </div>
+                            <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
+                        </div>
+                        <button type="button" onclick="generateAI('French')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="p-6 border-t border-teal-100/60 flex gap-4 bg-teal-50/20 rounded-b-3xl">
+            <button onclick="closeParagraphModal()" class="flex-1 py-3 btn-grad-cancel_modal font-bold rounded-xl active:scale-95 transition-all text-sm">
+                Cancel
+            </button>
+            <button id="btnImport" class="flex-1 py-3 btn-grad rounded-xl font-bold text-sm">
+                Confirm Import
+            </button>
+        </div>
+    </div>
 </div>
-
 @section Scripts {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -237,21 +299,41 @@ $(document).ready(function () {
 		}
 	});
 
-    // ===== IMPORT =====
-    $('#btnImport').on('click', function () {
+    // ===== IMPORT PARAGRAPHS (5 LANGUAGES) =====
+    $('#btnImport').on('click', function() {
         let chapId = $('#chapterSelect').val();
-        let fileEnglish = $('#fileEnglish')[0].files[0];
-        let fileVietnamese = $('#fileVietnamese')[0].files[0];
 
-        if (!chapId || !fileEnglish || !fileVietnamese) {
-            showToast('Vui lòng chọn chương và đủ 2 file Excel', 'error');
+        if (!chapId) {
+            showToast('Vui lòng chọn Chapter!', 'error');
+            return;
+        }
+
+        // Lấy file từ các ô input
+        let fileVN = $('#fileVietnamese')[0].files[0];
+        let fileEN = $('#fileEnglish')[0].files[0];
+        let fileZH = $('#fileChinese')[0].files[0];
+        let fileJA = $('#fileJapanese')[0].files[0];
+        let fileFR = $('#fileFrench')[0].files[0];
+
+        // Kiểm tra xem người dùng đã chọn ít nhất 1 file chưa
+        if (!fileVN && !fileEN && !fileZH && !fileJA && !fileFR) {
+            showToast('Vui lòng chọn ít nhất 1 file ngôn ngữ để import!', 'error');
             return;
         }
 
         let formData = new FormData();
         formData.append('chapId', chapId);
-        formData.append('fileEnglish', fileEnglish);
-        formData.append('fileVietnamese', fileVietnamese);
+
+        // Chỉ append những file người dùng thực sự chọn
+        if (fileVN) formData.append('fileVietnamese', fileVN);
+        if (fileEN) formData.append('fileEnglish', fileEN);
+        if (fileZH) formData.append('fileChinese', fileZH);
+        if (fileJA) formData.append('fileJapanese', fileJA);
+        if (fileFR) formData.append('fileFrench', fileFR);
+
+        // Disable nút trong lúc chờ xử lý
+        let $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Importing...');
 
         $.ajax({
             url: '/Admin/tblParagraphs/ImportExcel',
@@ -259,20 +341,82 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
-            success: function (res) {
+            success: function(res) {
                 if (res.success) {
-                    showToast('Import thành công', 'succes');
+                    showToast(res.message || 'Import thành công!', 'success'); // Đã sửa chính tả 'succes' thành 'success'
                     closeParagraphModal();
+                    // Load lại danh sách đoạn văn nếu có hàm reload
+                    if (typeof loadParagraphs === 'function') {
+                        loadParagraphs(chapId);
+                    }
                 } else {
                     showToast(res.message, 'error');
                 }
             },
-            error: function () {
-                showToast('Có lỗi xảy ra khi import!', 'error');
+            error: function (xhr, status, error) {
+                // 1. Lấy thông điệp lỗi dạng JSON từ server trả về (nếu có)
+                let errorMessage = xhr.responseJSON && xhr.responseJSON.message 
+                    ? xhr.responseJSON.message 
+                    : (xhr.responseText || error || 'Có lỗi xảy ra khi import!');
+
+                // 2. Hiển thị Toast
+                showToast(`Lỗi [${xhr.status}]: ${errorMessage}`, 'error');
+
+                // 3. In ra console để developer tiện debug
+                console.error('AJAX Import Error Details:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('Confirm Import');
             }
         });
     });
 
+    // ===== XỬ LÝ HIỂN THỊ TÊN FILE KHI NGƯỜI DÙNG CHỌN FILE =====
+    const languageInputs = [
+        { inputId: '#fileVietnamese', statusId: '#fileStatusVN', defaultText: 'Chọn hoặc thả file VN...' },
+        { inputId: '#fileEnglish', statusId: '#fileStatusEN', defaultText: 'Chọn hoặc thả file EN...' },
+        { inputId: '#fileChinese', statusId: '#fileStatusZH', defaultText: 'Chọn hoặc thả file ZH...' },
+        { inputId: '#fileJapanese', statusId: '#fileStatusJA', defaultText: 'Chọn hoặc thả file JA...' },
+        { inputId: '#fileFrench', statusId: '#fileStatusFR', defaultText: 'Chọn hoặc thả file FR...' }
+    ];
+
+    languageInputs.forEach(item => {
+        $(document).on('change', item.inputId, function() {
+            let fileName = this.files[0] ? this.files[0].name : item.defaultText;
+            $(item.statusId).text(fileName);
+        });
+    });
+    // Cập nhật tên file cho các input khác khi chọn file thủ công
+    const otherInputs = [
+        { inputId: '#fileVietnamese', statusId: '#fileStatusVN', defaultText: 'Chọn hoặc thả file VN...' },
+        { inputId: '#fileChinese', statusId: '#fileStatusZH', defaultText: 'Chọn hoặc thả file ZH...' },
+        { inputId: '#fileJapanese', statusId: '#fileStatusJA', defaultText: 'Chọn hoặc thả file JA...' },
+        { inputId: '#fileFrench', statusId: '#fileStatusFR', defaultText: 'Chọn hoặc thả file FR...' }
+    ];
+
+    otherInputs.forEach(item => {
+        $(document).on('change', item.inputId, function() {
+            let fileName = this.files[0] ? this.files[0].name : item.defaultText;
+            $(item.statusId).text(fileName);
+        });
+    });
+    $(document).on('change', '#fileEnglish', function() {
+        let file = this.files[0];
+        if (file) {
+            $('#fileStatusEN').text(file.name);
+            // Mở khóa tất cả các nút AI
+            $('.ai-btn').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
+            showToast('Đã nhận file Tiếng Anh! Bạn có thể bấm các nút AI bên dưới để dịch.', 'info');
+        } else {
+            $('#fileStatusEN').text('Tải file Tiếng Anh lên...');
+            $('.ai-btn').prop('disabled', true).addClass('opacity-40 cursor-not-allowed');
+        }
+    });
     // ===== RESET FORM =====
     function resetImportForm() {
         $('#storySelect').val('');
@@ -289,6 +433,78 @@ $(document).ready(function () {
                 dateFormat: "Y-m-d",
                 allowInput: true
             });
+</script>
+<script>
+function generateAI(targetLang) {
+    let fileInput = $('#fileEnglish')[0];
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showToast('Vui lòng chọn file Tiếng Anh trước!', 'error');
+        return;
+    }
+
+    let fileEN = fileInput.files[0];
+
+    // Xác định nút bấm AI vừa click để hiện hiệu ứng xoay (loading)
+    let $btn = $(event.currentTarget);
+    let originalText = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Đang dịch...');
+
+    let formData = new FormData();
+    formData.append('fileEnglish', fileEN);
+    formData.append('targetLanguage', targetLang);
+
+    showToast(`Đang gửi file sang Gemini AI để dịch sang ${targetLang}...`, 'info');
+
+    $.ajax({
+        url: '/Admin/tblParagraphs/TranslateEnglishFileWithAI',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            console.log("Kết quả từ Server:", res); // In ra console F12 để kiểm tra
+
+            if (res.success && res.translatedData) {
+                // Tạo file .txt ảo chứa nội dung AI đã dịch
+                let contentText = res.translatedData.join('\n');
+                let blob = new Blob([contentText], { type: 'text/plain;charset=utf-8' });
+                let generatedFile = new File([blob], `AI_${targetLang}.txt`, { type: 'text/plain' });
+
+                // Map file vừa tạo vào Input của ngôn ngữ đó
+                let inputMap = {
+                    'Vietnamese': { input: '#fileVietnamese', status: '#fileStatusVN' },
+                    'Chinese': { input: '#fileChinese', status: '#fileStatusZH' },
+                    'Japanese': { input: '#fileJapanese', status: '#fileStatusJA' },
+                    'French': { input: '#fileFrench', status: '#fileStatusFR' }
+                };
+
+                let targetUI = inputMap[targetLang];
+                if (targetUI) {
+                    let container = new DataTransfer();
+                    container.items.add(generatedFile);
+                    $(targetUI.input)[0].files = container.files;
+
+                    // Hiển thị tên file AI vừa sinh lên giao diện
+                    $(targetUI.status).html(`<span class="text-purple-600 font-bold">✨ AI_${targetLang}.txt</span>`);
+                }
+
+                showToast(res.message || `Đã dịch xong sang ${targetLang}!`, 'success');
+            } else {
+                showToast(res.message || 'AI không thể dịch file này!', 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Lỗi AJAX AI:", xhr.responseText);
+            let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi khi kết nối tới Server AI!';
+            showToast(msg, 'error');
+        },
+        complete: function() {
+            // Khôi phục trạng thái nút bấm
+            $btn.prop('disabled', false).html(originalText);
+        }
+    });
+}
 </script>
 
 <script>
@@ -645,59 +861,69 @@ function gotoPage(input, totalPages) {
 
 			if (!data.paragraphs || data.paragraphs.length === 0) {
 				$body.html(`
-					<tr>
-						<td colspan="6" class="text-center py-10 text-gray-500">
-							Not found any results.
-						</td>
-					</tr>
-				`);
-				$('#pagination-container').html('');
-				return;
+                    <tr>
+                        <td colspan="9" class="text-center py-10 text-gray-500">
+                            Not found any results.
+                        </td>
+                    </tr>
+                `);
+                $('#pagination-container').html('');
+                return;
 			}
 
-			data.paragraphs.forEach(p => {
-				html += `
-				<tr class="group hover:bg-indigo-50/30 transition-all">
-					<td class="px-6 py-5">
-						<input type="checkbox"
-							class="user-checkbox w-5 h-5"
-							value="${p.paragraphId}">
-					</td>
+                    data.paragraphs.forEach(p => {
+                        // Ép các giá trị null/undefined thành chuỗi rỗng ""
+                        let en = p.english || '';
+                        let vn = p.vietnamese || '';
+                        let zh = p.chinese || '';
+                        let ja = p.japanese || '';
+                        let fr = p.french || '';
 
-					<td class="px-4 py-5">
-						<div class="text-xs text-gray-400 mb-1">
-							${p.storyTitle} → ${p.chapterTitle}
-						</div>
-					</td>
-					<td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm">
-						${p.english}
-					</td>
+                        html += `
+            <tr class="group hover:bg-indigo-50/30 transition-all">
+                <td class="px-6 py-5">
+                    <input type="checkbox" class="user-checkbox w-5 h-5" value="${p.paragraphId}">
+                </td>
+                <td class="px-4 py-5">
+                    <div class="text-xs text-gray-400 mb-1">
+                        ${p.storyTitle || ''} → ${p.chapterTitle || ''}
+                    </div>
+                </td>
+                <td class="px-6 py-5 text-center">
+                    <span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">
+                        ${p.paragraphOrder}
+                    </span>
+                </td>
+                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${en}">
+                    ${en}
+                </td>
+                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${vn}">
+                    ${vn}
+                </td>
+                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${zh}">
+                    ${zh}
+                </td>
+                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${ja}">
+                    ${ja}
+                </td>
+                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${fr}">
+                    ${fr}
+                </td>
 
-					<td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm">
-						${p.vietnamese}
-					</td>
-
-					<td class="px-6 py-5 text-center">
-						<span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">
-							${p.paragraphOrder}
-						</span>
-					</td>
-
-					<td class="px-8 py-5 text-right">
-						<div class="flex justify-end gap-3">
-							<button onclick="openModal('edit', ${p.paragraphId})"
-								class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white">
-								<i class="fas fa-pencil-alt text-[11px]"></i>
-							</button>
-
-							<button onclick="deleteParagraph(${p.paragraphId})"
-								class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 hover:text-white">
-								<i class="fas fa-trash-alt text-[11px]"></i>
-							</button>
-						</div>
-					</td>
-				</tr>`;
-			});
+                <td class="px-8 py-5 text-right">
+                    <div class="flex justify-end gap-3">
+                        <button onclick="openModal('edit', ${p.paragraphId})"
+                            class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
+                            <i class="fas fa-pencil-alt text-[11px]"></i>
+                        </button>
+                        <button onclick="deleteParagraph(${p.paragraphId})"
+                            class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all">
+                            <i class="fas fa-trash-alt text-[11px]"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+                    });
 
 			$body.html(html);
 			renderPagination(data.currentPage, data.totalPages);
