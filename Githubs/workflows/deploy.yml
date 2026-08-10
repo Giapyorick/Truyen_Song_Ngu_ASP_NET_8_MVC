@@ -1,0 +1,56 @@
+name: Build and Deploy Artifact to MonsterASP.NET
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # JOB 1: Build và lưu Artifact
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Thay đổi theo phiên bản .NET của bạn
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Publish application
+      run: dotnet publish -c Release -o ./publish
+
+    # TẠO VÀ LƯU ARTIFACT LÊN GITHUB
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v4
+      with:
+        name: aspnet-app-build   # Tên của Artifact
+        path: ./publish          # Thư mục cần đóng gói
+        retention-days: 1        # Thời gian lưu trữ trên GitHub (1 ngày)
+
+  # JOB 2: Tải Artifact và Deploy lên MonsterASP
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build # Chỉ chạy sau khi Job build hoàn tất thành công
+
+    steps:
+    # TẢI ARTIFACT ĐÃ TẠO TỪ JOB BUILD
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: aspnet-app-build
+        path: ./downloaded-app
+
+    # ĐẨY THƯ MỤC TẢI VỀ LÊN MONSTERASP.NET
+    - name: Upload via FTP to MonsterASP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./downloaded-app/
+        server-dir: /

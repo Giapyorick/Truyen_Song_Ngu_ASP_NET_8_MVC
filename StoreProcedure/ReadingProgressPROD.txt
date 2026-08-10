@@ -1,0 +1,21 @@
+CREATE OR ALTER PROCEDURE [dbo].[sp_SaveUserReadingProgress]
+    @UserID INT,
+    @StoryID INT,
+    @ChapterID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM [dbo].[tblUserReadingProgress] WHERE [UserID] = @UserID AND [StoryID] = @StoryID)
+    BEGIN
+        UPDATE [dbo].[tblUserReadingProgress]
+        SET [LastChapterID] = @ChapterID,
+            [Updateat] = GETDATE()
+        WHERE [UserID] = @UserID AND [StoryID] = @StoryID;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO [dbo].[tblUserReadingProgress] ([UserID], [StoryID], [LastChapterID], [Updateat])
+        VALUES (@UserID, @StoryID, @ChapterID, GETDATE());
+    END
+END

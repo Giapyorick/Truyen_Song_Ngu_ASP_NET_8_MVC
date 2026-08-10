@@ -21,6 +21,8 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        ViewBag.DebugUserId = HttpContext.Session.GetInt32("UserId");
+        ViewBag.DebugUserName = HttpContext.Session.GetString("UserName");
         return View();
     }
 

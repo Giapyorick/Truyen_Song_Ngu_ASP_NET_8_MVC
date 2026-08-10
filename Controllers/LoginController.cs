@@ -37,12 +37,12 @@ namespace WebTruyenTranh.Controllers
                 });
             }
 
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            HttpContext.Session.SetString("UserName", user.Name ?? "");
 
             return Json(new
             {
                 success = true,
+                debugUserId = HttpContext.Session.GetInt32("UserId"),
+                debugUserName = HttpContext.Session.GetString("UserName"),
                 redirectUrl = Url.Action("Index", "Home")
             });
         }

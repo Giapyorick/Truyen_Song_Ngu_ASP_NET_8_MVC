@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient; 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WebTruyenTranh.Models;
@@ -22,75 +24,94 @@ namespace WebTruyenTranh.Controllers
             _context = context;
         }
 
-        public IActionResult Index() //Components/StoriesComponent.cs
+        public async Task<IActionResult> Index() 
         {
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
-            var stories = _context.TblStories
-            .Select(s => new StoryListViewModel
-            {
-                StoryID = s.StoryId,
-                Title = s.Title ?? "Chưa xác định",
-                Img = s.Img,
-                HasProgress = _context.TblUserReadingProgresses
-                    .Any(p => p.UserId == userId && p.StoryId == s.StoryId),
+            var stories = await _context.TblStories
+                .Select(s => new StoryListViewModel
+                {
+                    StoryID = s.StoryId,
+                    Title = s.Title ?? "Chưa xác định",
+                    Img = s.Img,
+                    HasProgress = userId > 0 && _context.TblUserReadingProgresses
+                        .Any(p => p.UserId == userId && p.StoryId == s.StoryId),
 
-                LastChapterId = _context.TblUserReadingProgresses
-                    .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
-                    .Select(p => (int?)p.LastChapterId)
-                    .FirstOrDefault(),
+                    LastChapterId = userId > 0 ? _context.TblUserReadingProgresses
+                        .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
+                        .Select(p => (int?)p.LastChapterId)
+                        .FirstOrDefault() : null,
 
-                Categories = s.TblCategoryOfStories
-                    .Select(c => c.Category.Name ?? "Chưa xác định") 
-                    .ToList()
-            })
-            .ToList();
+                    Categories = s.TblCategoryOfStories
+                        .Select(c => c.Category.Name ?? "Chưa xác định")
+                        .ToList()
+                })
+                .ToListAsync();
 
-        return View(stories);
+            return View(stories);
         }
-        public IActionResult Detail(int id)
+
+        public async Task<IActionResult> Detail(int id)
         {
-            var story = _context.TblStories
+            var story = await _context.TblStories
                 .Include(s => s.TblChapters)
                 .Include(s => s.Author)
                 .Include(s => s.TblCategoryOfStories)
-                .ThenInclude(a => a.Category)
-                .FirstOrDefault(s => s.StoryId == id);
+                    .ThenInclude(a => a.Category)
+                .FirstOrDefaultAsync(s => s.StoryId == id);
+
+            if (story == null)
+            {
+                return NotFound();
+            }
 
             return View(story);
         }
-        public IActionResult Read(int id)
+
+        public async Task<IActionResult> Read(int id)
         {
+            // 1. Lấy UserId từ Session
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
-            var chapter = _context.TblChapters.FirstOrDefault(c => c.ChapterId == id);
+            // 2. IN LOG TRỰC TIẾP RA CONSOLE / OUTPUT (Không lo bị chặn)
+            System.Diagnostics.Debug.WriteLine($"===================> CHECK SESSION: UserId = {userId}, ChapterId = {id}");
+            Console.WriteLine($"===================> CHECK SESSION: UserId = {userId}, ChapterId = {id}");
 
-            var progress = _context.TblUserReadingProgresses
-                .FirstOrDefault(p => p.UserId == userId && p.StoryId == chapter.StoryId);
-
-            if (progress == null)
+            var chapter = await _context.TblChapters.FirstOrDefaultAsync(c => c.ChapterId == id);
+            if (chapter == null)
             {
-                _context.TblUserReadingProgresses.Add(new TblUserReadingProgress
+                Console.WriteLine($"===================> KHÔNG TÌM THẤY CHAPTER: {id}");
+                return NotFound();
+            }
+
+            if (userId > 0)
+            {
+                try
                 {
-                    UserId = userId,
-                    StoryId = chapter.StoryId,
-                    LastChapterId = id,
-                    UpdatedAt = DateTime.Now
-                });
+                    Console.WriteLine("===================> CHUẨN BỊ GỌI STORED PROCEDURE...");
+
+                    var pUserId = new SqlParameter("@UserID", userId);
+                    var pStoryId = new SqlParameter("@StoryID", chapter.StoryId);
+                    var pChapterId = new SqlParameter("@ChapterID", id);
+
+                    int rows = await _context.Database.ExecuteSqlRawAsync(
+                        "EXEC [dbo].[sp_SaveUserReadingProgress] @UserID, @StoryID, @ChapterID",
+                        pUserId, pStoryId, pChapterId
+                    );
+
+                    Console.WriteLine($"===================> THỰC THI SP THÀNH CÔNG! Số dòng ảnh hưởng: {rows}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"===================> LỖI SP: {ex.Message}");
+                }
             }
             else
             {
-                progress.LastChapterId = id;
-                progress.UpdatedAt = DateTime.Now;
+                Console.WriteLine("===================> KẾT QUẢ: UserId = 0 NÊN KHÔNG GỌI STORED PROCEDURE!");
             }
-
-            _context.SaveChanges();
 
             return View(chapter);
         }
-
-
-
     }
-    
 }

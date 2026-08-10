@@ -20,15 +20,15 @@
         <div class="logo text-wait" style="text-shadow: 0 4px 12px rgba(255, 255, 255, 0.6);">BILINGUAL NOVEL</div>
         <nav>
             <ul>
-                <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Trang chủ</a></li>
+                <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" asp-controller="Home" asp-action="Index" > Trang chủ</a></li>
                 <li><a href="#" class="text-wait" style="text-shadow: 0 4px 12px rgba(255, 255, 255, 0.6);">Song ngữ EN-VI</a></li>
                 <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Thể loại</a></li>
                 <li><a style="color: #ffffff; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);" href="#">Xếp hạng</a></li>
             </ul>
         </nav>
-        <div class="user-action">
-            <button class="btn-grad-login">Đăng nhập</button>
-        </div>
+        <a asp-area="" asp-controller="Login" asp-action="Login" class="btn-grad-login inline-block text-center">
+            Đăng nhập
+        </a>
     </header>
 
     <section class="hero-slideshow">
@@ -521,3 +521,7 @@
     </style>
 </body>
 </html>
+<script>
+    console.log("Session UserId vừa tạo:", res.debugUserId);
+    console.log("Session UserName vừa tạo:", res.debugUserName);
+</script>

@@ -309,14 +309,26 @@ CONFIRM UI *@
     <aside class="sidebar h-full flex flex-col">
         <div class="p-6 text-2xl font-bold text-cus">Admin</div>
         <nav class="flex-1 px-4 space-y-2">
-            <a href="#" onclick="loadContent('dashboard')" class="nav-link flex items-center p-3 rounded-lg active-nav">
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="nav-link flex items-center p-3 rounded-lg">
                 <i class="fas fa-chart-pie mr-3"></i> Dashboard
             </a>
-            <a href="#" onclick="loadContent('users')" class="nav-link flex items-center p-3  rounded-lg">
-                <i class="fas fa-users mr-3"></i> Users
+            <a asp-area="Admin" asp-controller="tblAuthors" asp-action="Authors" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-users mr-3"></i> Authors
             </a>
-            <a href="#" onclick="loadContent('orders')" class="nav-link flex items-center p-3 rounded-lg">
-                <i class="fas fa-shopping-cart mr-3"></i> Orders
+            <a asp-area="Admin" asp-controller="tblCategories" asp-action="Categories" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-book mr-3"></i> Categories
+            </a>
+            <a asp-area="Admin" asp-controller="tblStories" asp-action="Stories" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-book mr-3"></i> Stories
+            </a>
+            <a asp-area="Admin" asp-controller="tblChapters" asp-action="Chapters" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-list-alt mr-3"></i> Chapters
+            </a>
+            <a asp-area="Admin" asp-controller="tblParagraphs" asp-action="Paragraphs" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-paragraph mr-3"></i> Paragraphs
+            </a>
+            <a asp-area="Admin" asp-controller="tblUsers" asp-action="Users" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-user-cog mr-3"></i> Users
             </a>
         </nav>
     </aside>
@@ -326,38 +338,65 @@ CONFIRM UI *@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @RenderSection("Scripts", required: false)
     <script>
-        function loadContent(page) {
-            $('.nav-link').removeClass('active-nav');
-            $(event.currentTarget).addClass('active-nav');
-            
-            $('#page-title').text(page);
+            function loadContent(url, element) {
+                $('.sidebar nav a, .nav-link').removeClass('active-nav');
 
-            $('#main-view').hide();
-            $('#loader').show();
+                if (element) {
+                    $(element).addClass('active-nav');
+                }
 
-            setTimeout(function() {
-                $('#loader').hide();
-                $('#main-view').fadeIn().html(`
-                    <div class="bg-white p-8 rounded-2xl shadow-sm">
-                        <h3 class="text-2xl font-bold text-cus mb-4">Nội dung trang ${page}</h3>
-                        <p class="text-gray-600">Đây là nội dung được tải động qua Ajax bằng màu sắc bạn yêu cầu.</p>
-                        <table class="w-full mt-6 border-collapse">
-                            <thead>
-                                <tr class="text-left border-b">
-                                    <th class="pb-3">ID</th>
-                                    <th class="pb-3">Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td class="py-3">#001</td><td class="text-accepted font-bold">Thành công</td></tr>
-                                <tr><td class="py-3">#002</td><td class="text-wait font-bold">Chờ xử lý</td></tr>
-                                <tr><td class="py-3">#003</td><td class="text-deny font-bold">Bị từ chối</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `);
-            }, 500);
-        }
+                $('#main-view').hide();
+                $('#loader').show();
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    success: function (data) {
+                        $('#loader').hide();
+                        $('#main-view').html(data).fadeIn();
+                    },
+                    error: function (xhr) {
+                        $('#loader').hide();
+                        $('#main-view').show();
+                        if (typeof showToast === "function") {
+                            showToast('Lỗi tải dữ liệu hoặc trang không tồn tại!', 'error');
+                        }
+                    }
+                });
+            }
+            $(document).ready(function () {
+                $('.nav-link').removeClass('active-nav');
+
+                var currentPath = window.location.pathname.toLowerCase().replace(/\/$/, "");
+
+                var matched = false;
+
+                $('.nav-link').each(function () {
+                    var href = $(this).attr('href');
+                    if (href) {
+                        var navPath = href.toLowerCase().replace(/\/$/, "");
+                        if (currentPath === navPath) {
+                            $(this).addClass('active-nav');
+                            matched = true;
+                            return false;
+                        }
+                    }
+                });
+
+                if (!matched) {
+                    $('.nav-link').each(function () {
+                        var href = $(this).attr('href');
+                        if (href && href !== '/' && href !== '/admin' && href !== '/admin/home') {
+                            var navPath = href.toLowerCase().replace(/\/$/, "");
+                            if (currentPath.indexOf(navPath) === 0) {
+                                $(this).addClass('active-nav');
+                                return false;
+                            }
+                        }
+                    });
+                }
+            });
         //Toast_Notification
         function showToast(message, type = 'success', duration = 10000) {
             const container = document.getElementById('toast-container');
@@ -424,5 +463,7 @@ CONFIRM UI *@
             </div>
         </div>
     </div>
+
 </body>
+
 </html>

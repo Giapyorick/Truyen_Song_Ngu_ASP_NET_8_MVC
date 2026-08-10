@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Githubs\workflows\" />
     <Folder Include="Service\" />
   </ItemGroup>
 

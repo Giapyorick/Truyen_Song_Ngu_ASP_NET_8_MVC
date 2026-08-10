@@ -46,6 +46,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         {
             var chapter = await _context.TblChapters
 				.Include(x => x.Story)
+                .AsNoTracking()
                 .Select(u => new {
                         u.ChapterId,
                         u.Title,
@@ -67,7 +68,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             try
     		{
 				var query = _context.TblChapters
-					.Select(c => new
+                    .AsNoTracking()
+                    .Select(c => new
 					{
 						c.ChapterId,
 						c.Title,

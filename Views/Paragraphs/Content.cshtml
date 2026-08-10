@@ -584,7 +584,14 @@ background-color: #fbf7ee !important;
             updateChapterTitleText();
 
             window.history.pushState({}, '', `?chapterId=${chapterId}`);
+
             loadParagraphs();
+
+            $.post('/Paragraphs/UpdateProgress', { chapterId: chapterId }, function(res) {
+                if (res.success) {
+                    console.log("Đã tự động lưu tiến trình chương:", chapterId);
+                }
+            });
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (isFocusMode) {

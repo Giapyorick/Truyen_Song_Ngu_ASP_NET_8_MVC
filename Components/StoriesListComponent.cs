@@ -29,7 +29,13 @@ namespace WebTruyenTranh.Components
                     LastChapterId = _context.TblUserReadingProgresses
                         .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
                         .Select(p => (int?)p.LastChapterId)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+                    LastChapterNumber = (
+                        from p in _context.TblUserReadingProgresses
+                        join c in _context.TblChapters on p.LastChapterId equals c.ChapterId
+                        where p.UserId == userId && p.StoryId == s.StoryId
+                        select (int?)c.ChapterNumber
+                    ).FirstOrDefault()
                 })
                 .ToList();
 

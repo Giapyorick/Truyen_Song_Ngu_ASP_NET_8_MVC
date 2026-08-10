@@ -26,6 +26,7 @@ namespace WebTruyenTranh.ViewModels
         public string? Status { get; set; }
         public bool HasProgress { get; set; }
         public int? LastChapterId { get; set; }
+        public int? LastChapterNumber { get; set; }
         public List<string> Categories { get; set; }
     }
 
