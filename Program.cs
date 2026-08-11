@@ -12,7 +12,7 @@ builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>(
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddDistributedSqlServerCache(options =>
 {
-    options.ConnectionString = "Data Source=DESKTOP-8T25JED;Initial Catalog=TruyenSongNgu;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+    options.ConnectionString = "Server=db63321.public.databaseasp.net; Database=db63321; User Id=db63321; Password=8Ad!Q_9hcP%2; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;";
     options.SchemaName = "dbo";
     options.TableName = "TblSessionCache";
 });
