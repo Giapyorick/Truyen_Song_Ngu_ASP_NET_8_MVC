@@ -39,8 +39,6 @@ jobs:
         with:
           name: publish
           path: ./publish/
-      - name: Substitute Secrets in appsettings.json
-
   deploy-main:
     needs: build
     if: github.ref == 'refs/heads/main'
