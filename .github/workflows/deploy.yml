@@ -1,0 +1,84 @@
+name: ASP.NET Core Multi-Branch Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:   # 👈 enables manual trigger from Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'   # 👈 upgraded to .NET 1
+
+      - name: Restore dependencies
+        run: dotnet restore ./WebTruyenTranh.csproj
+
+      - name: Inject secrets into appsettings.json
+        run: |
+          jq '.Groq.ApiKey = "${{ secrets.GROQ_API_KEY }}" |
+              .ConnectionStrings.DefaultConnection = "${{ secrets.MONSTER_DB_CONNECTION }}"' \
+              ./appsettings.json > tmp.json && mv tmp.json ./appsettings.json
+
+      - name: Build
+        run: dotnet build ./WebTruyenTranh.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish ./WebTruyenTranh.csproj -c Release -o ./publish/
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish
+          path: ./publish/
+      - name: Substitute Secrets in appsettings.json
+
+  deploy-main:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download publish artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish
+          path: ./publish/
+
+      - name: Deploy to Production FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./MovieShop/publish/
+          server-dir: /wwwroot/
+
+  deploy-develop:
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: develop
+    steps:
+      - name: Download publish artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish
+          path: ./publish/
+
+      - name: Deploy to Staging FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_DEV }}
+          username: ${{ secrets.FTP_USERNAME_DEV }}
+          password: ${{ secrets.FTP_PASSWORD_DEV }}
+          local-dir: ./publish/
+          server-dir: /wwwroot/
