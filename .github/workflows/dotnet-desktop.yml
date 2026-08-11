@@ -18,7 +18,7 @@ jobs:
     - name: Substitute Secrets in appsettings.json
       uses: microsoft/variable-substitution@v1
       with:
-        files: 'WebTruyenTranh/appsettings.json' # Cập nhật đường dẫn nếu file nằm trong folder con (ví dụ: 'MyProject/appsettings.json')
+        files: '**/appsettings.json' # Cập nhật đường dẫn nếu file nằm trong folder con (ví dụ: 'MyProject/appsettings.json')
       env:
         Groq.ApiKey: ${{ secrets.GROQ_API_KEY }}
         ConnectionStrings.DefaultConnection: ${{ secrets.MONSTER_DB_CONNECTION }}
