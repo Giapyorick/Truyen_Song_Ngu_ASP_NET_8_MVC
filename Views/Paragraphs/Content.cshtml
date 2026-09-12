@@ -628,13 +628,18 @@ background-color: #fbf7ee !important;
                 return;
             }
 
+            const hasContent = (str) => {
+                if (!str) return false;
+                return str.replace(/<[^>]*>/g, '').trim() !== '';
+            };
+
             const availableLangs = [];
 
-            if (data.some(x => x.english && x.english.trim() !== '')) availableLangs.push('en');
-            if (data.some(x => x.vietnamese && x.vietnamese.trim() !== '')) availableLangs.push('vi');
-            if (data.some(x => x.chinese && x.chinese.trim() !== '')) availableLangs.push('zh');
-            if (data.some(x => x.japanese && x.japanese.trim() !== '')) availableLangs.push('ja');
-            if (data.some(x => x.french && x.french.trim() !== '')) availableLangs.push('fr');
+            if (data.some(x => hasContent(x.english))) availableLangs.push('en');
+            if (data.some(x => hasContent(x.vietnamese))) availableLangs.push('vi');
+            if (data.some(x => hasContent(x.chinese))) availableLangs.push('zh');
+            if (data.some(x => hasContent(x.japanese))) availableLangs.push('ja');
+            if (data.some(x => hasContent(x.french))) availableLangs.push('fr');
 
             if (availableLangs.length <= 1) {
                 $('#languageSelectorGroup').addClass('hidden').removeClass('flex');
@@ -694,13 +699,14 @@ background-color: #fbf7ee !important;
                 const srcText = getParagraphTextByLang(p, currentSrcLang);
                 const targetText = getParagraphTextByLang(p, currentTargetLang);
 
+                // Dùng thẻ div/block để chứa các thẻ HTML như <p>, <em> bên trong hợp lệ
                 html += `
-                            <span class="text-segment"
-                                  data-lang="${currentSrcLang}"
-                                  data-src="${escapeHtml(srcText)}"
-                                  data-target="${escapeHtml(targetText)}">
-                                ${escapeHtml(srcText)}
-                            </span> `;
+                            <div class="text-segment block mb-3"
+                                 data-lang="${currentSrcLang}"
+                                 data-src="${escapeHtml(srcText)}"
+                                 data-target="${escapeHtml(targetText)}">
+                                ${srcText}
+                            </div>`;
             });
 
             $('#paragraphList').html(html);
@@ -732,7 +738,8 @@ background-color: #fbf7ee !important;
                     const $originalSegment = $('#paragraphList .text-segment').eq(index);
 
                     toggleLanguage($originalSegment);
-                    $el.text($originalSegment.text());
+                    // Dùng html() thay vì text()
+                    $el.html($originalSegment.html());
                     $el.data('lang', $originalSegment.data('lang'));
                     $el.toggleClass('is-translated', $originalSegment.hasClass('is-translated'));
                 } else {
@@ -764,14 +771,15 @@ background-color: #fbf7ee !important;
                 $btn.find('.btn-text').text(isAllTranslated ? `Show ${srcLabel}` : 'Translate all');
             });
         }
-
         function toggleLanguage($el, targetLang = null) {
             const currentLang = $el.data('lang');
             const nextLang = targetLang || (currentLang === currentSrcLang ? currentTargetLang : currentSrcLang);
             if (currentLang === nextLang) return;
 
-            const newText = nextLang === currentTargetLang ? $el.data('target') : $el.data('src');
-            $el.text(newText);
+            const newContent = nextLang === currentTargetLang ? $el.data('target') : $el.data('src');
+
+            // Dùng html() để hiển thị đúng tag <em>, <p>, <strong>...
+            $el.html(newContent);
             $el.data('lang', nextLang);
             $el.toggleClass('is-translated', nextLang === currentTargetLang);
         }

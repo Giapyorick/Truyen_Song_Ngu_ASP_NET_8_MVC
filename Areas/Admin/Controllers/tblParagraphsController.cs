@@ -60,6 +60,49 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             return Json(list);
         }
         [HttpGet]
+        public async Task<IActionResult> GetChapterForEditor(int id)
+        {
+            var chapter = await _context.TblChapters
+                .Include(c => c.Story)
+                .FirstOrDefaultAsync(c => c.ChapterId == id);
+
+            if (chapter == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Chapter không tồn tại."
+                });
+            }
+
+            var paragraphs = await _context.TblParagraphs
+                .Where(p => p.ChapterId == id)
+                .OrderBy(p => p.ParagraphOrder)
+                .Select(p => new
+                {
+                    paragraphId = p.ParagraphId,
+                    paragraphOrder = p.ParagraphOrder,
+
+                    english = p.English,
+                    vietnamese = p.Vietnamese,
+                    chinese = p.Chinese,
+                    japanese = p.Japanese,
+                    french = p.French
+                })
+                .ToListAsync();
+
+            return Json(new
+            {
+                chapterId = chapter.ChapterId,
+                chapterTitle = chapter.Title,
+                storyTitle = chapter.Story != null
+                    ? chapter.Story.Title
+                    : "",
+
+                paragraphs
+            });
+        }
+        [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
             var para = await _context.TblParagraphs
@@ -216,24 +259,48 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 .Select(p => (int?)p.ParagraphOrder)
                 .MaxAsync() ?? 0;
 
-            for (int i = 0; i < expectedCount; i++)
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                var paragraph = new TblParagraph
+                var paragraphs = new List<TblParagraph>(expectedCount);
+
+                for (int i = 0; i < expectedCount; i++)
                 {
-                    ChapterId = chapId,
-                    ParagraphOrder = currentMaxOrder + i + 1,
-                    English = parsedData.ContainsKey("English") ? parsedData["English"][i].Trim() : null,
-                    Vietnamese = parsedData.ContainsKey("Vietnamese") ? parsedData["Vietnamese"][i].Trim() : null,
-                    Chinese = parsedData.ContainsKey("Chinese") ? parsedData["Chinese"][i].Trim() : null,
-                    Japanese = parsedData.ContainsKey("Japanese") ? parsedData["Japanese"][i].Trim() : null,
-                    French = parsedData.ContainsKey("French") ? parsedData["French"][i].Trim() : null
-                };
+                    paragraphs.Add(new TblParagraph
+                    {
+                        ChapterId = chapId,
+                        ParagraphOrder = currentMaxOrder + i + 1,
+                        English = parsedData.ContainsKey("English")? parsedData["English"][i].Trim(): null,
+                        Vietnamese = parsedData.ContainsKey("Vietnamese")? parsedData["Vietnamese"][i].Trim(): null,
+                        Chinese = parsedData.ContainsKey("Chinese")? parsedData["Chinese"][i].Trim(): null,
+                        Japanese = parsedData.ContainsKey("Japanese")? parsedData["Japanese"][i].Trim(): null,
+                        French = parsedData.ContainsKey("French")? parsedData["French"][i].Trim(): null
+                    });
+                }
 
-                _context.TblParagraphs.Add(paragraph);
+                await _context.TblParagraphs.AddRangeAsync(paragraphs);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Đã nhập thành công {expectedCount} đoạn văn!"
+                });
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
 
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = $"Đã nhập thành công {expectedCount} đoạn văn!" });
+                return Json(new
+                {
+                    success = false,
+                    message = $"Import thất bại: {ex.Message}"
+                });
+            }
         }
 
         private List<string> ProcessFileImport(IFormFile file)
@@ -292,6 +359,30 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             return sentences;
         }
+        private string? NormalizeQuillHtml(string? html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return null;
+
+            html = html.Trim();
+
+            if (html == "<p><br></p>" || html == "<p></p>")
+                return null;
+
+            if (html.StartsWith("<p>") && html.EndsWith("</p>"))
+            {
+                var inner = html.Substring(
+                    3,
+                    html.Length - 7
+                ).Trim();
+
+                if (!inner.Contains("</p>"))
+                    return inner;
+            }
+
+            return html;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Update(ParagraphsViewModel model)
         {
@@ -310,11 +401,26 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             if (paragraph == null)
                 return Json(new { success = false, message = "Paragraph not found" });
+            var duplicateOrder = await _context.TblParagraphs
+            .AnyAsync(x =>
+                x.ChapterId == model.ChapterId &&
+                x.ParagraphOrder == model.ParagraphOrder &&
+                x.ParagraphId != model.ParagraphId);
 
-            paragraph.ChapterId = model.ChapterId;
-            paragraph.ParagraphOrder = model.ParagraphOrder;
-            paragraph.English = model.English;
-            paragraph.Vietnamese = model.Vietnamese;
+                    if (duplicateOrder)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = "Paragraph Order has been exist in this Chapter."
+                        });
+                    }
+
+            paragraph.English = NormalizeQuillHtml(model.English);
+            paragraph.Vietnamese = NormalizeQuillHtml(model.Vietnamese);
+            paragraph.Chinese = NormalizeQuillHtml(model.Chinese);
+            paragraph.Japanese = NormalizeQuillHtml(model.Japanese);
+            paragraph.French = NormalizeQuillHtml(model.French);
 
             await _context.SaveChangesAsync();
 
@@ -334,27 +440,58 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             return Json(new { success = true, message = "Deleted successfully" });
         }
-       [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> DeleteMultiple(List<int> ids)
         {
             if (ids == null || !ids.Any())
-                return Json(new { success = false, message = "No paragraphs selected" });
+                return Json(new
+                {
+                    success = false,
+                    message = "No paragraphs selected"
+                });
 
-            var paragraphs = await _context.TblParagraphs
-                .Where(x => ids.Contains(x.ParagraphId))
-                .ToListAsync();
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
 
-            if (!paragraphs.Any())
-                return Json(new { success = false, message = "No valid paragraphs found" });
-
-            _context.TblParagraphs.RemoveRange(paragraphs);
-            await _context.SaveChangesAsync();
-
-            return Json(new
+            try
             {
-                success = true,
-                deleted = paragraphs.Select(x => x.ParagraphId)
-            });
+                var paragraphs = await _context.TblParagraphs
+                    .Where(x => ids.Contains(x.ParagraphId))
+                    .ToListAsync();
+
+                if (!paragraphs.Any())
+                {
+                    await transaction.RollbackAsync();
+
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No valid paragraphs found"
+                    });
+                }
+
+                _context.TblParagraphs.RemoveRange(paragraphs);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    deleted = paragraphs.Select(x => x.ParagraphId)
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return Json(new
+                {
+                    success = false,
+                    message = $"Delete failed: {ex.Message}"
+                });
+            }
         }
 
         [HttpGet]

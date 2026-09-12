@@ -14,5 +14,10 @@ public partial class ParagraphsViewModel
     public string English { get; set; } = null!;
 
     public string Vietnamese { get; set; } = null!;
+    public string? French { get; set; } = null!;
+
+    public string? Chinese { get; set; } = null!;
+    public string? Japanese { get; set; } = null!;
+
 
 }

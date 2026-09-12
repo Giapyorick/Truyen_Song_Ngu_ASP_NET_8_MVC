@@ -2,13 +2,14 @@
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" >
+<link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
 
 <main class="flex-1 flex flex-col overflow-y-auto">
 	<div class="space-y-10 m-10">
 		<div class="flex flex-col items-center gap-4">
 		<h2 class="text-2xl font-bold text-cus tracking-tight">
-			Chapters Management
+			Paragraphs Management
 		</h2>
 	</div>
     <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
@@ -67,6 +68,286 @@
     </div>
 </div>
 </main>
+
+@* MODAL CRUD PARAGRAPH *@
+<div id="modalOverlay"
+     class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[99] transition-all duration-500">
+
+    <div id="modalContent"
+         class="bg-white w-full max-w-5xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
+
+        @* HEADER *@
+        <div class="p-8 border-b border-gray-50 relative mx-5 mt-0 mb-0 bg-gradient-to-r from-gray-50 to-white">
+
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                <h3 id="modalTitle"
+                    class="text-xl font-extrabold text-cus">
+                    Edit Paragraph
+                </h3>
+
+                <p class="text-xs text-gray-400 mt-1">
+                    Please fill in all information
+                </p>
+            </div>
+
+            <button type="button"
+                    onclick="closeModal()"
+                    class="absolute right-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all text-2xl">
+                &times;
+            </button>
+        </div>
+
+
+        @* FORM *@
+        <form id="paragraphForm"
+              class="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+
+            @* Hidden *@
+            <input type="hidden"
+                   name="ParagraphId"
+                   id="paragraphId"
+                   value="0">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                @* =========================
+                   LEFT / MAIN CONTENT
+                   ========================= *@
+                <div class="md:col-span-2 space-y-6">
+
+                    @* Chapter *@
+                    <div class="space-y-1">
+
+                        <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                            Chapter
+                        </label>
+
+                        <select name="ChapterId"
+                                id="paragraphChapterId"
+                                class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+                                required>
+                        </select>
+
+                    </div>
+
+
+                    @* Paragraph Order *@
+                    <div class="space-y-1">
+
+                        <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                            Paragraph Order
+                        </label>
+
+                        <input type="number"
+                               name="ParagraphOrder"
+                               id="paragraphOrder"
+                               min="1"
+                               class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+                               required>
+
+                    </div>
+
+
+                    @* =========================
+                       LANGUAGE TABS
+                       ========================= *@
+
+                    <div class="space-y-4">
+
+                        <div class="flex gap-2 border-b border-gray-200">
+
+                            <button type="button"
+                                    id="tabEnglish"
+                                    onclick="switchParagraphLanguage('English')"
+                                    class="paragraph-language-tab px-4 py-2 text-sm font-bold border-b-2 border-purple-500 text-purple-600">
+                                🇺🇸 English
+                            </button>
+
+                            <button type="button"
+                                    id="tabVietnamese"
+                                    onclick="switchParagraphLanguage('Vietnamese')"
+                                    class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">
+                                🇻🇳 Vietnamese
+                            </button>
+
+                            <button type="button"
+                                    id="tabChinese"
+                                    onclick="switchParagraphLanguage('Chinese')"
+                                    class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">
+                                🇨🇳 Chinese
+                            </button>
+
+                            <button type="button"
+                                    id="tabJapanese"
+                                    onclick="switchParagraphLanguage('Japanese')"
+                                    class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">
+                                🇯🇵 Japanese
+                            </button>
+
+                            <button type="button"
+                                    id="tabFrench"
+                                    onclick="switchParagraphLanguage('French')"
+                                    class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">
+                                🇫🇷 French
+                            </button>
+
+                        </div>
+
+
+                        @* English *@
+                        <div id="paragraphLanguageEnglish"
+                             class="paragraph-language-content">
+
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                                English
+                            </label>
+                            <div id="paragraphEnglish" class="paragraph-editor"></div>
+                            <input type="hidden" name="English" id="paragraphEnglishValue">
+                        </div>
+
+
+                        @* Vietnamese *@
+                        <div id="paragraphLanguageVietnamese"
+                             class="paragraph-language-content hidden">
+
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                                Vietnamese
+                            </label>
+                            <div id="paragraphVietnamese" class="paragraph-editor"></div>
+                            <input type="hidden" name="Vietnamese" id="paragraphVietnameseValue">
+                        </div>
+
+
+                        @* Chinese *@
+                        <div id="paragraphLanguageChinese"
+                             class="paragraph-language-content hidden">
+
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                                Chinese
+                            </label>
+                            <div id="paragraphChinese" class="paragraph-editor"></div>
+                            <input type="hidden" name="Chinese" id="paragraphChineseValue">
+                        </div>
+
+
+                        @* Japanese *@
+                        <div id="paragraphLanguageJapanese"
+                             class="paragraph-language-content hidden">
+
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                                Japanese
+                            </label>
+                            <div id="paragraphJapanese" class="paragraph-editor"></div>
+                            <input type="hidden" name="Japanese" id="paragraphJapaneseValue">
+                        </div>
+
+
+                        @* French *@
+                        <div id="paragraphLanguageFrench"
+                             class="paragraph-language-content hidden">
+
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">
+                                French
+                            </label>
+                            <div id="paragraphFrench" class="paragraph-editor"></div>
+                            <input type="hidden" name="French" id="paragraphFrenchValue">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                @* =========================
+                   RIGHT SIDE
+                   ========================= *@
+                <div class="space-y-4">
+
+                    <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+
+                        <div class="text-xs font-bold text-cus uppercase mb-3">
+                            Paragraph Information
+                        </div>
+
+                        <div class="space-y-3 text-sm text-gray-500">
+
+                            <div>
+                                <span class="font-semibold">
+                                    Paragraph ID:
+                                </span>
+
+                                <span id="displayParagraphId">
+                                    New
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="font-semibold">
+                                    Chapter:
+                                </span>
+
+                                <span id="displayChapterName">
+                                    -
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="font-semibold">
+                                    Order:
+                                </span>
+
+                                <span id="displayParagraphOrder">
+                                    -
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="p-5 bg-purple-50 rounded-2xl border border-purple-100">
+
+                        <div class="text-xs font-bold text-purple-600 uppercase mb-2">
+                            Note
+                        </div>
+
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            You can enter the paragraph content in multiple
+                            languages. Rich text formatting will be added
+                            in the next step.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            @* BUTTONS *@
+            <div class="pt-6 flex gap-4">
+
+                <button type="button"
+                        onclick="closeModal()"
+                        class="flex-[2] py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        id="btnSave"
+                        class="flex-[2] py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
 @*MODAL IMPORT PARAGRAPHS WITH AI GENERATE*@
 <div id="importParagraphModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
     <div id="importContent" class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] transform scale-95 opacity-0 transition-all duration-300">
@@ -217,10 +498,260 @@
         </div>
     </div>
 </div>
+<!-- =========================================================
+     CHAPTER READER / EDITOR
+========================================================= -->
+
+<div id="chapterEditorModal"
+     class="fixed inset-0 z-[9999] hidden bg-black/60 backdrop-blur-sm">
+
+    <div class="chapter-editor-window">
+
+        <!-- ================= HEADER ================= -->
+
+        <div class="chapter-editor-header">
+
+            <div class="flex-1 text-center">
+
+                <h1 id="editorStoryTitle"
+                    class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-1">
+                    Đang tải tên truyện...
+                </h1>
+
+                <h2 id="editorChapterTitle"
+                    class="text-base md:text-lg font-medium text-teal-600">
+                    Đang tải chương...
+                </h2>
+
+                <div class="chapter-editor-meta">
+
+                    <span>
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span id="chapterParagraphCount">
+                            0 paragraphs
+                        </span>
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="chapterCurrentParagraph">
+                            #001
+                        </span>
+                    </span>
+
+                    <span id="chapterModifiedInfo"
+                          class="hidden">
+                        <i class="fa-solid fa-pen"></i>
+                        <span id="chapterModifiedCount">
+                            0 modified
+                        </span>
+                    </span>
+
+                </div>
+
+            </div>
+
+            <button type="button"
+                    onclick="closeChapterEditor()"
+                    class="chapter-editor-close">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- ================= LANGUAGE ================= -->
+
+        <div id="chapterEditorLanguageTabs"
+             class="chapter-editor-language-tabs">
+        </div>
+
+
+        <!-- ================= MAIN ================= -->
+
+        <div class="chapter-editor-main">
+
+            <!-- ===== READER ===== -->
+
+            <article id="chapterEditorParagraphList"
+                     class="chapter-editor-reader reading-content">
+
+                <div class="text-center text-gray-400 py-20">
+
+                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-3"></i>
+
+                    <div>
+                        Đang tải nội dung...
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- ===== EDITOR PANEL ===== -->
+
+            <aside id="chapterEditorSidePanel"
+                   class="chapter-editor-side-panel">
+
+                <div class="chapter-editor-side-header">
+
+                    <div>
+
+                        <div class="text-xs text-gray-400">
+                            Editing paragraph
+                        </div>
+
+                        <div id="sidePanelParagraphNumber"
+                             class="text-lg font-bold text-teal-600">
+                            #001
+                        </div>
+
+                    </div>
+
+                    <button type="button"
+                            onclick="closeChapterSidePanel()"
+                            class="chapter-side-close">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </div>
+
+
+                <div id="chapterEditorSideContent"
+                     class="chapter-editor-side-content">
+
+                    <div class="text-center text-gray-400 py-10">
+
+                        Click a paragraph to edit.
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+
+        <!-- ================= FOOTER ================= -->
+
+        <div class="chapter-editor-bottom-bar">
+
+            <button type="button"
+                    onclick="previousChapterParagraph()"
+                    class="chapter-editor-nav-button">
+
+                <i class="fa-solid fa-chevron-left"></i>
+
+                Previous
+
+            </button>
+
+
+            <span id="chapterParagraphCounter"
+                  class="chapter-editor-counter">
+
+                0 / 0
+
+            </span>
+
+
+            <button type="button"
+                    onclick="nextChapterParagraph()"
+                    class="chapter-editor-nav-button">
+
+                Next
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+
+            <button type="button"
+                    id="chapterEditorSaveButton"
+                    class="chapter-editor-save-button"
+                    disabled>
+
+                <i class="fa-solid fa-save"></i>
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 @section Scripts {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+<script>
+        let quillEnglish;
+        let quillVietnamese;
+        let quillChinese;
+        let quillJapanese;
+        let quillFrench;
+
+        const quillToolbar = [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            ['blockquote', 'code-block'],
+            ['link'],
+            ['linebreak'],
+            ['clean']
+        ];
+
+        function initQuillEditors() {
+
+            quillEnglish = new Quill('#paragraphEnglish', {
+                theme: 'snow',
+                modules: {
+                    toolbar: quillToolbar
+                }
+            });
+
+            quillVietnamese = new Quill('#paragraphVietnamese', {
+                theme: 'snow',
+                modules: {
+                    toolbar: quillToolbar
+                }
+            });
+
+            quillChinese = new Quill('#paragraphChinese', {
+                theme: 'snow',
+                modules: {
+                    toolbar: quillToolbar
+                }
+            });
+
+            quillJapanese = new Quill('#paragraphJapanese', {
+                theme: 'snow',
+                modules: {
+                    toolbar: quillToolbar
+                }
+            });
+
+            quillFrench = new Quill('#paragraphFrench', {
+                theme: 'snow',
+                modules: {
+                    toolbar: quillToolbar
+                }
+            });
+        }
+</script>
 <script>
 $(document).ready(function () {
 
@@ -421,8 +952,22 @@ $(document).ready(function () {
     function resetImportForm() {
         $('#storySelect').val('');
         $('#chapterSelect').val('');
+
         $('#fileEnglish').val('');
         $('#fileVietnamese').val('');
+        $('#fileChinese').val('');
+        $('#fileJapanese').val('');
+        $('#fileFrench').val('');
+
+        $('#fileStatusEN').text('Tải file Tiếng Anh lên...');
+        $('#fileStatusVN').text('Chọn hoặc thả file VN...');
+        $('#fileStatusZH').text('Chọn hoặc thả file ZH...');
+        $('#fileStatusJA').text('Chọn hoặc thả file JA...');
+        $('#fileStatusFR').text('Chọn hoặc thả file FR...');
+
+        $('.ai-btn')
+            .prop('disabled', true)
+            .addClass('opacity-40 cursor-not-allowed');
     }
 
 });
@@ -596,43 +1141,173 @@ $(document).ready(function () {
 
 <script>
 	//open modal
-    function openModal(mode, id) {
-    const modal = $('#modalOverlay');
-    $('#paragraphForm')[0].reset();
+        function openModal(mode, id) {
 
-    if (mode !== 'edit') return;
+            if (mode !== 'edit') return;
 
-    $('#modalTitle').text('Update paragraph');
-    modal.removeClass('hidden').addClass('flex');
+            const modal = $('#modalOverlay');
+            // Reset form
+            const form = $('#paragraphForm')[0];
 
-    $('.select2-custom').each(function () {
-        if (!$(this).hasClass('select2-hidden-accessible')) {
-            $(this).select2({ dropdownParent: modal });
+            if (form) {
+                form.reset();
+            }
+            // Reset language visibility
+            [
+                'English',
+                'Vietnamese',
+                'Chinese',
+                'Japanese',
+                'French'
+            ].forEach(function(language) {
+
+                setLanguageVisibility(language, false);
+
+            });
+            // Reset Quill editors
+            if (quillEnglish) {
+                quillEnglish.setText('');
+            }
+
+            if (quillVietnamese) {
+                quillVietnamese.setText('');
+            }
+
+            if (quillChinese) {
+                quillChinese.setText('');
+            }
+
+            if (quillJapanese) {
+                quillJapanese.setText('');
+            }
+
+            if (quillFrench) {
+                quillFrench.setText('');
+            }
+
+            // Reset hidden values
+            $('#paragraphEnglishValue').val('');
+            $('#paragraphVietnameseValue').val('');
+            $('#paragraphChineseValue').val('');
+            $('#paragraphJapaneseValue').val('');
+            $('#paragraphFrenchValue').val('');
+
+            // Hiện modal
+            modal
+                .removeClass('hidden')
+                .addClass('flex');
+
+            // Select2
+            $('.select2-custom').each(function() {
+
+                if (!$(this).hasClass('select2-hidden-accessible')) {
+
+                    $(this).select2({
+                        dropdownParent: modal
+                    });
+
+                }
+
+            });
+
+            // Animation
+            setTimeout(function() {
+
+                $('#modalContent')
+                    .removeClass('translate-y-20 opacity-0')
+                    .addClass('translate-y-0 opacity-100');
+
+            }, 10);
+
+            // Load paragraph
+            $.get('/Admin/tblParagraphs/GetById/' + id)
+                .done(function(data) {
+
+                    console.log('Paragraph data:', data);
+
+                    // =========================
+                    // Basic information
+                    // =========================
+                    $('#paragraphId').val(data.paragraphId);
+                    $('#paragraphOrder').val(data.paragraphOrder);
+
+                    $('#displayParagraphId').text(data.paragraphId);
+                    $('#displayChapterName').text(data.chapter.chapterTitle || '-');
+                    $('#displayParagraphOrder').text(data.paragraphOrder);
+
+                    // =========================
+                    // Load chapters
+                    // =========================
+                    $.get(
+                        '/Admin/tblParagraphs/GetChaptersForSelect',
+                        { id: data.chapter.storyId }
+                    )
+                        .done(function(chapters) {
+
+                            const select = $('#paragraphChapterId');
+
+                            select.empty();
+
+                            chapters.forEach(function(x) {
+                                select.append(
+                                    `<option value="${x.id}">${x.name}</option>`
+                                );
+                            });
+
+                            select
+                                .val(data.chapter.chapterId)
+                                .trigger('change');
+                        });
+
+                    // =========================
+                    // Load languages
+                    // =========================
+                    const languages = [
+                        { name: 'English', value: data.english, quill: quillEnglish },
+                        { name: 'Vietnamese', value: data.vietnamese, quill: quillVietnamese },
+                        { name: 'Chinese', value: data.chinese, quill: quillChinese },
+                        { name: 'Japanese', value: data.japanese, quill: quillJapanese },
+                        { name: 'French', value: data.french, quill: quillFrench }
+                    ];
+
+                    languages.forEach(function (lang) {
+                        const exists = lang.value !== null;
+
+                        setLanguageVisibility(lang.name, exists);
+                        setLanguageInputState(lang.name, exists);
+
+                        if (exists && lang.quill) {
+                            lang.quill.root.innerHTML = lang.value;
+                            $('#paragraph' + lang.name + 'Value').val(lang.value);
+                        } else {
+                            $('#paragraph' + lang.name + 'Value').val('');
+                        }
+                    });
+
+                    // =========================
+                    // Activate first available language
+                    // =========================
+                    const firstLanguage = languages.find(function(lang) {
+                        return lang.value !== null;
+                    });
+
+                    if (firstLanguage) {
+                        switchParagraphLanguage(firstLanguage.name);
+                    }
+
+                })
+                .fail(function(xhr) {
+
+                    console.error('GetById failed');
+                    console.error('Status:', xhr.status);
+                    console.error('Response:', xhr.responseText);
+
+                    showToast(
+                        'Cannot load paragraph information',
+                        'error'
+                    );
+                });
         }
-    });
-
-    $.get('/Admin/tblParagraphs/GetById/' + id, function (data) {
-        console.log('Paragraph data:', data);
-
-        $('#paragraphId').val(data.paragraphId);
-        $('#paragraphOrder').val(data.paragraphOrder);
-        $('#paragraphEnglish').val(data.english);
-        $('#paragraphVietnamese').val(data.vietnamese);
-
-        $('#storySelect')
-            .val(data.chapter.storyId)
-            .trigger('change');
-
-        setTimeout(() => {
-            $('#chapterSelect')
-                .val(data.chapter.chapterId)
-                .trigger('change');
-        }, 300);
-    });
-
-    setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
-}
-
 ///////////////////////////////////////
 	// close modall
     function closeModal() {
@@ -665,7 +1340,7 @@ $(document).ready(function () {
 					if (response.success) {
 						$row.fadeOut(400, function() {
 							$(this).remove();
-							showToast(response.message, 'succes');
+							showToast(response.message, 'success');
 						});
 					} else {
 						showToast("Lỗi: " + response.message, 'error');
@@ -694,9 +1369,31 @@ $(document).ready(function () {
     e.preventDefault();
 
     // lưu lại trang hiện tại
-    localStorage.setItem('storyPage', currentPage);
+            localStorage.setItem('paragraphPage', currentPage);
 
     const submitBtn = $(this).find('button[type="submit"]');
+
+    // Đồng bộ nội dung từ Quill vào hidden input
+    if (quillEnglish && !$('#paragraphEnglishValue').prop('disabled')) {
+        $('#paragraphEnglishValue').val(normalizeQuillHtml(quillEnglish.root.innerHTML));
+    }
+
+    if (quillVietnamese && !$('#paragraphVietnameseValue').prop('disabled')) {
+        $('#paragraphVietnameseValue').val(normalizeQuillHtml(quillVietnamese.root.innerHTML));
+    }
+
+    if (quillChinese && !$('#paragraphChineseValue').prop('disabled')) {
+        $('#paragraphChineseValue').val(normalizeQuillHtml(quillChinese.root.innerHTML));
+    }
+
+    if (quillJapanese && !$('#paragraphJapaneseValue').prop('disabled')) {
+        $('#paragraphJapaneseValue').val(normalizeQuillHtml(quillJapanese.root.innerHTML));
+    }
+
+    if (quillFrench && !$('#paragraphFrenchValue').prop('disabled')) {
+        $('#paragraphFrenchValue').val(normalizeQuillHtml(quillFrench.root.innerHTML));
+    }
+
     const formData = new FormData(this);
 
     submitBtn.prop('disabled', true)
@@ -708,22 +1405,23 @@ $(document).ready(function () {
         data: formData,
         contentType: false,
         processData: false,
-        success: function (res) {
+        success: function(res) {
             if (res.success) {
-                showToast(response.message, 'succes');
+                showToast(res.message, 'success');
                 closeModal();
 
-                const savedPage = localStorage.getItem('storyPage');
+                const savedPage = localStorage.getItem('paragraphPage');
                 loadParagraphList(savedPage ? parseInt(savedPage) : 1);
             } else {
                 showToast(res.message, 'error');
             }
         },
-        error: function () {
+        error: function() {
             showToast('Cannot connect to server', 'error');
         },
-        complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+        complete: function() {
+            submitBtn.prop('disabled', false)
+                .html('Save Changes');
         }
     });
 });
@@ -846,7 +1544,7 @@ function gotoPage(input, totalPages) {
 
 	const filters = {
 		search: $('#filterSearch').val(),
-		cstoryId: $('#filterStory').val(),
+		storyId: $('#filterStory').val(),
         chapterId: $('#filterChapter').val(),
 		page: currentPage,
 		pageSize: pageSize
@@ -912,10 +1610,16 @@ function gotoPage(input, totalPages) {
 
                 <td class="px-8 py-5 text-right">
                     <div class="flex justify-end gap-3">
-                        <button onclick="openModal('edit', ${p.paragraphId})"
-                            class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
+                        <button type="button"
+                                onclick="openModal('edit', ${p.paragraphId})"
+                                class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
                             <i class="fas fa-pencil-alt text-[11px]"></i>
                         </button>
+                                <button type="button"
+                                                onclick="openChapterEditor(${p.chapterId})">
+                                        class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
+                                    <i class="fas fa-pencil-alt text-[11px]"></i>
+                                </button>
                         <button onclick="deleteParagraph(${p.paragraphId})"
                             class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all">
                             <i class="fas fa-trash-alt text-[11px]"></i>
@@ -952,6 +1656,9 @@ $(document).ready(function () {
 	$('#filterChapter').on('change', function () {
 		loadParagraphList(1);
 	});
+});
+$(document).ready(function() {
+    initQuillEditors();
 });
 </script>
 @*UPDATE DELELE BUTTON BUTTON(N)*@
@@ -1054,6 +1761,839 @@ $(document).ready(function () {
     });
 
 });
+        function switchParagraphLanguage(language) {
+
+            $('.paragraph-language-content')
+                .addClass('hidden');
+
+            $('#tabEnglish, #tabVietnamese, #tabChinese, #tabJapanese, #tabFrench')
+                .removeClass('text-purple-600 border-purple-500')
+                .addClass('text-gray-400 border-transparent');
+
+            const tab = $('#tab' + language);
+            const content = $('#paragraphLanguage' + language);
+
+            if (tab.hasClass('hidden')) {
+                return;
+            }
+
+            content.removeClass('hidden');
+
+            tab
+                .removeClass('text-gray-400 border-transparent')
+                .addClass('text-purple-600 border-purple-500');
+        }
+        let paragraphLanguageExists = {
+            English: false,
+            Vietnamese: false,
+            Chinese: false,
+            Japanese: false,
+            French: false
+        };
+        function setLanguageVisibility(language, hasContent) {
+            const tab = $('#tab' + language);
+            const content = $('#paragraphLanguage' + language);
+
+            if (hasContent) {
+                tab.removeClass('hidden');
+                content.removeClass('hidden');
+                paragraphLanguageExists[language] = true;
+            } else {
+                tab.addClass('hidden');
+                content.addClass('hidden');
+                paragraphLanguageExists[language] = false;
+            }
+        }
+        function setLanguageInputState(language, exists) {
+
+            const input = $('#paragraph' + language + 'Value');
+
+            if (exists) {
+                input.prop('disabled', false);
+            } else {
+                input.prop('disabled', true);
+                input.val('');
+            }
+        }
+</script>
+<script>
+    // =========================================================
+    // CHAPTER READER / EDITOR
+    // PHASE 1
+    // =========================================================
+
+    let chapterEditorData = null;
+
+    let chapterEditorObserver = null;
+
+    let chapterEditorParagraphs = [];
+
+    let currentEditorParagraphIndex = 0;
+
+    let currentEditorLanguage = 'english';
+
+
+    // =========================================================
+    // OPEN
+    // =========================================================
+
+    function openChapterEditor(id) {
+
+        $('#chapterEditorModal').removeClass('hidden');
+
+        $('#chapterEditorParagraphList').html(`
+            <div class="text-center text-gray-400 py-20">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-3"></i>
+
+                <div>
+                    Đang tải chapter...
+                </div>
+            </div>
+        `);
+
+        closeChapterSidePanel();
+
+        $.ajax({
+
+            url: '/Admin/tblParagraphs/GetChapterForEditor/' + id,
+
+            type: 'GET',
+
+            success: function(data) {
+
+                console.log('Chapter Editor API:', data);
+
+                chapterEditorData = data;
+
+                chapterEditorParagraphs =
+                    data.paragraphs || [];
+
+                currentEditorParagraphIndex = 0;
+
+
+                // HEADER
+
+                $('#editorStoryTitle')
+                    .text(data.storyTitle || 'Unknown Story');
+
+                $('#editorChapterTitle')
+                    .text(data.chapterTitle || 'Unknown Chapter');
+
+
+                $('#chapterParagraphCount')
+                    .text(
+                        `${chapterEditorParagraphs.length} paragraphs`
+                    );
+
+
+                // LANGUAGE
+
+                buildChapterEditorLanguageTabs();
+
+
+                // READER
+
+                renderChapterEditor();
+
+
+                // COUNTER
+
+                updateChapterEditorCounter();
+
+            },
+
+            error: function(xhr) {
+
+                console.error(
+                    'GetChapterForEditor failed:',
+                    xhr.status,
+                    xhr.responseText
+                );
+
+                $('#chapterEditorParagraphList').html(`
+
+                    <div class="text-center text-red-500 py-20">
+
+                        <i class="fa-solid fa-circle-exclamation text-2xl mb-3"></i>
+
+                        <div>
+                            Không thể tải nội dung chapter.
+                        </div>
+
+                    </div>
+
+                `);
+
+            }
+
+        });
+    }
+        function closeChapterEditor() {
+
+            if (chapterEditorObserver) {
+                chapterEditorObserver.disconnect();
+                chapterEditorObserver = null;
+            }
+            closeChapterSidePanel();
+
+
+            $('#chapterEditorModal')
+                .addClass('hidden');
+
+            chapterEditorData = null;
+            chapterEditorParagraphs = [];
+            currentEditorParagraphIndex = 0;
+        }
+    function hasLanguageContent(language) {
+        return chapterEditorParagraphs.some(function(p) {
+            const value = p[language];
+            return value !== null &&
+                value !== undefined &&
+                value.trim() !== '';
+
+        });
+    }
+    function buildChapterEditorLanguageTabs() {
+
+        const languages = [
+            {
+                key: 'english',
+                label: '🇺🇸 English'
+            },
+            {
+                key: 'vietnamese',
+                label: '🇻🇳 Vietnamese'
+            },
+            {
+                key: 'chinese',
+                label: '🇨🇳 Chinese'
+            },
+            {
+                key: 'japanese',
+                label: '🇯🇵 Japanese'
+            },
+            {
+                key: 'french',
+                label: '🇫🇷 French'
+            }
+        ];
+
+        const $container =
+            $('#chapterEditorLanguageTabs');
+
+        $container.empty();
+
+        let firstLanguage = null;
+
+        languages.forEach(function(lang) {
+            if (!hasLanguageContent(lang.key)) {
+                return;
+            }
+            if (!firstLanguage) {
+                firstLanguage = lang.key;
+            }
+            $container.append(`
+
+                <button
+                    type="button"
+
+                    class="chapter-editor-language-tab"
+
+                    data-language="${lang.key}"
+
+                    onclick="changeChapterEditorLanguage('${lang.key}')">
+
+                    ${lang.label}
+
+                </button>
+
+            `);
+
+        });
+
+        if (firstLanguage) {
+            currentEditorLanguage =
+                firstLanguage;
+            updateActiveEditorLanguageTab();
+        }
+    }
+    function changeChapterEditorLanguage(language) {
+
+        if (!hasLanguageContent(language)) {
+
+            return;
+
+        }
+
+        currentEditorLanguage =
+            language;
+
+
+        updateActiveEditorLanguageTab();
+
+
+        renderChapterEditor();
+
+
+        closeChapterSidePanel();
+    }
+    function updateActiveEditorLanguageTab() {
+
+        $('.chapter-editor-language-tab')
+            .removeClass('active');
+
+
+        $(
+            `.chapter-editor-language-tab[data-language="${currentEditorLanguage}"]`
+        )
+            .addClass('active');
+    }
+    function getEditorParagraphText(paragraph, language) {
+
+        const value = paragraph[language];
+
+        if (value === null ||
+            value === undefined ||
+            value.trim() === '') {
+
+            return null;
+        }
+
+        return value;
+    }
+    function renderChapterEditor() {
+
+        const $container =
+            $('#chapterEditorParagraphList');
+
+
+        if (!chapterEditorParagraphs ||
+            chapterEditorParagraphs.length === 0) {
+
+            $container.html(`
+
+                <div class="text-center text-gray-400 py-20">
+
+                    Chapter này chưa có paragraph.
+
+                </div>
+
+            `);
+
+            $('#chapterParagraphCounter')
+                .text('0 / 0');
+
+            return;
+        }
+
+
+        let html = '';
+
+
+        chapterEditorParagraphs.forEach(function(paragraph, index) {
+
+            const content =
+                getEditorParagraphText(
+                    paragraph,
+                    currentEditorLanguage
+                );
+
+
+            const order =
+                paragraph.paragraphOrder;
+
+
+            html += `
+
+                <div
+
+                    class="editor-reader-paragraph"
+
+                    data-paragraph-id="${paragraph.paragraphId}"
+
+                    data-paragraph-index="${index}"
+
+                    data-paragraph-order="${order}">
+
+
+                    <div class="editor-paragraph-number">
+
+                        #${String(order).padStart(3, '0')}
+
+                    </div>
+
+
+                    <div class="editor-paragraph-content">
+
+            `;
+
+
+            if (content === null) {
+
+                html += `
+
+                    <div class="editor-paragraph-unavailable">
+
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        Nội dung
+                        ${getEditorLanguageName(currentEditorLanguage)}
+                        chưa có.
+
+                    </div>
+
+                `;
+
+            }
+            else {
+
+                /*
+                    * Quan trọng:
+                    * API đang trả HTML từ Quill.
+                    *
+                    * Không escape HTML ở đây.
+                    *
+                    * Vì reader hiện tại của bạn cũng đang
+                    * xử lý nội dung rich text.
+                    */
+
+                html += content;
+
+            }
+
+
+            html += `
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+
+        $container.html(html);
+
+
+        updateChapterEditorCounter();
+
+
+        initChapterEditorScrollObserver();
+    }
+    function getEditorParagraphText(paragraph, language) {
+
+        const value =
+            paragraph[language];
+
+
+        if (
+            value === null ||
+            value === undefined ||
+            value.trim() === ''
+        ) {
+
+            return null;
+
+        }
+
+
+        return value;
+    }
+    function getEditorLanguageName(language) {
+
+        switch (language) {
+
+            case 'english':
+                return 'English';
+
+            case 'vietnamese':
+                return 'Vietnamese';
+
+            case 'chinese':
+                return 'Chinese';
+
+            case 'japanese':
+                return 'Japanese';
+
+            case 'french':
+                return 'French';
+
+            default:
+                return language;
+        }
+    }
+        function updateChapterEditorCounter() {
+
+            const total =
+                chapterEditorParagraphs.length;
+
+
+            if (total === 0) {
+
+                $('#chapterParagraphCounter')
+                    .text('0 / 0');
+
+                return;
+
+            }
+
+
+            const current =
+                currentEditorParagraphIndex + 1;
+
+
+            $('#chapterParagraphCounter')
+                .text(`${current} / ${total}`);
+
+
+            const paragraph =
+                chapterEditorParagraphs[
+                currentEditorParagraphIndex
+                ];
+
+
+            if (paragraph) {
+
+                $('#chapterCurrentParagraph')
+                    .text(
+                        `#${String(
+                            paragraph.paragraphOrder
+                        ).padStart(3, '0')}`
+                    );
+
+            }
+        }
+    $(document)
+        .off('click.chapterEditor', '.editor-reader-paragraph')
+        .on(
+            'click.chapterEditor',
+            '.editor-reader-paragraph',
+            function() {
+
+                const index =
+                    parseInt(
+                        $(this).attr('data-paragraph-index')
+                    );
+
+
+                currentEditorParagraphIndex =
+                    index;
+
+
+                $('.editor-reader-paragraph')
+                    .removeClass('active');
+
+
+                $(this)
+                    .addClass('active');
+
+
+                updateChapterEditorCounter();
+
+
+                openChapterSidePanel(index);
+
+            }
+        );
+    function previousChapterParagraph() {
+
+        if (currentEditorParagraphIndex <= 0) {
+            return;
+        }
+
+        currentEditorParagraphIndex--;
+
+        scrollToEditorParagraph(
+            currentEditorParagraphIndex
+        );
+    }
+    function nextChapterParagraph() {
+
+        if (
+            currentEditorParagraphIndex >=
+            chapterEditorParagraphs.length - 1
+        ) {
+            return;
+        }
+
+        currentEditorParagraphIndex++;
+
+        scrollToEditorParagraph(
+            currentEditorParagraphIndex
+        );
+    }
+    function scrollToEditorParagraph(index) {
+
+        const $reader =
+            $('#chapterEditorParagraphList');
+
+        const $paragraph =
+            $reader.find(
+                `.editor-reader-paragraph[data-paragraph-index="${index}"]`
+            );
+
+        if ($paragraph.length === 0) {
+            return;
+        }
+
+        const readerTop =
+            $reader.offset().top;
+
+        const paragraphTop =
+            $paragraph.offset().top;
+
+        const scrollTop =
+            $reader.scrollTop();
+
+        const target =
+            scrollTop +
+            paragraphTop -
+            readerTop -
+            30;
+
+        $reader.animate(
+            {
+                scrollTop: target
+            },
+            300
+        );
+
+        updateChapterEditorCounter();
+    }
+    function normalizeQuillHtml(html) {
+        if (!html) return null;
+
+        html = html.trim();
+
+        // Nội dung rỗng của Quill
+        if (
+            html === '' ||
+            html === '<p><br></p>' ||
+            html === '<p></p>'
+        ) {
+            return null;
+        }
+
+        // Nếu toàn bộ nội dung chỉ có đúng 1 <p>...</p>
+        const match = html.match(/^<p>([\s\S]*)<\/p>$/);
+
+        if (match) {
+            return match[1].trim();
+        }
+
+        return html;
+    }
+    function initChapterEditorScrollObserver() {
+
+        const reader =
+            document.getElementById(
+                'chapterEditorParagraphList'
+            );
+
+
+        if (!reader) {
+
+            return;
+
+        }
+
+
+        if (chapterEditorObserver) {
+
+            chapterEditorObserver.disconnect();
+
+        }
+
+
+        chapterEditorObserver =
+            new IntersectionObserver(
+
+                function(entries) {
+
+                    entries.forEach(function(entry) {
+
+                        if (!entry.isIntersecting) {
+
+                            return;
+
+                        }
+
+
+                        const index =
+                            parseInt(
+                                entry.target.dataset
+                                    .paragraphIndex
+                            );
+
+
+                        currentEditorParagraphIndex =
+                            index;
+
+
+                        updateChapterEditorCounter();
+
+                    });
+
+                },
+
+                {
+                    root: reader,
+
+                    threshold: 0.5
+
+                }
+
+            );
+
+
+        reader
+            .querySelectorAll(
+                '.editor-reader-paragraph'
+            )
+            .forEach(function(paragraph) {
+
+                chapterEditorObserver
+                    .observe(paragraph);
+
+            });
+    }
+    function openChapterSidePanel(index) {
+
+        const paragraph =
+            chapterEditorParagraphs[index];
+
+
+        if (!paragraph) {
+
+            return;
+
+        }
+
+
+        const order =
+            paragraph.paragraphOrder;
+
+
+        $('#sidePanelParagraphNumber')
+            .text(
+                `#${String(order).padStart(3, '0')}`
+            );
+
+
+        const languages = [
+
+            {
+                key: 'english',
+                label: '🇺🇸 English'
+            },
+
+            {
+                key: 'vietnamese',
+                label: '🇻🇳 Vietnamese'
+            },
+
+            {
+                key: 'chinese',
+                label: '🇨🇳 Chinese'
+            },
+
+            {
+                key: 'japanese',
+                label: '🇯🇵 Japanese'
+            },
+
+            {
+                key: 'french',
+                label: '🇫🇷 French'
+            }
+
+        ];
+
+
+        let html = '';
+
+
+        languages.forEach(function(lang) {
+
+            const value =
+                paragraph[lang.key];
+
+
+            /*
+                * NULL thật sự => không render editor.
+                */
+
+            if (
+                value === null ||
+                value === undefined ||
+                value.trim() === ''
+            ) {
+
+                return;
+
+            }
+
+
+            html += `
+
+                <div class="chapter-language-editor">
+
+                    <div class="chapter-language-editor-label">
+
+                        <span>
+                            ${lang.label}
+                        </span>
+
+                    </div>
+
+
+                    <div class="chapter-language-editor-content">
+
+                        ${value}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+
+        if (!html) {
+
+            html = `
+
+                <div class="text-center text-gray-400 py-10">
+
+                    Paragraph này chưa có nội dung.
+
+                </div>
+
+            `;
+
+        }
+
+
+        $('#chapterEditorSideContent')
+            .html(html);
+
+
+        $('#chapterEditorSidePanel')
+            .addClass('open');
+
+    }
+    function closeChapterSidePanel() {
+
+        $('#chapterEditorSidePanel')
+            .removeClass('open');
+
+
+        $('.editor-reader-paragraph')
+            .removeClass('active');
+    }
+
 </script>
 }
 
@@ -1168,4 +2708,399 @@ $(document).ready(function () {
     margin-right: 5px;
 }
 
+.paragraph-editor {
+    background: white;
+    border-radius: 8px;
+}
+
+.paragraph-editor .ql-editor {
+    min-height: 180px;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.paragraph-editor .ql-toolbar {
+    border-radius: 8px 8px 0 0;
+}
+
+.paragraph-editor .ql-container {
+    border-radius: 0 0 8px 8px;
+}
+
+    /* =========================================================
+       CHAPTER READER / EDITOR
+    ========================================================= */
+
+    .chapter-editor-window {
+        width: 96vw;
+        height: 94vh;
+        margin: 3vh auto;
+        background: #ffffff;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .chapter-editor-header {
+        flex-shrink: 0;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 18px 28px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+
+    .chapter-editor-close {
+        position: absolute;
+        right: 18px;
+        top: 18px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: #6b7280;
+        transition: all .2s;
+    }
+
+
+        .chapter-editor-close:hover {
+            background: #f3f4f6;
+            color: #111827;
+            transform: rotate(90deg);
+        }
+
+
+    /* =========================================================
+       META
+    ========================================================= */
+
+    .chapter-editor-meta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 7px;
+        font-size: 13px;
+        color: #9ca3af;
+    }
+
+
+        .chapter-editor-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+
+    /* =========================================================
+       LANGUAGE TABS
+    ========================================================= */
+
+    .chapter-editor-language-tabs {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 20px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        overflow-x: auto;
+    }
+
+
+    .chapter-editor-language-tab {
+        padding: 7px 14px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+
+        .chapter-editor-language-tab:hover {
+            background: #ffffff;
+            color: #0f766e;
+        }
+
+
+        .chapter-editor-language-tab.active {
+            background: #ffffff;
+            color: #0f766e;
+            border-color: #99f6e4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+        }
+
+
+    /* =========================================================
+       MAIN
+    ========================================================= */
+
+    .chapter-editor-main {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+
+    /* =========================================================
+       READER
+    ========================================================= */
+
+    .chapter-editor-reader {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        padding: 45px 7vw 120px;
+        background: #fafafa;
+        font-family: 'Lora', serif !important;
+        line-height: 2 !important;
+    }
+
+
+    /*
+       Reader giống người đọc thật.
+       Không card.
+       Không background riêng từng paragraph.
+    */
+
+    .editor-reader-paragraph {
+        max-width: 850px;
+        margin: 0 auto 24px;
+        cursor: pointer;
+        transition: opacity .15s;
+    }
+
+
+        .editor-reader-paragraph:hover {
+            opacity: .72;
+        }
+
+
+    /* Số paragraph */
+
+    .editor-paragraph-number {
+        margin-bottom: 3px;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        color: #b0b7c3;
+        user-select: none;
+    }
+
+
+    /* Nội dung */
+
+    .editor-paragraph-content {
+        font-size: 18px;
+        line-height: 2;
+        color: #1f2937;
+    }
+
+
+    /*
+       Paragraph đang được chọn
+    */
+
+    .editor-reader-paragraph.active {
+        opacity: 1;
+    }
+
+
+        .editor-reader-paragraph.active
+        .editor-paragraph-number {
+            color: #0d9488;
+        }
+
+
+    /* NULL */
+
+    .editor-paragraph-unavailable {
+        color: #9ca3af;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+
+    /* =========================================================
+       SIDE EDITOR
+    ========================================================= */
+
+    .chapter-editor-side-panel {
+        width: 480px;
+        flex-shrink: 0;
+        display: none;
+        flex-direction: column;
+        background: #ffffff;
+        border-left: 1px solid #e5e7eb;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, .05);
+    }
+
+
+        .chapter-editor-side-panel.open {
+            display: flex;
+        }
+
+
+    /* Header */
+
+    .chapter-editor-side-header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #ffffff;
+    }
+
+
+    .chapter-side-close {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        color: #6b7280;
+        transition: all .2s;
+    }
+
+
+        .chapter-side-close:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+
+    /* Content */
+
+    .chapter-editor-side-content {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 18px;
+    }
+
+
+    /* =========================================================
+       LANGUAGE EDITOR BLOCK
+    ========================================================= */
+
+    .chapter-language-editor {
+        margin-bottom: 24px;
+    }
+
+
+    .chapter-language-editor-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 7px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+
+    .chapter-language-editor-content {
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fafafa;
+        font-family: 'Lora', serif;
+        font-size: 16px;
+        line-height: 1.8;
+        min-height: 80px;
+    }
+
+
+    /* =========================================================
+       FOOTER
+    ========================================================= */
+
+    .chapter-editor-bottom-bar {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 11px 20px;
+        background: rgba(255,255,255,.96);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid #e5e7eb;
+        box-shadow: 0 -4px 15px rgba(0,0,0,.05);
+    }
+
+
+    .chapter-editor-nav-button {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4b5563;
+        transition: all .2s;
+    }
+
+
+        .chapter-editor-nav-button:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+
+    .chapter-editor-counter {
+        min-width: 80px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+
+    .chapter-editor-save-button {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 16px;
+        margin-left: 10px;
+        border-radius: 10px;
+        background: #14b8a6;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+
+        .chapter-editor-save-button:not(:disabled) {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+
+            .chapter-editor-save-button:not(:disabled):hover {
+                background: #0d9488;
+            }
 </style>
