@@ -1,19 +1,16 @@
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using WebTruyenTranh.Helpers;
-using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
+using WebTruyenTranh.Services;
 using WebTruyenTranh.ViewModels;
 
 namespace WebTruyenTranh.Areas.Admin.Controllers
@@ -23,42 +20,37 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly TruyenSongNguContext _context;
-        private readonly IAiTranslationService _aiService;
 
-        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment, IAiTranslationService aiService)
+        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
-            _aiService = aiService;
         }
+
         [HttpGet]
-        public IActionResult Paragraphs()
+        public IActionResult Paragraphs() => View();
+
+        [HttpGet]
+        public async Task<IActionResult> GetStoriesForSelect()
         {
-            return View(); 
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetStoriesForSelect(){
             var list = await _context.TblStories
                 .AsNoTracking()
-                .Select(x => new{
-                    id = x.StoryId,
-                    name = x.Title
-                })
+                .Select(x => new { id = x.StoryId, name = x.Title })
                 .ToListAsync();
             return Json(list);
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetChaptersForSelect(int id){
+        public async Task<IActionResult> GetChaptersForSelect(int id)
+        {
             var list = await _context.TblChapters
                 .AsNoTracking()
                 .Where(x => x.StoryId == id)
-                .Select(x => new{
-                    id = x.ChapterId,
-                    name = x.Title
-                })
+                .Select(x => new { id = x.ChapterId, name = x.Title })
                 .ToListAsync();
             return Json(list);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetChapterForEditor(int id)
         {
@@ -68,11 +60,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             if (chapter == null)
             {
-                return NotFound(new
-                {
-                    success = false,
-                    message = "Chapter không tồn tại."
-                });
+                return NotFound(new { success = false, message = "Chapter không tồn tại." });
             }
 
             var paragraphs = await _context.TblParagraphs
@@ -82,12 +70,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 {
                     paragraphId = p.ParagraphId,
                     paragraphOrder = p.ParagraphOrder,
-
                     english = p.English,
                     vietnamese = p.Vietnamese,
                     chinese = p.Chinese,
                     japanese = p.Japanese,
-                    french = p.French
+                    french = p.French,
+                    blockType = p.BlockType
                 })
                 .ToListAsync();
 
@@ -95,13 +83,11 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             {
                 chapterId = chapter.ChapterId,
                 chapterTitle = chapter.Title,
-                storyTitle = chapter.Story != null
-                    ? chapter.Story.Title
-                    : "",
-
+                storyTitle = chapter.Story?.Title ?? "",
                 paragraphs
             });
         }
+
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
@@ -117,7 +103,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     p.Chinese,
                     p.Japanese,
                     p.French,
-
+                    p.BlockType,
                     Chapter = new
                     {
                         chapterId = p.ChapterId,
@@ -132,11 +118,39 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetAvailableLanguages(int chapterId)
+        {
+            var chapter = await _context.TblChapters
+                .AsNoTracking()
+                .Include(c => c.Story)
+                .FirstOrDefaultAsync(c => c.ChapterId == chapterId);
+
+            if (chapter?.Story == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy chương hoặc truyện." });
+            }
+
+            var rawLangs = (chapter.Story.Lang ?? "vi")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(l => l.Trim().ToLower())
+                .Distinct()
+                .ToList();
+
+            var langList = rawLangs.Select(code => new
+            {
+                code = NormalizeLangKey(code),
+                rawCode = code,
+                name = GetLangDisplayName(code)
+            }).ToList();
+
+            return Json(new { success = true, languages = langList });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> List(string? search, int? storyId, int? cstoryId, int? chapterId, int page = 1, int pageSize = 10)
         {
             try
             {
-                // Lấy storyId từ 1 trong 2 tham số gửi lên
                 int? filterStoryId = storyId ?? cstoryId;
 
                 var query = _context.TblParagraphs
@@ -145,41 +159,35 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     {
                         p.ParagraphId,
                         p.ParagraphOrder,
-                        // Dùng ?? "" để đảm bảo không bị null khi serialization
                         English = p.English ?? "",
                         Vietnamese = p.Vietnamese ?? "",
                         Chinese = p.Chinese ?? "",
                         Japanese = p.Japanese ?? "",
                         French = p.French ?? "",
-
+                        BlockType = p.BlockType ?? 1,
                         ChapterId = p.ChapterId,
-                        // Bọc kiểm tra null an toàn cho navigation property
                         ChapterTitle = p.Chap != null ? p.Chap.Title : "N/A",
-
                         StoryId = (p.Chap != null && p.Chap.Story != null) ? (int?)p.Chap.StoryId : null,
                         StoryTitle = (p.Chap != null && p.Chap.Story != null) ? p.Chap.Story.Title : "N/A"
                     })
                     .AsQueryable();
 
-                // 1. Lọc theo chuỗi tìm kiếm
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(x =>
-                        (x.English != null && x.English.Contains(search)) ||
-                        (x.Vietnamese != null && x.Vietnamese.Contains(search)) ||
-                        (x.Chinese != null && x.Chinese.Contains(search)) ||
-                        (x.Japanese != null && x.Japanese.Contains(search)) ||
-                        (x.French != null && x.French.Contains(search))
+                        x.English.Contains(search) ||
+                        x.Vietnamese.Contains(search) ||
+                        x.Chinese.Contains(search) ||
+                        x.Japanese.Contains(search) ||
+                        x.French.Contains(search)
                     );
                 }
 
-                // 2. Lọc theo StoryId (Bổ sung thêm)
                 if (filterStoryId.HasValue && filterStoryId.Value > 0)
                 {
                     query = query.Where(x => x.StoryId == filterStoryId.Value);
                 }
 
-                // 3. Lọc theo ChapterId
                 if (chapterId.HasValue && chapterId.Value > 0)
                 {
                     query = query.Where(x => x.ChapterId == chapterId.Value);
@@ -206,81 +214,47 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                // Trả về lỗi chi tiết để debug thay vì chỉ trả về 500 chung chung
                 return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message });
             }
         }
+
         [HttpPost]
-        public async Task<IActionResult> ImportExcel(
-            int chapId,
-            IFormFile? fileEnglish,
-            IFormFile? fileVietnamese,
-            IFormFile? fileChinese,
-            IFormFile? fileJapanese,
-            IFormFile? fileFrench)
+        public async Task<IActionResult> InsertAfter([FromBody] InsertParagraphViewModel model)
         {
-            var files = new Dictionary<string, IFormFile?>
+            if (model == null || model.ChapterId <= 0)
             {
-                { "English", fileEnglish },
-                { "Vietnamese", fileVietnamese },
-                { "Chinese", fileChinese },
-                { "Japanese", fileJapanese },
-                { "French", fileFrench }
-            };
-
-            var activeFiles = files.Where(f => f.Value != null && f.Value.Length > 0).ToDictionary(f => f.Key, f => f.Value!);
-
-            if (activeFiles.Count == 0)
-            {
-                return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 file dữ liệu để import!" });
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
             }
 
-            var parsedData = new Dictionary<string, List<string>>();
-            foreach (var item in activeFiles)
+            string Clean(string? text) => NormalizeQuillHtml(text) ?? "";
+            string enText = Clean(model.English);
+            string vnText = Clean(model.Vietnamese);
+
+            if (string.IsNullOrWhiteSpace(enText) || string.IsNullOrWhiteSpace(vnText))
             {
-                parsedData[item.Key] = ProcessFileImport(item.Value);
+                return Json(new { success = false, message = "Tiếng Anh và Tiếng Việt không được để trống!" });
             }
-
-            int expectedCount = parsedData.First().Value.Count;
-            var mismatched = parsedData.Where(p => p.Value.Count != expectedCount).ToList();
-
-            if (mismatched.Any())
-            {
-                string details = string.Join(", ", parsedData.Select(p => $"{p.Key}: {p.Value.Count} câu"));
-                return Json(new
-                {
-                    success = false,
-                    message = $"Số lượng câu giữa các file không đồng bộ! Chi tiết: ({details})"
-                });
-            }
-
-            int currentMaxOrder = await _context.TblParagraphs
-                .Where(p => p.ChapterId == chapId)
-                .Select(p => (int?)p.ParagraphOrder)
-                .MaxAsync() ?? 0;
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
-                var paragraphs = new List<TblParagraph>(expectedCount);
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC sp_PrepareInsertAndReindexParagraph @ChapID = {model.ChapterId}, @TargetOrder = {model.TargetOrder}");
 
-                for (int i = 0; i < expectedCount; i++)
+                var newParagraph = new TblParagraph
                 {
-                    paragraphs.Add(new TblParagraph
-                    {
-                        ChapterId = chapId,
-                        ParagraphOrder = currentMaxOrder + i + 1,
-                        English = parsedData.ContainsKey("English")? parsedData["English"][i].Trim(): null,
-                        Vietnamese = parsedData.ContainsKey("Vietnamese")? parsedData["Vietnamese"][i].Trim(): null,
-                        Chinese = parsedData.ContainsKey("Chinese")? parsedData["Chinese"][i].Trim(): null,
-                        Japanese = parsedData.ContainsKey("Japanese")? parsedData["Japanese"][i].Trim(): null,
-                        French = parsedData.ContainsKey("French")? parsedData["French"][i].Trim(): null
-                    });
-                }
+                    ChapterId = model.ChapterId,
+                    ParagraphOrder = model.TargetOrder + 1,
+                    BlockType = model.BlockType ?? 1,
+                    English = enText,
+                    Vietnamese = vnText,
+                    Chinese = Clean(model.Chinese),
+                    Japanese = Clean(model.Japanese),
+                    French = Clean(model.French),
+                };
 
-                await _context.TblParagraphs.AddRangeAsync(paragraphs);
-
+                _context.ChangeTracker.Clear();
+                await _context.TblParagraphs.AddAsync(newParagraph);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
@@ -288,99 +262,15 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = $"Đã nhập thành công {expectedCount} đoạn văn!"
+                    message = $"Đã chèn đoạn mới vào vị trí #{newParagraph.ParagraphOrder} thành công!"
                 });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-
-                return Json(new
-                {
-                    success = false,
-                    message = $"Import thất bại: {ex.Message}"
-                });
+                var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = $"Lỗi CSDL: {msg}" });
             }
-        }
-
-        private List<string> ProcessFileImport(IFormFile file)
-        {
-            string ext = Path.GetExtension(file.FileName).ToLower();
-
-            if (ext == ".txt")
-            {
-                return ReadSentencesFromTxt(file);
-            }
-
-            return ReadSentencesFromExcel(file);
-        }
-
-        private List<string> ReadSentencesFromExcel(IFormFile file)
-        {
-            var sentences = new List<string>();
-            using (var stream = file.OpenReadStream())
-            {
-                using (var package = new ExcelPackage(stream))
-                {
-                    var sheet = package.Workbook.Worksheets[0];
-                    var rowCount = sheet.Dimension?.Rows ?? 0;
-
-                    for (int row = 1; row <= rowCount; row++)
-                    {
-                        string cellValue = sheet.Cells[row, 1].Text;
-                        if (string.IsNullOrEmpty(cellValue)) continue;
-
-                        var splitContent = Regex.Split(cellValue, @"(?<=[.!?])\s*")
-                                                .Where(s => !string.IsNullOrWhiteSpace(s));
-
-                        sentences.AddRange(splitContent);
-                    }
-                }
-            }
-            return sentences;
-        }
-
-        private List<string> ReadSentencesFromTxt(IFormFile file)
-        {
-            var sentences = new List<string>();
-
-            using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
-            {
-                string fileContent = reader.ReadToEnd();
-
-                if (!string.IsNullOrEmpty(fileContent))
-                {
-                    var splitContent = Regex.Split(fileContent, @"(?<=[.!?。！？])\s*")
-                        .Where(s => !string.IsNullOrWhiteSpace(s));
-
-                    sentences.AddRange(splitContent);
-                }
-            }
-
-            return sentences;
-        }
-        private string? NormalizeQuillHtml(string? html)
-        {
-            if (string.IsNullOrWhiteSpace(html))
-                return null;
-
-            html = html.Trim();
-
-            if (html == "<p><br></p>" || html == "<p></p>")
-                return null;
-
-            if (html.StartsWith("<p>") && html.EndsWith("</p>"))
-            {
-                var inner = html.Substring(
-                    3,
-                    html.Length - 7
-                ).Trim();
-
-                if (!inner.Contains("</p>"))
-                    return inner;
-            }
-
-            return html;
         }
 
         [HttpPost]
@@ -388,45 +278,48 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Invalid data" });
-            var chapterExists = await _context.TblChapters
-                .AnyAsync(x => x.ChapterId == model.ChapterId);
 
-            if (!chapterExists)
-            {
-                return Json(new { success = false, message = "Chapter không tồn tại" });
-            }
-
-            var paragraph = await _context.TblParagraphs
-                .FirstOrDefaultAsync(x => x.ParagraphId == model.ParagraphId);
-
+            var paragraph = await _context.TblParagraphs.FirstOrDefaultAsync(x => x.ParagraphId == model.ParagraphId);
             if (paragraph == null)
                 return Json(new { success = false, message = "Paragraph not found" });
-            var duplicateOrder = await _context.TblParagraphs
-            .AnyAsync(x =>
-                x.ChapterId == model.ChapterId &&
-                x.ParagraphOrder == model.ParagraphOrder &&
-                x.ParagraphId != model.ParagraphId);
 
-                    if (duplicateOrder)
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            message = "Paragraph Order has been exist in this Chapter."
-                        });
-                    }
-
-            paragraph.English = NormalizeQuillHtml(model.English);
-            paragraph.Vietnamese = NormalizeQuillHtml(model.Vietnamese);
+            paragraph.English = NormalizeQuillHtml(model.English) ?? "";
+            paragraph.Vietnamese = NormalizeQuillHtml(model.Vietnamese) ?? "";
             paragraph.Chinese = NormalizeQuillHtml(model.Chinese);
             paragraph.Japanese = NormalizeQuillHtml(model.Japanese);
             paragraph.French = NormalizeQuillHtml(model.French);
+            paragraph.BlockType = model.BlockType ?? 1;
 
             await _context.SaveChangesAsync();
-
             return Json(new { success = true, message = "Updated successfully" });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateMultipleFromEditor([FromBody] List<ParagraphsViewModel> models)
+        {
+            if (models == null || !models.Any())
+                return Json(new { success = false, message = "Không có dữ liệu thay đổi." });
+
+            var ids = models.Select(m => m.ParagraphId).ToList();
+            var paragraphs = await _context.TblParagraphs.Where(p => ids.Contains(p.ParagraphId)).ToListAsync();
+
+            foreach (var para in paragraphs)
+            {
+                var model = models.FirstOrDefault(m => m.ParagraphId == para.ParagraphId);
+                if (model != null)
+                {
+                    para.English = NormalizeQuillHtml(model.English) ?? "";
+                    para.Vietnamese = NormalizeQuillHtml(model.Vietnamese) ?? "";
+                    para.Chinese = NormalizeQuillHtml(model.Chinese);
+                    para.Japanese = NormalizeQuillHtml(model.Japanese);
+                    para.French = NormalizeQuillHtml(model.French);
+                    para.BlockType = model.BlockType ?? 1;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Đã cập nhật toàn bộ thay đổi thành công!" });
+        }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
@@ -435,122 +328,112 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             if (paragraph == null)
                 return Json(new { success = false, message = "Paragraph not found" });
 
-            _context.TblParagraphs.Remove(paragraph);
-            await _context.SaveChangesAsync();
+            int chapterId = paragraph.ChapterId;
 
-            return Json(new { success = true, message = "Deleted successfully" });
-        }
-        [HttpPost]
-        public async Task<IActionResult> DeleteMultiple(List<int> ids)
-        {
-            if (ids == null || !ids.Any())
-                return Json(new
-                {
-                    success = false,
-                    message = "No paragraphs selected"
-                });
-
-            await using var transaction =
-                await _context.Database.BeginTransactionAsync();
-
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var paragraphs = await _context.TblParagraphs
-                    .Where(x => ids.Contains(x.ParagraphId))
-                    .ToListAsync();
-
-                if (!paragraphs.Any())
-                {
-                    await transaction.RollbackAsync();
-
-                    return Json(new
-                    {
-                        success = false,
-                        message = "No valid paragraphs found"
-                    });
-                }
-
-                _context.TblParagraphs.RemoveRange(paragraphs);
-
+                _context.TblParagraphs.Remove(paragraph);
                 await _context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC sp_ReindexParagraphOrder @ChapID = {chapterId}");
 
-                return Json(new
-                {
-                    success = true,
-                    deleted = paragraphs.Select(x => x.ParagraphId)
-                });
+                await transaction.CommitAsync();
+                return Json(new { success = true, message = "Deleted and reindexed successfully" });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                var innerError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = $"Delete failed: {innerError}" });
+            }
+        }
 
-                return Json(new
+        [HttpPost]
+        public async Task<IActionResult> DeleteMultiple(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "No paragraphs selected" });
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var paragraphs = await _context.TblParagraphs.Where(x => ids.Contains(x.ParagraphId)).ToListAsync();
+                if (!paragraphs.Any())
                 {
-                    success = false,
-                    message = $"Delete failed: {ex.Message}"
-                });
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "No valid paragraphs found" });
+                }
+
+                var affectedChapterIds = paragraphs.Select(x => x.ChapterId).Distinct().ToList();
+
+                _context.TblParagraphs.RemoveRange(paragraphs);
+                await _context.SaveChangesAsync();
+
+                foreach (var chapId in affectedChapterIds)
+                {
+                    await _context.Database.ExecuteSqlInterpolatedAsync(
+                        $"EXEC sp_ReindexParagraphOrder @ChapID = {chapId}");
+                }
+
+                await transaction.CommitAsync();
+                return Json(new { success = true, message = $"Đã xóa thành công {paragraphs.Count} đoạn!", deleted = paragraphs.Select(x => x.ParagraphId) });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                var innerError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = $"Delete failed: {innerError}" });
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> ExportToExcel(string? search, int? chapterId)
         {
-            var query = _context.TblParagraphs
-                .AsNoTracking()
-                .AsQueryable();
+            var query = _context.TblParagraphs.AsNoTracking().AsQueryable();
+
             if (chapterId.HasValue && chapterId.Value > 0)
-            {
                 query = query.Where(p => p.ChapterId == chapterId.Value);
-            }
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(p =>
-                    p.English.Contains(search) ||
-                    p.Vietnamese.Contains(search)
-                );
-            }
+                query = query.Where(p => p.English.Contains(search) || p.Vietnamese.Contains(search));
+
             var data = await query
                 .OrderBy(p => p.ParagraphOrder)
                 .Select(p => new
                 {
-                    p.ChapterId,
-                    ChapterTitle = p.Chap.Title,
-                    StoryTitle = p.Chap.Story.Title,
                     p.ParagraphId,
+                    StoryTitle = p.Chap != null && p.Chap.Story != null ? p.Chap.Story.Title : "N/A",
+                    ChapterTitle = p.Chap != null ? p.Chap.Title : "N/A",
                     p.ParagraphOrder,
                     p.English,
-                    p.Vietnamese
+                    p.Vietnamese,
+                    p.Chinese,
+                    p.Japanese,
+                    p.French,
+                    BlockType = p.BlockType ?? 1
                 })
                 .ToListAsync();
-
-            
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using var package = new ExcelPackage();
             var ws = package.Workbook.Worksheets.Add("Paragraphs");
 
-            // Title
             ws.Cells[1, 1].Value = "LIST OF PARAGRAPHS";
-            ws.Cells[1, 1, 1, 6].Merge = true;
-            ws.Cells[1, 1].Style.Font.Size = 18;
+            ws.Cells[1, 1, 1, 10].Merge = true;
+            ws.Cells[1, 1].Style.Font.Size = 16;
             ws.Cells[1, 1].Style.Font.Bold = true;
             ws.Cells[1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-            ws.Cells[2, 1].Value = $"Export date: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
-            ws.Cells[2, 1, 2, 6].Merge = true;
-
-            ws.Cells[3, 1].Value = $"Total paragraphs: {data.Count}";
-            ws.Cells[3, 1, 3, 6].Merge = true;
-            ws.Cells[3, 1].Style.Font.Bold = true;
-
-            string[] headers = { "Id", "Story", "Chapter", "Order", "English", "Vietnamese" };
+            string[] headers = { "Id", "Story", "Chapter", "Order", "English", "Vietnamese", "Chinese", "Japanese", "French", "BlockType" };
             for (int i = 0; i < headers.Length; i++)
-                ws.Cells[5, i + 1].Value = headers[i];
+            {
+                ws.Cells[3, i + 1].Value = headers[i];
+                ws.Cells[3, i + 1].Style.Font.Bold = true;
+            }
 
-            int row = 6;
+            int row = 4;
             foreach (var p in data)
             {
                 ws.Cells[row, 1].Value = p.ParagraphId;
@@ -559,73 +442,103 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 ws.Cells[row, 4].Value = p.ParagraphOrder;
                 ws.Cells[row, 5].Value = p.English;
                 ws.Cells[row, 6].Value = p.Vietnamese;
+                ws.Cells[row, 7].Value = p.Chinese;
+                ws.Cells[row, 8].Value = p.Japanese;
+                ws.Cells[row, 9].Value = p.French;
+                ws.Cells[row, 10].Value = p.BlockType;
                 row++;
             }
 
             ws.Cells.AutoFitColumns();
-
-            return File(
-                await package.GetAsByteArrayAsync(),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"Paragraphs_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-            );
+            return File(await package.GetAsByteArrayAsync(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Paragraphs_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
-        [HttpPost]
-        public async Task<IActionResult> TranslateEnglishFileWithAI(IFormFile fileEnglish, string targetLanguage)
+        [HttpGet]
+        public IActionResult CheckJobStatus(string jobId)
         {
-            try
+            if (string.IsNullOrWhiteSpace(jobId))
+                return Json(new { completed = true });
+
+            var monitoringApi = JobStorage.Current.GetMonitoringApi();
+            var jobDetails = monitoringApi.JobDetails(jobId);
+
+            if (jobDetails == null)
             {
-                if (fileEnglish == null || fileEnglish.Length == 0)
-                    return Json(new { success = false, message = "Vui lòng chọn file Tiếng Anh!" });
-
-                List<string> englishLines = ProcessFileImport(fileEnglish);
-                if (!englishLines.Any())
-                    return Json(new { success = false, message = "File Tiếng Anh rỗng!" });
-
-                // Chuyển mảng câu thành JSON
-                string jsonInput = System.Text.Json.JsonSerializer.Serialize(englishLines);
-
-                // PROMPT SIÊU NGHIÊM NGẶT - ÉP AI KHÔNG ĐƯỢC GỘP CÂU
-                string prompt = $@"You are an exact line-by-line translator.
-Translate the following JSON array of sentences from English into {targetLanguage}.
-
-STRICT RULES:
-1. Output MUST be a valid JSON array of strings.
-2. The output JSON array MUST contain EXACTLY {englishLines.Count} elements, matching the input count 1-to-1.
-3. NEVER merge sentences. Never combine multiple input lines into one line.
-4. Return ONLY the raw JSON array. Do NOT wrap in markdown like ```json ... ```.
-
-Input JSON:
-{jsonInput}";
-
-                string resultText = await _aiService.GetAiResponse(prompt);
-
-                // Làm sạch mã markdown nếu AI vô tình trả về
-                resultText = resultText.Replace("```json", "").Replace("```", "").Trim();
-
-                var translatedLines = System.Text.Json.JsonSerializer.Deserialize<List<string>>(resultText);
-
-                // Kiểm tra xem AI có dịch đủ số dòng hay không
-                if (translatedLines == null || translatedLines.Count != englishLines.Count)
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"AI dịch lệch số câu! (Đầu vào: {englishLines.Count} câu, AI trả về: {translatedLines?.Count ?? 0} câu). Vui lòng thử lại!"
-                    });
-                }
-
-                return Json(new
-                {
-                    success = true,
-                    translatedData = translatedLines,
-                    message = $"Đã dịch thành công chuẩn {translatedLines.Count} câu sang {targetLanguage}!"
-                });
+                return Json(new { completed = true, state = "NotFoundOrFinished" });
             }
-            catch (Exception ex)
+
+            var currentState = jobDetails.History.FirstOrDefault()?.StateName;
+            bool isCompleted = currentState == "Succeeded" || currentState == "Failed" || currentState == "Deleted";
+
+            return Json(new
             {
-                return Json(new { success = false, message = $"Lỗi AI: {ex.Message}" });
+                completed = isCompleted,
+                state = currentState
+            });
+        }
+
+        // Action duy nhất tiếp nhận file và xếp hàng vào Hangfire
+        [HttpPost]
+        public async Task<IActionResult> EnqueueImportAi(int chapterId, IFormFile fileEnglish, string targetLanguages = "Vietnamese")
+        {
+            if (fileEnglish == null || fileEnglish.Length == 0 || chapterId <= 0)
+            {
+                return Json(new { success = false, message = "Vui lòng chọn Chapter và file Tiếng Anh hợp lệ!" });
             }
+
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var tempFilePath = Path.Combine(uploadsFolder, $"{Guid.NewGuid()}_{fileEnglish.FileName}");
+            using (var stream = new FileStream(tempFilePath, FileMode.Create))
+            {
+                await fileEnglish.CopyToAsync(stream);
+            }
+
+            // Đẩy Job vào Hangfire xử lý danh sách ngôn ngữ được chọn
+            var jobId = BackgroundJob.Enqueue<IParagraphAiProcessingService>(service =>
+                service.ProcessChapterFileJob(chapterId, tempFilePath, targetLanguages));
+
+            return Json(new
+            {
+                success = true,
+                jobId,
+                message = "Đã gửi vào hàng đợi xử lý ngầm Hangfire! Hệ thống đang tự động đánh BlockType và dịch thuật."
+            });
+        }
+        private static string NormalizeLangKey(string code) => code switch
+        {
+            "vi" or "vie" or "vietnamese" => "vietnamese",
+            "en" or "eng" or "english" or "us" => "english",
+            "zh" or "zho" or "cn" or "chinese" => "chinese",
+            "ja" or "jp" or "jpn" or "japanese" => "japanese",
+            "fr" or "fra" or "french" => "french",
+            _ => code
+        };
+
+        private static string GetLangDisplayName(string code) => code switch
+        {
+            "vietnamese" or "vi" => "Tiếng Việt 🇻🇳",
+            "english" or "en" => "English 🇺🇸",
+            "chinese" or "zh" or "cn" => "Tiếng Trung 🇨🇳",
+            "japanese" or "ja" or "jp" => "Tiếng Nhật 🇯🇵",
+            "french" or "fr" => "Tiếng Pháp 🇫🇷",
+            _ => code.ToUpper()
+        };
+
+        private static string? NormalizeQuillHtml(string? html)
+        {
+            if (string.IsNullOrWhiteSpace(html)) return null;
+            html = html.Trim();
+            if (html == "<p><br></p>" || html == "<p></p>") return null;
+            if (html.StartsWith("<p>") && html.EndsWith("</p>"))
+            {
+                var inner = html.Substring(3, html.Length - 7).Trim();
+                if (!inner.Contains("</p>")) return inner;
+            }
+
+            // Sửa thành cú pháp Regex.Replace chuẩn của C#
+            string clean = Regex.Replace(html, @"<\/?p[^>]*>", "");
+            return Regex.Replace(clean, @"<br\s*\/?>", " ").Trim();
         }
     }
 }

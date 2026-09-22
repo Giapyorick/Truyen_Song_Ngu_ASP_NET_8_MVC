@@ -1,13 +1,26 @@
-﻿
-<main>
-    <h2 class="section-title text-cus">TRUYỆN MỚI NHẤT</h2>
+﻿@{
+    ViewBag.HideHotSidebar = false;
+}
 
-    <div class="story-grid">
-        @await Component.InvokeAsync("StoriesList")
-    </div>
-</main>
+<div class="w-full">
+    @await Component.InvokeAsync("StoriesList")
+</div>
 
-<script>
-    console.log("Session UserId hiện tại:", "@ViewBag.DebugUserId");
-    console.log("Session UserName hiện tại:", "@ViewBag.DebugUserName");
-</script>
+@section Scripts {
+    <script src="~/js/infinite_scroll.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (typeof InfiniteScroller !== 'undefined') {
+                const homeScroller = new InfiniteScroller({
+                    gridSelector: '#mainStoryGrid',
+                    triggerSelector: '#infiniteScrollTrigger',
+                    spinnerSelector: '#scrollSpinner',
+                    noMoreSelector: '#noMoreData',
+                    endpoint: '/Stories/GetStoriesInfinite',
+                    pageSize: 8,
+                    params: { type: 'likes' }
+                });
+            }
+        });
+    </script>
+}

@@ -55,6 +55,7 @@
                         <th class="px-6 py-4 text-gray font-bold text-left">Chinese</th>
                         <th class="px-6 py-4 text-gray font-bold text-left">Japanese</th>
                         <th class="px-6 py-4 text-gray font-bold text-left">French</th>
+                        <th class="px-6 py-4 text-gray font-bold text-left">Block type</th>
 						<th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
 					</tr>
 				</thead>
@@ -74,7 +75,7 @@
      class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[99] transition-all duration-500">
 
     <div id="modalContent"
-         class="bg-white w-full max-w-5xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
+         class="bg-white w-full max-w-6xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
 
         @* HEADER *@
         <div class="p-8 border-b border-gray-50 relative mx-5 mt-0 mb-0 bg-gradient-to-r from-gray-50 to-white">
@@ -300,9 +301,18 @@
                                     -
                                 </span>
                             </div>
-
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-cus uppercase ml-1">Kiểu hiển thị đoạn văn</label>
+                                <select name="BlockType" 
+                                        id="paragraphBlockType" 
+                                        class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all text-sm font-semibold">
+                                    <option data-color="linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%)" value="0">0 - Đoạn mở đầu chương</option>
+                                    <option data-color="linear-gradient(to right, #283048 0%, #859398 51%, #283048 100%)" value="1" selected>1 - Câu nối tiếp</option>
+                                    <option data-color="linear-gradient(to right, #4facfe 0%, #00f2fe 100%)" value="2">2 - Đoạn văn mới</option>
+                                    <option data-color="linear-gradient(to right, #b224ef 0%, #7579ff 100%)" value="4">4 - Lời thoại nhân vật</option>
+                                </select>
+                            </div>
                         </div>
-
                     </div>
 
 
@@ -387,23 +397,27 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                     <!-- 1. TIẾNG ANH (NGÔN NGỮ NGUỒN CHÍNH) -->
-                    <div class="p-4 border-2 border-[#50C9C3] bg-teal-50/20 rounded-2xl space-y-3 relative">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-bold text-cus flex items-center gap-2">
-                                🇺🇸 Tiếng Anh <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] px-2.5 py-0.5 rounded-full font-semibold shadow-sm">File gốc</span>
-                            </span>
-                            <a href="/assets/template/Story_English_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
-                        </div>
-
-                        <div id="dropZoneEN" class="relative border-2 border-dashed border-teal-300 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group shadow-sm">
-                            <input type="file" id="fileEnglish" name="fileEnglish" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-cloud-upload-alt text-[#50C9C3] text-lg group-hover:scale-110 transition-transform"></i>
-                                <span id="fileStatusEN" class="text-xs font-semibold text-gray-600 truncate max-w-[150px]">Tải file Tiếng Anh lên...</span>
+                    <div class="p-4 border-2 border-[#50C9C3] bg-teal-50/20 rounded-2xl space-y-3 relative flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-cus flex items-center gap-2">
+                                    🇺🇸 Tiếng Anh <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] px-2.5 py-0.5 text-white rounded-full font-semibold shadow-sm">File gốc</span>
+                                </span>
+                                <a href="/assets/template/Story_English_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
                             </div>
-                            <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] text-white px-3 py-1 rounded-md font-semibold shadow-sm">Browse</span>
+
+                            <div id="dropZoneEN" class="relative border-2 border-dashed border-teal-300 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group shadow-sm">
+                                <input type="file" id="fileEnglish" name="fileEnglish" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-cloud-upload-alt text-[#50C9C3] text-lg group-hover:scale-110 transition-transform"></i>
+                                    <span id="fileStatusEN" class="text-xs font-semibold text-gray-600 truncate max-w-[150px]">Tải file Tiếng Anh lên...</span>
+                                </div>
+                                <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] text-white px-3 py-1 rounded-md font-semibold shadow-sm">Browse</span>
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-teal-700 bg-teal-100/50 px-3 py-2 rounded-xl flex items-center gap-1.5 font-medium">
+                            <i class="fas fa-info-circle text-[#50C9C3]"></i> AI sẽ dùng file này làm nguồn để dịch và đánh BlockType
                         </div>
                     </div>
 
@@ -421,8 +435,12 @@
                             </div>
                             <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
                         </div>
-                        <button type="button" onclick="generateAI('Vietnamese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
-                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        <button type="button"
+                                onclick="toggleAutoAiTranslate('Vietnamese', this)"
+                                disabled
+                                class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99]"
+                                data-active="false">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">AI Dịch từ file Tiếng Anh</span>
                         </button>
                     </div>
 
@@ -436,16 +454,20 @@
                             <input type="file" id="fileChinese" name="fileChinese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
-                                <span id="fileStatusZH" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file CN...</span>
+                                <span id="fileStatusZH" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file ZH...</span>
                             </div>
                             <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
                         </div>
-                        <button type="button" onclick="generateAI('Chinese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
-                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        <button type="button" 
+                                onclick="toggleAutoAiTranslate('Chinese', this)" 
+                                disabled 
+                                class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99]"
+                                data-active="false">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">AI Dịch từ file Tiếng Anh</span>
                         </button>
                     </div>
 
-                    <!-- 4. TIẾNG NHẬT -->
+                    <!-- 4. TIẾNG NHẬT (ĐÃ SỬA ID THÀNH fileJapanese) -->
                     <div class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-colors">
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-bold text-cus flex items-center gap-2">🇯🇵 Tiếng Nhật</span>
@@ -455,34 +477,41 @@
                             <input type="file" id="fileJapanese" name="fileJapanese" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
-                                <span id="fileStatusJA" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file JP...</span>
+                                <span id="fileStatusJA" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file JA...</span>
                             </div>
                             <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
                         </div>
-                        <button type="button" onclick="generateAI('Japanese')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
-                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        <button type="button" 
+                                onclick="toggleAutoAiTranslate('Japanese', this)" 
+                                disabled 
+                                class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99]"
+                                data-active="false">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">AI Dịch từ file Tiếng Anh</span>
                         </button>
                     </div>
 
                     <!-- 5. TIẾNG PHÁP -->
-                    <div class="p-4 border border-cus bg-teal-50/10 rounded-2xl space-y-3 md:col-span-2 hover:border-teal-200 transition-colors">
+                    <div class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 md:col-span-2 hover:border-teal-200 transition-colors">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-bold text-teal-900 flex items-center gap-2">🇫🇷 Tiếng Pháp</span>
+                            <span class="text-sm font-bold text-cus flex items-center gap-2">🇫🇷 Tiếng Pháp</span>
                             <a href="/assets/template/Story_French_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
                         </div>
                         <div id="dropZoneFR" class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
                             <input type="file" id="fileFrench" name="fileFrench" accept=".xlsx, .xls, .txt" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
-                                <span id="fileStatusFR" class="text-xs font-medium text-gray-600 truncate">Chọn hoặc thả file FR...</span>
+                                <span id="fileStatusFR" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Chọn hoặc thả file FR...</span>
                             </div>
                             <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
                         </div>
-                        <button type="button" onclick="generateAI('French')" disabled class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:shadow-md active:scale-[0.99]">
-                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> AI Dịch từ file Tiếng Anh
+                        <button type="button" 
+                                onclick="toggleAutoAiTranslate('French', this)" 
+                                disabled 
+                                class="ai-btn w-full py-2 px-3 bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99]"
+                                data-active="false">
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">AI Dịch từ file Tiếng Anh</span>
                         </button>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -507,19 +536,21 @@
 
     <div class="chapter-editor-window">
 
-        <!-- ================= HEADER ================= -->
+        <!-- =================================================
+             HEADER
+        ================================================== -->
 
-        <div class="chapter-editor-header">
+        <header class="chapter-editor-header">
 
-            <div class="flex-1 text-center">
+            <div class="chapter-editor-header-inner">
 
                 <h1 id="editorStoryTitle"
-                    class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-1">
+                    class="chapter-editor-story-title">
                     Đang tải tên truyện...
                 </h1>
 
                 <h2 id="editorChapterTitle"
-                    class="text-base md:text-lg font-medium text-teal-600">
+                    class="chapter-editor-chapter-title">
                     Đang tải chương...
                 </h2>
 
@@ -541,106 +572,145 @@
 
                     <span id="chapterModifiedInfo"
                           class="hidden">
+
                         <i class="fa-solid fa-pen"></i>
+
                         <span id="chapterModifiedCount">
                             0 modified
                         </span>
+
                     </span>
 
                 </div>
 
             </div>
 
+
             <button type="button"
                     onclick="closeChapterEditor()"
-                    class="chapter-editor-close">
+                    class="chapter-editor-close"
+                    aria-label="Close">
 
                 <i class="fa-solid fa-xmark"></i>
 
             </button>
 
-        </div>
+        </header>
 
 
-        <!-- ================= LANGUAGE ================= -->
+        <!-- =================================================
+             MAIN
+        ================================================== -->
 
-        <div id="chapterEditorLanguageTabs"
-             class="chapter-editor-language-tabs">
-        </div>
+        <main class="chapter-editor-main">
 
+            <!-- =============================================
+                 READER
+            ============================================== -->
 
-        <!-- ================= MAIN ================= -->
+            <section class="chapter-editor-reader-wrapper">
 
-        <div class="chapter-editor-main">
+                <article id="chapterEditorParagraphList"
+                         class="chapter-editor-reader reading-content">
 
-            <!-- ===== READER ===== -->
+                    <div class="chapter-editor-loading">
 
-            <article id="chapterEditorParagraphList"
-                     class="chapter-editor-reader reading-content">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
 
-                <div class="text-center text-gray-400 py-20">
+                        <span>
+                            Đang tải nội dung...
+                        </span>
 
-                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-3"></i>
-
-                    <div>
-                        Đang tải nội dung...
                     </div>
 
-                </div>
+                </article>
 
-            </article>
+            </section>
 
 
-            <!-- ===== EDITOR PANEL ===== -->
-
+            <!-- =============================================
+                 EDITOR SIDE PANEL (TÍCH HỢP TABS + QUILL + BLOCKTYPE)
+            ============================================== -->
             <aside id="chapterEditorSidePanel"
-                   class="chapter-editor-side-panel">
+                   class="chapter-editor-side-panel hidden">
 
+                <!-- SIDE HEADER -->
                 <div class="chapter-editor-side-header">
-
-                    <div>
-
-                        <div class="text-xs text-gray-400">
-                            Editing paragraph
-                        </div>
-
-                        <div id="sidePanelParagraphNumber"
-                             class="text-lg font-bold text-teal-600">
-                            #001
-                        </div>
-
+                    <div class="chapter-editor-side-title">
+                        <span class="text-2xl font-bold text-cus tracking-tight">Editing paragraph</span>
+                        <span id="sidePanelParagraphNumber" class="text-2xl font-bold text-cus tracking-tight">#001</span>
                     </div>
 
                     <button type="button"
                             onclick="closeChapterSidePanel()"
-                            class="chapter-side-close">
-
+                            class="chapter-side-close"
+                            aria-label="Close editor">
                         <i class="fa-solid fa-xmark"></i>
-
                     </button>
-
                 </div>
 
+                <!-- SIDE CONTENT -->
+                <div id="chapterEditorSideContent" class="chapter-editor-side-content">
 
-                <div id="chapterEditorSideContent"
-                     class="chapter-editor-side-content">
+                    <!-- Khung chỉnh sửa thực tế -->
+                    <div id="sideEditorFormWrapper" class="hidden space-y-4">
+                        <!-- Chọn kiểu đoạn văn (BlockType) -->
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-cus uppercase tracking-wider">Kiểu hiển thị</label>
+                            <select id="sidePanelBlockType" 
+                                    class="select2-custom w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:border-teal-500 outline-none transition">
+                                <option data-color="linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%)" value="0">0 - Mở đầu chương</option>
+                                <option data-color="linear-gradient(to right, #283048 0%, #859398 51%, #283048 100%)" value="1" selected>1 - Câu nối tiếp </option>
+                                <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="2">2 - Đoạn văn mới (Xuống hàng + Thụt lề 1cm)</option>
+                                <option data-color="linear-gradient(to right, #DA22FF 0%, #9733EE 51%, #DA22FF 100%)" value="4">4 - Lời thoại (Xuống hàng + Thêm "-" )</option>
+                            </select>
+                        </div>
+                        <!-- Thêm nút chèn nhanh vào Side Panel -->
+                        <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                            <span class="text-xs text-gray-500">Thao tác cấu trúc:</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button"
+                                        onclick="insertFromCurrentEditorIndex()"
+                                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white border border-teal-200 transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-plus"></i> Chèn câu sau này
+                                </button>
+                                <button type="button"
+                                        onclick="deleteFromCurrentEditorIndex()"
+                                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-trash-can"></i> Xóa đoạn này
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="text-center text-gray-400 py-10">
+                        <!-- Language Tabs -->
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-bold text-cus uppercase tracking-wider">Ngôn ngữ soạn thảo</label>
+                            <div class="flex gap-1.5 border-b border-gray-200 pb-2 overflow-x-auto" id="sidePanelLangTabs">
+                            </div>
+                        </div>
 
-                        Click a paragraph to edit.
-
+                        <!-- Quill Editor Container -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-[10px] text-gray-400">
+                                <span>Đang sửa: <b id="sideCurrentLangLabel" class="text-cus uppercase">English</b></span>
+                                <span>Cập nhật trực tiếp lên trang đọc</span>
+                            </div>
+                            <div id="sideQuillEditorContainer" class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                <div id="sideQuillEditor" style="min-height: 140px; font-family: 'Lora', serif; font-size: 16px;"></div>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
-
             </aside>
 
-        </div>
+        </main>
 
 
-        <!-- ================= FOOTER ================= -->
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
 
-        <div class="chapter-editor-bottom-bar">
+        <footer class="chapter-editor-bottom-bar">
 
             <button type="button"
                     onclick="previousChapterParagraph()"
@@ -648,24 +718,25 @@
 
                 <i class="fa-solid fa-chevron-left"></i>
 
-                Previous
+                <span>Previous</span>
 
             </button>
 
 
-            <span id="chapterParagraphCounter"
-                  class="chapter-editor-counter">
+            <div class="chapter-editor-counter">
 
-                0 / 0
+                <span id="chapterParagraphCounter">
+                    0 / 0
+                </span>
 
-            </span>
+            </div>
 
 
             <button type="button"
                     onclick="nextChapterParagraph()"
                     class="chapter-editor-nav-button">
 
-                Next
+                <span>Next</span>
 
                 <i class="fa-solid fa-chevron-right"></i>
 
@@ -674,19 +745,117 @@
 
             <button type="button"
                     id="chapterEditorSaveButton"
-                    class="chapter-editor-save-button"
+                    class="btn-grad"
                     disabled>
 
                 <i class="fa-solid fa-save"></i>
 
-                Save Changes
+                <span>Save Changes</span>
 
             </button>
 
-        </div>
+        </footer>
 
     </div>
 
+</div>
+<!-- =========================================================
+     MODAL CHÈN ĐOẠN VĂN MỚI (INSERT AFTER)
+========================================================= -->
+<div id="insertParagraphModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[10000] transition-all duration-300">
+    <div id="insertModalContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]">
+
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-teal-50/50 to-white">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl text-center font-bold text-cus">Chèn đoạn văn mới</h3>
+                    <p class="text-base text-cus">
+                        Chèn vào ngay sau vị trí thứ tự: <strong id="lblInsertTargetOrder" class="text-red-500 font-extrabold text-xs">#0</strong>
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="closeInsertParagraphModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                &times;
+            </button>
+        </div>
+
+        <!-- Body Form -->
+        <div class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="insertChapterId" value="0" />
+            <input type="hidden" id="insertTargetOrder" value="0" />
+
+            <!-- Kiểu hiển thị đoạn văn mới -->
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-cus uppercase">Kiểu hiển thị</label>
+                <select id="insertBlockType" class="select2-custom w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:border-teal-500 outline-none transition">
+                    <option data-color="linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%)" value="0">0 - Mở đầu chương</option>
+                    <option data-color="linear-gradient(to right, #283048 0%, #859398 51%, #283048 100%)" value="1" selected>1 - Câu nối tiếp </option>
+                    <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="2">2 - Đoạn văn mới (Xuống hàng + Thụt lề 1cm)</option>
+                    <option data-color="linear-gradient(to right, #DA22FF 0%, #9733EE 51%, #DA22FF 100%)" value="4">4 - Lời thoại (Xuống hàng + Thêm gạch ngang - )</option>
+                </select>
+            </div>
+
+            <div class="border-t border-gray-100 pt-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-bold text-cus uppercase">Nội dung theo ngôn ngữ khả dụng</span>
+                    <span class="text-[10px] text-red-500 font-bold">* Yêu cầu nhập đầy đủ</span>
+                </div>
+
+                <!-- Danh sách ô nhập đa ngữ tự render động -->
+                <div id="insertDynamicLanguages" class="space-y-3">
+                    <div class="text-center py-6 text-gray-400 text-xs">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải cấu hình ngôn ngữ...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-100 flex gap-3 bg-gray-50/50">
+            <button type="button" onclick="closeInsertParagraphModal()" class="flex-1 py-2.5 btn-grad-cancel text-white text-xs font-bold rounded-xl active:scale-95 transition">
+                Hủy bỏ
+            </button>
+            <button type="button" id="btnConfirmInsertParagraph" onclick="submitInsertParagraph()" class="flex-1 py-2.5 btn-grad text-white text-xs font-bold rounded-xl active:scale-95 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu và Dồn STT
+            </button>
+        </div>
+
+    </div>
+</div>
+<!-- =========================================================
+     FLOATING BACKGROUND TASK PROGRESS BAR
+========================================================= -->
+<div id="aiProcessingOverlay" class="fixed bottom-6 right-6 z-[10001] hidden transform transition-all duration-300 translate-y-10 opacity-0">
+    <div class="bg-white/95 backdrop-blur-md border border-teal-200 shadow-2xl rounded-2xl p-5 max-w-sm flex items-start gap-4 ring-1 ring-black/5">
+        <div class="relative flex-shrink-0">
+            <!-- Spinner -->
+            <div class="w-10 h-10 border-4 border-teal-100 border-t-teal-500 rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fas fa-robot text-teal-600 text-xs animate-pulse"></i>
+            </div>
+        </div>
+        <div class="flex-1 space-y-1">
+            <h4 class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+                <span>AI Đang Xử Lý Ngầm</span>
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                </span>
+            </h4>
+            <p id="aiProcessingMessage" class="text-xs text-gray-500 leading-relaxed">
+                Hệ thống đang phân tích câu thoại và dịch thuật. Vui lòng không tắt hoặc tải lại (F5) trang...
+            </p>
+            <div class="pt-1.5 flex items-center gap-2">
+                <span class="text-[10px] bg-teal-50 text-teal-700 font-semibold px-2 py-0.5 rounded-md border border-teal-200">
+                    Hangfire Background Job
+                </span>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -695,6 +864,174 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script>
+        // =========================================================
+        // XỬ LÝ CHÈN ĐOẠN VĂN MỚI (INSERT AFTER)
+        // =========================================================
+
+        // 1. Mở modal và nạp danh sách ngôn ngữ khả dụng của truyện
+        async function openInsertParagraphModal(chapterId, targetOrder) {
+            if (!chapterId || chapterId <= 0) {
+                showToast('Chưa chọn Chapter hợp lệ!', 'error');
+                return;
+            }
+
+            $('#insertChapterId').val(chapterId);
+            $('#insertTargetOrder').val(targetOrder);
+            $('#lblInsertTargetOrder').text(`#${targetOrder}`);
+            $('#insertBlockType').val('1');
+
+            const $modal =$('#insertParagraphModal');
+            const $content =$('#insertModalContent');
+            const $container =$('#insertDynamicLanguages');
+
+            $container.html(`
+                <div class="text-center py-6 text-gray-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải cấu hình ngôn ngữ khả dụng...
+                </div>
+            `);
+
+            $modal.removeClass('hidden').addClass('flex');
+            setTimeout(() => {
+                $content.removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+            }, 10);
+
+            try {
+                const res = await fetch(`/Admin/tblParagraphs/GetAvailableLanguages?chapterId=${chapterId}`);
+                const data = await res.json();
+
+                if (data.success && data.languages && data.languages.length > 0) {
+                    let html = '';
+                    data.languages.forEach(lang => {
+                        // Chuẩn hóa mã định danh về 2 ký tự: en, vi, zh, ja, fr
+                        let raw = (lang.rawCode || lang.code || '').toLowerCase();
+                        let key = 'en';
+                        if (raw.includes('vi')) key = 'vi';
+                        else if (raw.includes('zh') || raw.includes('cn')) key = 'zh';
+                        else if (raw.includes('ja') || raw.includes('jp')) key = 'ja';
+                        else if (raw.includes('fr')) key = 'fr';
+
+                        html += `
+                            <div class="p-3 bg-teal-50/20 border border-teal-100 rounded-2xl space-y-1.5">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                        <span class="px-2 py-0.5 rounded bg-teal-600 text-white text-[10px] font-extrabold uppercase">
+                                            ${key}
+                                        </span>
+                                        ${lang.name}
+                                    </label>
+                                    <span class="text-[10px] text-red-500 font-bold">* Bắt buộc</span>
+                                </div>
+                                <textarea id="insert_input_${key}"
+                                          class="w-full px-3 py-2 bg-white border border-gray-200 focus:border-teal-500 rounded-xl text-xs outline-none transition resize-none"
+                                          rows="2"
+                                          placeholder="Nhập nội dung cho ${lang.name}..."></textarea>
+                            </div>
+                        `;
+                    });
+                    $container.html(html);
+                } else {
+                    $container.html(`
+                        <div class="text-center py-4 text-amber-600 text-xs font-semibold">
+                            Không tìm thấy cấu hình ngôn ngữ khả dụng cho truyện này.
+                        </div>
+                    `);
+                }
+            } catch (e) {
+                $container.html(`
+                    <div class="text-center py-4 text-red-500 text-xs">
+                        Không thể tải danh sách ngôn ngữ: ${e.message}
+                    </div>
+                `);
+            }
+        }
+
+        // 2. Đóng modal chèn đoạn
+        function closeInsertParagraphModal() {
+            const $modal =$('#insertParagraphModal');
+            const $content =$('#insertModalContent');
+
+            $content.removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+            setTimeout(() => {
+                $modal.removeClass('flex').addClass('hidden');
+            }, 250);
+        }
+
+        // 3. Kích hoạt chèn ngay khi đang ở Side Panel của Editor
+        function insertFromCurrentEditorIndex() {
+            if (currentEditingIndex === -1 || !chapterEditorParagraphs[currentEditingIndex]) {
+                showToast('Vui lòng chọn một câu để chèn phía sau!', 'error');
+                return;
+            }
+            const targetPara = chapterEditorParagraphs[currentEditingIndex];
+            openInsertParagraphModal(chapterEditorData.chapterId, targetPara.paragraphOrder);
+        }
+
+        // 4. Gửi dữ liệu chèn lên Server
+        async function submitInsertParagraph() {
+            const chapterId = parseInt($('#insertChapterId').val());
+            const targetOrder = parseInt($('#insertTargetOrder').val());
+            const blockType = parseInt($('#insertBlockType').val() || 1);
+
+            // Đọc trực tiếp từ ID của từng ô
+            const enText = ($('#insert_input_en').val() || '').trim();
+            const vnText = ($('#insert_input_vi').val() || '').trim();
+            const zhText = ($('#insert_input_zh').val() || '').trim();
+            const jaText = ($('#insert_input_ja').val() || '').trim();
+            const frText = ($('#insert_input_fr').val() || '').trim();
+
+            const payload = {
+                ChapterId: chapterId,
+                TargetOrder: targetOrder,
+                BlockType: blockType,
+                English: enText,
+                Vietnamese: vnText,
+                Chinese: zhText,
+                Japanese: jaText,
+                French: frText
+            };
+
+            console.log("Dữ liệu gửi lên Server:", payload);
+
+            // Kiểm tra 2 trường bắt buộc
+            if (!payload.English || !payload.Vietnamese) {
+                showToast("Tiếng Anh và Tiếng Việt không được để trống!", "error");
+                return;
+            }
+
+            const $btn = $('#btnConfirmInsertParagraph');
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...');
+
+            try {
+                const res = await fetch('/Admin/tblParagraphs/InsertAfter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    closeInsertParagraphModal();
+
+                    if (typeof loadParagraphList === 'function') {
+                        loadParagraphList(currentPage);
+                    }
+                    if (!$('#chapterEditorModal').hasClass('hidden') && chapterEditorData) {
+                        openChapterEditor(chapterEditorData.chapterId);
+                    }
+                } else {
+                    showToast(data.message || 'Lỗi khi lưu dữ liệu!', 'error');
+                }
+            } catch (err) {
+                showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
+            } finally {
+                $btn.prop('disabled', false).html('<i class="fa-solid fa-floppy-disk"></i> Lưu và Dồn STT');
+            }
+        }
+</script>
+<script>
         let quillEnglish;
         let quillVietnamese;
         let quillChinese;
@@ -702,55 +1039,237 @@
         let quillFrench;
 
         const quillToolbar = [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ color: [] }, { background: [] }],
-            [{ align: [] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ indent: '-1' }, { indent: '+1' }],
-            ['blockquote', 'code-block'],
-            ['link'],
-            ['linebreak'],
-            ['clean']
+            ['bold', 'italic', 'underline', 'strike'],        // Bôi đen, in nghiêng, gạch chân, gạch ngang
+            [{ 'color': [] }, { 'background': [] }],          // Tô màu chữ, màu nền
+            ['clean']                                         // Xóa định dạng về mặc định
         ];
 
         function initQuillEditors() {
+            const commonModules = {
+                toolbar: quillToolbar,
+                keyboard: {
+                    bindings: {
+                        // Cấm phím Enter thông thường
+                        enter: {
+                            key: 'Enter',
+                            handler: function() {
+                                return false;
+                            }
+                        },
+                        // Cấm tổ hợp Shift + Enter
+                        shiftEnter: {
+                            key: 'Enter',
+                            shiftKey: true,
+                            handler: function() {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            };
 
-            quillEnglish = new Quill('#paragraphEnglish', {
+            quillEnglish = new Quill('#paragraphEnglish', { theme: 'snow', modules: commonModules });
+            quillVietnamese = new Quill('#paragraphVietnamese', { theme: 'snow', modules: commonModules });
+            quillChinese = new Quill('#paragraphChinese', { theme: 'snow', modules: commonModules });
+            quillJapanese = new Quill('#paragraphJapanese', { theme: 'snow', modules: commonModules });
+            quillFrench = new Quill('#paragraphFrench', { theme: 'snow', modules: commonModules });
+        }
+</script>
+<script>
+        let sideQuill = null;
+        let currentEditingIndex = -1;
+        let currentSideTabLang = 'english';
+        let modifiedParagraphsMap = new Map(); // Lưu trữ các câu đã bị sửa đổi
+
+        // 1. Khởi tạo Quill riêng cho Side Panel (Cấm tuyệt đối Enter)
+        function initSideQuillEditor() {
+            if (sideQuill) return;
+
+            sideQuill = new Quill('#sideQuillEditor', {
                 theme: 'snow',
                 modules: {
-                    toolbar: quillToolbar
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ],
+                    keyboard: {
+                        bindings: {
+                            handleEnter: {
+                                key: 'Enter',
+                                shiftKey: null,
+                                handler: function() { return false; }
+                            }
+                        }
+                    }
                 }
             });
 
-            quillVietnamese = new Quill('#paragraphVietnamese', {
-                theme: 'snow',
-                modules: {
-                    toolbar: quillToolbar
-                }
-            });
+            // Chặn Enter tầng DOM cứng
+            if (sideQuill.root) {
+                sideQuill.root.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.keyCode === 13) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }, true);
+            }
 
-            quillChinese = new Quill('#paragraphChinese', {
-                theme: 'snow',
-                modules: {
-                    toolbar: quillToolbar
-                }
-            });
+            // LẮNG NGHE SỰ KIỆN GÕ CHỮ ĐỂ UPDATE REAL-TIME
+            sideQuill.on('text-change', function(delta, oldDelta, source) {
+                if (source !== 'user' || currentEditingIndex === -1) return;
 
-            quillJapanese = new Quill('#paragraphJapanese', {
-                theme: 'snow',
-                modules: {
-                    toolbar: quillToolbar
-                }
-            });
+                const currentPara = chapterEditorParagraphs[currentEditingIndex];
+                if (!currentPara) return;
 
-            quillFrench = new Quill('#paragraphFrench', {
-                theme: 'snow',
-                modules: {
-                    toolbar: quillToolbar
+                // Bóc tách làm sạch thẻ <p>
+                let cleanHtml = normalizeQuillHtml(sideQuill.root.innerHTML) || '';
+
+                // Cập nhật bộ nhớ tạm
+                currentPara[currentSideTabLang] = cleanHtml;
+                markParagraphAsModified(currentPara);
+
+                // NẾU NGÔN NGỮ ĐANG SỬA TRÙNG VỚI NGÔN NGỮ ĐANG ĐỌC -> UPDATE NGAY DOM LẬP TỨC
+                if (currentSideTabLang.toLowerCase() === currentEditorLanguage.toLowerCase()) {
+                    renderChapterEditor(); // Render lại reader tức thì
+                    // Giữ outline cho câu đang sửa
+                    $(`.editor-reader-paragraph[data-paragraph-index="${currentEditingIndex}"]`).addClass('editing-live');
                 }
             });
         }
+
+        // 2. Mở Side Panel khi click chọn câu ở Reader
+        function openChapterSidePanel(index) {
+            currentEditingIndex = index;
+            const paragraph = chapterEditorParagraphs[index];
+            if (!paragraph) return;
+
+            initSideQuillEditor();
+
+            $('#sideEditorEmptyState').addClass('hidden');
+            $('#sideEditorFormWrapper').removeClass('hidden');
+            $('#chapterEditorSidePanel').removeClass('hidden').addClass('open');
+
+            // Gán số thứ tự câu
+            $('#sidePanelParagraphNumber').text(`#${String(paragraph.paragraphOrder).padStart(3, '0')}`);
+
+            // Gán BlockType
+            const bType = paragraph.blockType !== undefined && paragraph.blockType !== null 
+                          ? String(paragraph.blockType) 
+                          : "1";
+
+            $('#sidePanelBlockType').val(bType).trigger('change');
+
+            // Đồng bộ tab đang active theo ngôn ngữ đang đọc
+            updateActiveEditorLanguageTab();
+
+            // Nạp nội dung của câu theo ĐÚNG ngôn ngữ đang đọc vào Quill
+            if (sideQuill) {
+                const textValue = paragraph[currentEditorLanguage] || '';
+                sideQuill.root.innerHTML = textValue;
+            }
+
+            // Highlight câu được chọn ở khung đọc
+            $('.editor-reader-paragraph').removeClass('editing-live active');
+            $(`.editor-reader-paragraph[data-paragraph-index="${index}"]`).addClass('active editing-live');
+        }
+
+        // 3. Chuyển đổi ngôn ngữ soạn thảo trong Side Panel
+        function switchSidePanelTab(lang) {
+            currentSideTabLang = lang;
+
+            // Active UI tabs
+            $('#sidePanelLangTabs button').removeClass('bg-teal-50 text-teal-700 font-bold').addClass('text-gray-400 font-semibold');
+            $(`#sideTab_${lang}`).addClass('bg-teal-50 text-teal-700 font-bold').removeClass('text-gray-400 font-semibold');
+            $('#sideCurrentLangLabel').text(lang);
+
+            // Nạp dữ liệu vào Quill mà không kích hoạt sự kiện 'user'
+            const paragraph = chapterEditorParagraphs[currentEditingIndex];
+            if (paragraph && sideQuill) {
+                const textValue = paragraph[lang] || '';
+                sideQuill.root.innerHTML = textValue;
+            }
+        }
+
+        // 4. Khi thay đổi BlockType -> Cập nhật hiển thị Reader ngay lập tức
+        function onSidePanelBlockTypeChange(newVal) {
+            if (currentEditingIndex === -1) return;
+            const paragraph = chapterEditorParagraphs[currentEditingIndex];
+            if (!paragraph) return;
+
+            paragraph.blockType = parseInt(newVal);
+            markParagraphAsModified(paragraph);
+
+            // Render lại reader để ngắt đoạn/thụt dòng tức thời
+            renderChapterEditor();
+            $(`.editor-reader-paragraph[data-paragraph-index="${currentEditingIndex}"]`).addClass('editing-live active');
+        }
+
+        // 5. Quản lý trạng thái sửa đổi & Nút Save Changes
+        function markParagraphAsModified(paragraph) {
+            modifiedParagraphsMap.set(paragraph.paragraphId, paragraph);
+
+            // Bật nút Save ở Footer & hiển thị số lượng câu đã sửa
+            const count = modifiedParagraphsMap.size;
+            $('#chapterEditorSaveButton').prop('disabled', false);
+            $('#chapterModifiedInfo').removeClass('hidden');
+            $('#chapterModifiedCount').text(`${count} modified`);
+        }
+
+        function closeChapterSidePanel() {
+            // Đóng side panel
+            $('#chapterEditorSidePanel').removeClass('open').addClass('hidden');
+            $('#sideEditorFormWrapper').addClass('hidden');
+            $('#sideEditorEmptyState').removeClass('hidden');
+
+            $('.editor-reader-paragraph').removeClass('editing-live active');
+            currentEditingIndex = -1;
+        }
+
+        // 6. Gán sự kiện cho nút Save Changes ở Footer
+        $(document).on('click', '#chapterEditorSaveButton', function() {
+            if (modifiedParagraphsMap.size === 0) return;
+
+            const modifiedList = Array.from(modifiedParagraphsMap.values()).map(p => ({
+                ParagraphId: p.paragraphId,
+                ParagraphOrder: p.paragraphOrder,
+                ChapterId: chapterEditorData.chapterId,
+                English: p.english,
+                Vietnamese: p.vietnamese,
+                Chinese: p.chinese,
+                Japanese: p.japanese,
+                French: p.french,
+                BlockType: p.blockType
+            }));
+
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
+
+            // Gửi mảng danh sách cập nhật về Server
+            $.ajax({
+                url: '/Admin/tblParagraphs/UpdateMultipleFromEditor',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(modifiedList),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('Đã lưu thành công các thay đổi!', 'success');
+                        modifiedParagraphsMap.clear();
+                        $('#chapterModifiedInfo').addClass('hidden');
+                        $btn.prop('disabled', true).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+                        // Tải lại bảng danh sách ngoài nếu có
+                        if (typeof loadParagraphList === 'function') loadParagraphList(currentPage);
+                    } else {
+                        showToast(res.message || 'Lỗi khi lưu dữ liệu!', 'error');
+                        $btn.prop('disabled', false).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+                    }
+                },
+                error: function() {
+                    showToast('Không thể kết nối đến máy chủ!', 'error');
+                    $btn.prop('disabled', false).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+                }
+            });
+        });
 </script>
 <script>
 $(document).ready(function () {
@@ -777,6 +1296,13 @@ $(document).ready(function () {
             resetImportForm();
         }, 300);
     };
+
+    $('#sidePanelBlockType').on('select2:select change', function (e) {
+        const selectedVal = $(this).val();
+        if (selectedVal !== null && selectedVal !== undefined) {
+            onSidePanelBlockTypeChange(selectedVal);
+        }
+    });
 
     // ===== LOAD STORY =====
     function loadStories() {
@@ -829,147 +1355,6 @@ $(document).ready(function () {
 			$('#dropZone').addClass('border-indigo-500 bg-indigo-100/50');
 		}
 	});
-
-    // ===== IMPORT PARAGRAPHS (5 LANGUAGES) =====
-    $('#btnImport').on('click', function() {
-        let chapId = $('#chapterSelect').val();
-
-        if (!chapId) {
-            showToast('Vui lòng chọn Chapter!', 'error');
-            return;
-        }
-
-        // Lấy file từ các ô input
-        let fileVN = $('#fileVietnamese')[0].files[0];
-        let fileEN = $('#fileEnglish')[0].files[0];
-        let fileZH = $('#fileChinese')[0].files[0];
-        let fileJA = $('#fileJapanese')[0].files[0];
-        let fileFR = $('#fileFrench')[0].files[0];
-
-        // Kiểm tra xem người dùng đã chọn ít nhất 1 file chưa
-        if (!fileVN && !fileEN && !fileZH && !fileJA && !fileFR) {
-            showToast('Vui lòng chọn ít nhất 1 file ngôn ngữ để import!', 'error');
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append('chapId', chapId);
-
-        // Chỉ append những file người dùng thực sự chọn
-        if (fileVN) formData.append('fileVietnamese', fileVN);
-        if (fileEN) formData.append('fileEnglish', fileEN);
-        if (fileZH) formData.append('fileChinese', fileZH);
-        if (fileJA) formData.append('fileJapanese', fileJA);
-        if (fileFR) formData.append('fileFrench', fileFR);
-
-        // Disable nút trong lúc chờ xử lý
-        let $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Importing...');
-
-        $.ajax({
-            url: '/Admin/tblParagraphs/ImportExcel',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(res) {
-                if (res.success) {
-                    showToast(res.message || 'Import thành công!', 'success'); // Đã sửa chính tả 'succes' thành 'success'
-                    closeParagraphModal();
-                    // Load lại danh sách đoạn văn nếu có hàm reload
-                    if (typeof loadParagraphs === 'function') {
-                        loadParagraphs(chapId);
-                    }
-                } else {
-                    showToast(res.message, 'error');
-                }
-            },
-            error: function (xhr, status, error) {
-                // 1. Lấy thông điệp lỗi dạng JSON từ server trả về (nếu có)
-                let errorMessage = xhr.responseJSON && xhr.responseJSON.message 
-                    ? xhr.responseJSON.message 
-                    : (xhr.responseText || error || 'Có lỗi xảy ra khi import!');
-
-                // 2. Hiển thị Toast
-                showToast(`Lỗi [${xhr.status}]: ${errorMessage}`, 'error');
-
-                // 3. In ra console để developer tiện debug
-                console.error('AJAX Import Error Details:', {
-                    status: xhr.status,
-                    statusText: xhr.statusText,
-                    responseText: xhr.responseText,
-                    error: error
-                });
-            },
-            complete: function() {
-                $btn.prop('disabled', false).html('Confirm Import');
-            }
-        });
-    });
-
-    // ===== XỬ LÝ HIỂN THỊ TÊN FILE KHI NGƯỜI DÙNG CHỌN FILE =====
-    const languageInputs = [
-        { inputId: '#fileVietnamese', statusId: '#fileStatusVN', defaultText: 'Chọn hoặc thả file VN...' },
-        { inputId: '#fileEnglish', statusId: '#fileStatusEN', defaultText: 'Chọn hoặc thả file EN...' },
-        { inputId: '#fileChinese', statusId: '#fileStatusZH', defaultText: 'Chọn hoặc thả file ZH...' },
-        { inputId: '#fileJapanese', statusId: '#fileStatusJA', defaultText: 'Chọn hoặc thả file JA...' },
-        { inputId: '#fileFrench', statusId: '#fileStatusFR', defaultText: 'Chọn hoặc thả file FR...' }
-    ];
-
-    languageInputs.forEach(item => {
-        $(document).on('change', item.inputId, function() {
-            let fileName = this.files[0] ? this.files[0].name : item.defaultText;
-            $(item.statusId).text(fileName);
-        });
-    });
-    // Cập nhật tên file cho các input khác khi chọn file thủ công
-    const otherInputs = [
-        { inputId: '#fileVietnamese', statusId: '#fileStatusVN', defaultText: 'Chọn hoặc thả file VN...' },
-        { inputId: '#fileChinese', statusId: '#fileStatusZH', defaultText: 'Chọn hoặc thả file ZH...' },
-        { inputId: '#fileJapanese', statusId: '#fileStatusJA', defaultText: 'Chọn hoặc thả file JA...' },
-        { inputId: '#fileFrench', statusId: '#fileStatusFR', defaultText: 'Chọn hoặc thả file FR...' }
-    ];
-
-    otherInputs.forEach(item => {
-        $(document).on('change', item.inputId, function() {
-            let fileName = this.files[0] ? this.files[0].name : item.defaultText;
-            $(item.statusId).text(fileName);
-        });
-    });
-    $(document).on('change', '#fileEnglish', function() {
-        let file = this.files[0];
-        if (file) {
-            $('#fileStatusEN').text(file.name);
-            // Mở khóa tất cả các nút AI
-            $('.ai-btn').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
-            showToast('Đã nhận file Tiếng Anh! Bạn có thể bấm các nút AI bên dưới để dịch.', 'info');
-        } else {
-            $('#fileStatusEN').text('Tải file Tiếng Anh lên...');
-            $('.ai-btn').prop('disabled', true).addClass('opacity-40 cursor-not-allowed');
-        }
-    });
-    // ===== RESET FORM =====
-    function resetImportForm() {
-        $('#storySelect').val('');
-        $('#chapterSelect').val('');
-
-        $('#fileEnglish').val('');
-        $('#fileVietnamese').val('');
-        $('#fileChinese').val('');
-        $('#fileJapanese').val('');
-        $('#fileFrench').val('');
-
-        $('#fileStatusEN').text('Tải file Tiếng Anh lên...');
-        $('#fileStatusVN').text('Chọn hoặc thả file VN...');
-        $('#fileStatusZH').text('Chọn hoặc thả file ZH...');
-        $('#fileStatusJA').text('Chọn hoặc thả file JA...');
-        $('#fileStatusFR').text('Chọn hoặc thả file FR...');
-
-        $('.ai-btn')
-            .prop('disabled', true)
-            .addClass('opacity-40 cursor-not-allowed');
-    }
-
 });
 </script>
 
@@ -980,76 +1365,221 @@ $(document).ready(function () {
             });
 </script>
 <script>
-function generateAI(targetLang) {
-    let fileInput = $('#fileEnglish')[0];
+        // Danh sách ngôn ngữ được chọn để AI dịch ngầm
+        // =========================================================
+        let selectedAiLanguages = new Set(['Vietnamese']); // Mặc định luôn có Tiếng Việt
 
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        showToast('Vui lòng chọn file Tiếng Anh trước!', 'error');
-        return;
-    }
+        function toggleAutoAiTranslate(targetLang, btn) {
+            const $btn =$(btn);
+            const isActive = $btn.data('active') === true;
 
-    let fileEN = fileInput.files[0];
-
-    // Xác định nút bấm AI vừa click để hiện hiệu ứng xoay (loading)
-    let $btn = $(event.currentTarget);
-    let originalText = $btn.html();
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Đang dịch...');
-
-    let formData = new FormData();
-    formData.append('fileEnglish', fileEN);
-    formData.append('targetLanguage', targetLang);
-
-    showToast(`Đang gửi file sang Gemini AI để dịch sang ${targetLang}...`, 'info');
-
-    $.ajax({
-        url: '/Admin/tblParagraphs/TranslateEnglishFileWithAI',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(res) {
-            console.log("Kết quả từ Server:", res); // In ra console F12 để kiểm tra
-
-            if (res.success && res.translatedData) {
-                // Tạo file .txt ảo chứa nội dung AI đã dịch
-                let contentText = res.translatedData.join('\n');
-                let blob = new Blob([contentText], { type: 'text/plain;charset=utf-8' });
-                let generatedFile = new File([blob], `AI_${targetLang}.txt`, { type: 'text/plain' });
-
-                // Map file vừa tạo vào Input của ngôn ngữ đó
-                let inputMap = {
-                    'Vietnamese': { input: '#fileVietnamese', status: '#fileStatusVN' },
-                    'Chinese': { input: '#fileChinese', status: '#fileStatusZH' },
-                    'Japanese': { input: '#fileJapanese', status: '#fileStatusJA' },
-                    'French': { input: '#fileFrench', status: '#fileStatusFR' }
-                };
-
-                let targetUI = inputMap[targetLang];
-                if (targetUI) {
-                    let container = new DataTransfer();
-                    container.items.add(generatedFile);
-                    $(targetUI.input)[0].files = container.files;
-
-                    // Hiển thị tên file AI vừa sinh lên giao diện
-                    $(targetUI.status).html(`<span class="text-purple-600 font-bold">✨ AI_${targetLang}.txt</span>`);
-                }
-
-                showToast(res.message || `Đã dịch xong sang ${targetLang}!`, 'success');
+            if (isActive) {
+                selectedAiLanguages.delete(targetLang);
+                $btn.data('active', false)
+                    .removeClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600 shadow-md')
+                    .addClass('from-[#50C9C3] to-[#96DEDA]');
+                $btn.find('.ai-label').text('AI Dịch từ file Tiếng Anh');
+                showToast(`Đã bỏ chọn AI dịch cho ${targetLang}`, 'info');
             } else {
-                showToast(res.message || 'AI không thể dịch file này!', 'error');
+                selectedAiLanguages.add(targetLang);
+                $btn.data('active', true)
+                    .removeClass('from-[#50C9C3] to-[#96DEDA]')
+                    .addClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600 shadow-md');
+                $btn.find('.ai-label').html('✨ Sẽ được AI dịch khi Import');
+                showToast(`Đã chọn AI dịch cho ${targetLang}`, 'success');
             }
-        },
-        error: function(xhr, status, error) {
-            console.error("Lỗi AJAX AI:", xhr.responseText);
-            let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi khi kết nối tới Server AI!';
-            showToast(msg, 'error');
-        },
-        complete: function() {
-            // Khôi phục trạng thái nút bấm
-            $btn.prop('disabled', false).html(originalText);
+            console.log("Danh sách ngôn ngữ hiện tại:", Array.from(selectedAiLanguages));
         }
-    });
-}
+
+        // Khi chọn file Tiếng Anh: Tự động kích hoạt toàn bộ các nút dịch nếu muốn
+        $(document).on('change', '#fileEnglish', function () {
+            const file = this.files && this.files.length > 0 ? this.files[0] : null;
+            if (file) {
+                $('#fileStatusEN').text(file.name);
+                $('.ai-btn').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
+
+                // Tự động bật Tiếng Việt nếu chưa bật
+                const $vnBtn =$('#importParagraphModal button[onclick*="\'Vietnamese\'"]');
+                if ($vnBtn.length &&$vnBtn.data('active') !== true) {
+                    toggleAutoAiTranslate('Vietnamese', $vnBtn[0]);         }     } else {$('#fileStatusEN').text('Tải file Tiếng Anh lên...');
+                $('.ai-btn').prop('disabled', true).addClass('opacity-40 cursor-not-allowed');
+                selectedAiLanguages.clear();
+                selectedAiLanguages.add('Vietnamese');
+            }
+        });
+
+        // Xử lý nút Confirm Import
+        $('#btnImport').off('click').on('click', function () {
+            const storyId = $('#storySelect').val();
+            const chapId = $('#chapterSelect').val();
+            const inputEN = document.getElementById('fileEnglish');
+            const fileEN = inputEN && inputEN.files ? inputEN.files[0] : null;
+
+            if (!storyId || !chapId) {
+                showToast('Vui lòng chọn cả Truyện và Chapter!', 'error');
+                return;
+            }
+
+            if (!fileEN) {
+                showToast('Vui lòng chọn file Tiếng Anh làm ngôn ngữ nguồn!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('chapterId', chapId);
+            formData.append('fileEnglish', fileEN);
+
+            // Thu thập tất cả các ngôn ngữ đã bật
+            const langsArray = Array.from(selectedAiLanguages);
+            const targetLangs = langsArray.length > 0 ? langsArray.join(',') : 'Vietnamese';
+            formData.append('targetLanguages', targetLangs);
+
+            console.log("-> Đang gửi yêu cầu dịch sang:", targetLangs);
+
+            function appendFileSafe(elemId, formKey) {
+                const elem = document.getElementById(elemId);
+                if (elem && elem.files && elem.files.length > 0) {
+                    formData.append(formKey, elem.files[0]);
+                }
+            }
+
+            appendFileSafe('fileVietnamese', 'fileVietnamese');
+            appendFileSafe('fileChinese', 'fileChinese');
+            appendFileSafe('fileJapanese', 'fileJapanese');
+            appendFileSafe('fileFrench', 'fileFrench');
+
+            const $btn = $(this);$btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Đang gửi...');
+
+            $.ajax({
+                url: '/Admin/tblParagraphs/EnqueueImportAi',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success) {
+                        showToast(res.message || 'Đã xếp hàng xử lý ngầm!', 'info');
+                        if (typeof closeParagraphModal === 'function') closeParagraphModal();
+
+                        if (res.jobId) {
+                            pollHangfireJob(res.jobId, storyId, chapId);
+                        } else {
+                            setTimeout(() => { loadParagraphList(1); }, 3000);
+                        }
+                    } else {
+                        showToast(res.message || 'Lỗi khi gửi dữ liệu!', 'error');
+                    }
+                },
+                error: function (xhr) {
+                    console.error("Lỗi Import:", xhr.responseText);
+                    const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi khi kết nối tới Server!';
+                    showToast(msg, 'error');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html('Confirm Import');
+                }
+            });
+        });
+
+        // 2. Cập nhật hàm pollHangfireJob: Hiển thị thanh tiến trình cố định và khóa cảnh báo F5
+        function pollHangfireJob(jobId, storyId, chapId) {
+            const $overlay =$('#aiProcessingOverlay');
+            const $msg =$('#aiProcessingMessage');
+
+            // 1. Hiện popup thông báo tiến trình ngầm
+            $overlay.removeClass('hidden');
+            setTimeout(() => {
+                $overlay.removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100');
+            }, 50);
+
+            // 2. Kích hoạt cảnh báo trình duyệt nếu người dùng cố ý F5 hoặc tắt tab
+            const preventUnload = function (e) {
+                e.preventDefault();
+                e.returnValue = 'Hệ thống đang xử lý dịch ngầm, bạn có chắc muốn rời đi?';
+                return e.returnValue;
+            };
+            window.addEventListener('beforeunload', preventUnload);
+
+            // Helper đóng popup khi xong
+            function hideProcessingOverlay() {
+                window.removeEventListener('beforeunload', preventUnload); // Gỡ chặn F5
+                $overlay.removeClass('translate-y-0 opacity-100').addClass('translate-y-10 opacity-0');
+                setTimeout(() => {
+                    $overlay.addClass('hidden');
+                }, 300);
+            }
+
+            const intervalId = setInterval(function () {
+                $.get('/Admin/tblParagraphs/CheckJobStatus', { jobId: jobId }, function (statusRes) {
+                    if (statusRes.completed) {
+                        clearInterval(intervalId);
+                        hideProcessingOverlay();
+
+                        if (statusRes.state === 'Failed') {
+                            showToast('Xử lý thất bại! Vui lòng kiểm tra log Hangfire.', 'error');
+                        } else {
+                            showToast('Đã phân tích và dịch thành công toàn bộ chương!', 'success');
+
+                            // Đồng bộ dropdown Truyện bên ngoài
+                            $('#filterStory').val(storyId).trigger('change.select2');
+
+                            // Tải danh sách Chapter của Truyện và chọn đúng Chapter vừa import
+                            $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId }, function (data) {
+                                const $chapter =$('#filterChapter');
+                                $chapter.html('<option value="all">Chapter</option>');
+
+                                data.forEach(c => {
+                                    $chapter.append(`<option value="${c.id}">${c.name}</option>`);
+                                });
+
+                                $chapter.val(chapId).trigger('change.select2');
+
+                                // Nạp ngay danh sách các câu đã import
+                                currentPage = 1;
+                                loadParagraphList(1);
+                            });
+                        }
+                    } else {
+                        // Cập nhật trạng thái nhẹ nhàng nếu đang chạy
+                        if (statusRes.state === 'Processing') {
+                            $msg.text('AI đang dịch từng đợt câu... Dữ liệu đang được đồng bộ.');
+                        }
+                    }
+                }).fail(function () {
+                    clearInterval(intervalId);
+                    hideProcessingOverlay();
+                    showToast('Mất kết nối kiểm tra tiến trình!', 'error');
+                });
+            }, 2500);
+        }
+
+        function resetImportForm() {
+            $('#storySelect').val('');
+            $('#chapterSelect').val('');
+
+            $('#fileEnglish').val('');
+            $('#fileVietnamese').val('');
+            $('#fileChinese').val('');
+            $('#fileJapanese').val('');
+            $('#fileFrench').val('');
+
+            $('#fileStatusEN').text('Tải file Tiếng Anh lên...');
+            $('#fileStatusVN').text('Chọn hoặc thả file VN...');
+            $('#fileStatusZH').text('Chọn hoặc thả file ZH...');
+            $('#fileStatusJA').text('Chọn hoặc thả file JA...');
+            $('#fileStatusFR').text('Chọn hoặc thả file FR...');
+
+            $('.ai-btn')
+                .prop('disabled', true)
+                .addClass('opacity-40 cursor-not-allowed')
+                .removeClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600')
+                .addClass('from-[#50C9C3] to-[#96DEDA]')
+                .data('active', false)
+                .find('.ai-label').text('AI Dịch từ file Tiếng Anh');
+
+            selectedAiLanguages.clear();
+            selectedAiLanguages.add('Vietnamese');
+        }
 </script>
 
 <script>
@@ -1142,172 +1672,115 @@ $(document).ready(function () {
 <script>
 	//open modal
         function openModal(mode, id) {
+    if (mode !== 'edit') return;
 
-            if (mode !== 'edit') return;
+    const modal = $('#modalOverlay');
+    const form = $('#paragraphForm')[0];
 
-            const modal = $('#modalOverlay');
-            // Reset form
-            const form = $('#paragraphForm')[0];
+    if (form) {
+        form.reset();
+    }
 
-            if (form) {
-                form.reset();
-            }
-            // Reset language visibility
-            [
-                'English',
-                'Vietnamese',
-                'Chinese',
-                'Japanese',
-                'French'
-            ].forEach(function(language) {
+    // Reset dropdown BlockType về mặc định 1
+    $('#paragraphBlockType').val('1').trigger('change');
 
-                setLanguageVisibility(language, false);
+    // Reset language visibility
+    ['English', 'Vietnamese', 'Chinese', 'Japanese', 'French'].forEach(function(language) {
+        setLanguageVisibility(language, false);
+    });
 
+    // Reset Quill editors...
+    if (quillEnglish) quillEnglish.setText('');
+    if (quillVietnamese) quillVietnamese.setText('');
+    if (quillChinese) quillChinese.setText('');
+    if (quillJapanese) quillJapanese.setText('');
+    if (quillFrench) quillFrench.setText('');
+
+    $('#paragraphEnglishValue').val('');
+    $('#paragraphVietnameseValue').val('');
+    $('#paragraphChineseValue').val('');
+    $('#paragraphJapaneseValue').val('');
+    $('#paragraphFrenchValue').val('');
+
+    modal.removeClass('hidden').addClass('flex');
+
+    $('.select2-custom').each(function() {
+        if (!$(this).hasClass('select2-hidden-accessible')) {$(this).select2({
+                dropdownParent: modal
             });
-            // Reset Quill editors
-            if (quillEnglish) {
-                quillEnglish.setText('');
-            }
-
-            if (quillVietnamese) {
-                quillVietnamese.setText('');
-            }
-
-            if (quillChinese) {
-                quillChinese.setText('');
-            }
-
-            if (quillJapanese) {
-                quillJapanese.setText('');
-            }
-
-            if (quillFrench) {
-                quillFrench.setText('');
-            }
-
-            // Reset hidden values
-            $('#paragraphEnglishValue').val('');
-            $('#paragraphVietnameseValue').val('');
-            $('#paragraphChineseValue').val('');
-            $('#paragraphJapaneseValue').val('');
-            $('#paragraphFrenchValue').val('');
-
-            // Hiện modal
-            modal
-                .removeClass('hidden')
-                .addClass('flex');
-
-            // Select2
-            $('.select2-custom').each(function() {
-
-                if (!$(this).hasClass('select2-hidden-accessible')) {
-
-                    $(this).select2({
-                        dropdownParent: modal
-                    });
-
-                }
-
-            });
-
-            // Animation
-            setTimeout(function() {
-
-                $('#modalContent')
-                    .removeClass('translate-y-20 opacity-0')
-                    .addClass('translate-y-0 opacity-100');
-
-            }, 10);
-
-            // Load paragraph
-            $.get('/Admin/tblParagraphs/GetById/' + id)
-                .done(function(data) {
-
-                    console.log('Paragraph data:', data);
-
-                    // =========================
-                    // Basic information
-                    // =========================
-                    $('#paragraphId').val(data.paragraphId);
-                    $('#paragraphOrder').val(data.paragraphOrder);
-
-                    $('#displayParagraphId').text(data.paragraphId);
-                    $('#displayChapterName').text(data.chapter.chapterTitle || '-');
-                    $('#displayParagraphOrder').text(data.paragraphOrder);
-
-                    // =========================
-                    // Load chapters
-                    // =========================
-                    $.get(
-                        '/Admin/tblParagraphs/GetChaptersForSelect',
-                        { id: data.chapter.storyId }
-                    )
-                        .done(function(chapters) {
-
-                            const select = $('#paragraphChapterId');
-
-                            select.empty();
-
-                            chapters.forEach(function(x) {
-                                select.append(
-                                    `<option value="${x.id}">${x.name}</option>`
-                                );
-                            });
-
-                            select
-                                .val(data.chapter.chapterId)
-                                .trigger('change');
-                        });
-
-                    // =========================
-                    // Load languages
-                    // =========================
-                    const languages = [
-                        { name: 'English', value: data.english, quill: quillEnglish },
-                        { name: 'Vietnamese', value: data.vietnamese, quill: quillVietnamese },
-                        { name: 'Chinese', value: data.chinese, quill: quillChinese },
-                        { name: 'Japanese', value: data.japanese, quill: quillJapanese },
-                        { name: 'French', value: data.french, quill: quillFrench }
-                    ];
-
-                    languages.forEach(function (lang) {
-                        const exists = lang.value !== null;
-
-                        setLanguageVisibility(lang.name, exists);
-                        setLanguageInputState(lang.name, exists);
-
-                        if (exists && lang.quill) {
-                            lang.quill.root.innerHTML = lang.value;
-                            $('#paragraph' + lang.name + 'Value').val(lang.value);
-                        } else {
-                            $('#paragraph' + lang.name + 'Value').val('');
-                        }
-                    });
-
-                    // =========================
-                    // Activate first available language
-                    // =========================
-                    const firstLanguage = languages.find(function(lang) {
-                        return lang.value !== null;
-                    });
-
-                    if (firstLanguage) {
-                        switchParagraphLanguage(firstLanguage.name);
-                    }
-
-                })
-                .fail(function(xhr) {
-
-                    console.error('GetById failed');
-                    console.error('Status:', xhr.status);
-                    console.error('Response:', xhr.responseText);
-
-                    showToast(
-                        'Cannot load paragraph information',
-                        'error'
-                    );
-                });
         }
+    });
+
+    setTimeout(function() {
+        $('#modalContent')
+            .removeClass('translate-y-20 opacity-0')
+            .addClass('translate-y-0 opacity-100');
+    }, 10);
+    
+    // Load paragraph data
+    $.get('/Admin/tblParagraphs/GetById/' + id)
+        .done(function(data) {
+            $('#paragraphId').val(data.paragraphId);
+            $('#paragraphOrder').val(data.paragraphOrder);
+
+            // GÁN ĐÚNG BIẾN TỪ SERVER VÀO SELECT2
+            const rawBlockType = (data.blockType !== undefined && data.blockType !== null) 
+                ? data.blockType 
+                : (data.BlockType !== undefined && data.BlockType !== null ? data.BlockType : 1);
+            
+            $('#paragraphBlockType').val(String(rawBlockType)).trigger('change');
+
+            $('#displayParagraphId').text(data.paragraphId);
+            $('#displayChapterName').text((data.chapter && data.chapter.chapterTitle) || '-');
+            $('#displayParagraphOrder').text(data.paragraphOrder);
+
+            // Load chapters...
+            if (data.chapter && data.chapter.storyId) {
+                $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: data.chapter.storyId })
+                    .done(function(chapters) {
+                        const select = $('#paragraphChapterId');
+                        select.empty();
+                        chapters.forEach(function(x) {
+                            select.append(`<option value="${x.id}">${x.name}</option>`);
+                        });
+                        select.val(data.chapter.chapterId).trigger('change');
+                    });
+            }
+
+            // Load languages...
+            const languages = [
+                { name: 'English', value: data.english, quill: quillEnglish },
+                { name: 'Vietnamese', value: data.vietnamese, quill: quillVietnamese },
+                { name: 'Chinese', value: data.chinese, quill: quillChinese },
+                { name: 'Japanese', value: data.japanese, quill: quillJapanese },
+                { name: 'French', value: data.french, quill: quillFrench }
+            ];
+
+            languages.forEach(function (lang) {
+                const exists = lang.value !== null;
+                setLanguageVisibility(lang.name, exists);
+                setLanguageInputState(lang.name, exists);
+
+                if (exists && lang.quill) {
+                    lang.quill.root.innerHTML = lang.value;
+                    $('#paragraph' + lang.name + 'Value').val(lang.value);
+                } else {
+                    $('#paragraph' + lang.name + 'Value').val('');
+                }
+            });
+
+            const firstLanguage = languages.find(function(lang) {
+                return lang.value !== null;
+            });
+
+            if (firstLanguage) {
+                switchParagraphLanguage(firstLanguage.name);
+            }
+        })
+        .fail(function(xhr) {
+            showToast('Cannot load paragraph information', 'error');
+        });
+}
 ///////////////////////////////////////
 	// close modall
     function closeModal() {
@@ -1321,39 +1794,61 @@ $(document).ready(function () {
     }
 //////////////////////////////////////////
 	// action delete
-    async function deleteParagraph(id) {
-			const confirmed = await customConfirm(
-				`Are you sure to remove this paragraph ?<br><small class="text-red-400">This action cannot be undone.</small>`,
-				"Delete Paragraph"
-			);
-			if (confirmed) {
-			
-			const $row = $(`button[onclick="deleteParagraph(${id})"]`).closest('tr');
-			
-			$row.addClass('opacity-50 pointer-events-none');
+            async function safeConfirm(message, title = "Xác nhận") {
+            if (typeof customConfirm === 'function') {
+                try {
+                    return await customConfirm(message, title);
+                } catch (e) {
+                    console.warn("customConfirm bị lỗi, chuyển sang confirm mặc định:", e);
+                }
+            }
+            // Lọc sạch thẻ HTML nếu dùng confirm mặc định của trình duyệt
+            const textOnly = message.replace(/<[^>]*>?/gm, '');
+            return window.confirm(textOnly);
+        }
+            async function deleteParagraph(id) {
+            if (!id || id <= 0) {
+                showToast("ID đoạn văn không hợp lệ!", "error");
+                return;
+            }
 
-			$.ajax({
-				url: '/Admin/tblParagraphs/Delete',
-				type: 'POST',
-				data: { id: id },
-				success: function(response) {
-					if (response.success) {
-						$row.fadeOut(400, function() {
-							$(this).remove();
-							showToast(response.message, 'success');
-						});
-					} else {
-						showToast("Lỗi: " + response.message, 'error');
-						$row.removeClass('opacity-50 pointer-events-none');
-					}
-				},
-				error: function() {
-					showToast("Cannot connect to the server to delete.", 'error');
-					$row.removeClass('opacity-50 pointer-events-none');
-				}
-			});
-		}
-	}
+            const confirmed = await safeConfirm(
+                `Bạn có chắc muốn xóa đoạn văn này không?<br><small class="text-red-400">Hệ thống sẽ tự động đánh lại số thứ tự từ 0 đến n-1.</small>`,
+                "Xóa đoạn văn"
+            );
+
+            if (!confirmed) return;
+
+            // Tìm dòng tr tương ứng để làm mờ
+            const $row =$(`button[onclick*="deleteParagraph(${id})"]`).closest('tr');
+            $row.addClass('opacity-50 pointer-events-none');
+
+            $.ajax({
+                url: '/Admin/tblParagraphs/Delete',
+                type: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    if (response.success) {
+                        $row.fadeOut(300, function() {$(this).remove();
+                            showToast(response.message || "Đã xóa thành công!", 'success');
+                            // Tải lại trang hiện tại để cập nhật lại cột thứ tự Order trên bảng
+                            if (typeof loadParagraphList === 'function') {
+                                loadParagraphList(currentPage);
+                            }
+                        });
+                    } else {
+                        showToast("Lỗi: " + response.message, 'error');
+                        $row.removeClass('opacity-50 pointer-events-none');
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Lỗi xóa đơn:", xhr.responseText);
+                    const msg = xhr.responseJSON ? xhr.responseJSON.message : "Không thể kết nối đến máy chủ để xóa.";
+                    showToast(msg, 'error');
+                    $row.removeClass('opacity-50 pointer-events-none');
+                }
+            });
+        }
 	///////////////////
 	// Action export
 	function exportExcel() {
@@ -1538,111 +2033,139 @@ function gotoPage(input, totalPages) {
 }
 
 
-	function loadParagraphList(page = 1) {
-	currentPage = page;
-	const $body = $('#user-list-body');
+        function loadParagraphList(page = 1) {
+            currentPage = page;
+            const $body = $('#user-list-body');
 
-	const filters = {
-		search: $('#filterSearch').val(),
-		storyId: $('#filterStory').val(),
-        chapterId: $('#filterChapter').val(),
-		page: currentPage,
-		pageSize: pageSize
-	};
+            const filters = {
+                search: $('#filterSearch').val(),
+                storyId: $('#filterStory').val(),
+                chapterId: $('#filterChapter').val(),
+                page: currentPage,
+                pageSize: pageSize
+            };
 
-	$.ajax({
-		url: '/Admin/tblParagraphs/List',
-		type: 'GET',
-		data: filters,
-		success: function (data) {
-			let html = '';
+            $.ajax({
+                url: '/Admin/tblParagraphs/List',
+                type: 'GET',
+                data: filters,
+                success: function(data) {
+                    let html = '';
 
-			if (!data.paragraphs || data.paragraphs.length === 0) {
-				$body.html(`
-                    <tr>
-                        <td colspan="9" class="text-center py-10 text-gray-500">
-                            Not found any results.
-                        </td>
-                    </tr>
-                `);
-                $('#pagination-container').html('');
-                return;
-			}
+                    if (!data.paragraphs || data.paragraphs.length === 0) {
+                        $body.html(`
+                            <tr>
+                                <td colspan="10" class="text-center py-10 text-gray-500">
+                                    Not found any results.
+                                </td>
+                            </tr>
+                        `);
+                        $('#pagination-container').html('');
+                        return;
+                    }
 
                     data.paragraphs.forEach(p => {
-                        // Ép các giá trị null/undefined thành chuỗi rỗng ""
                         let en = p.english || '';
                         let vn = p.vietnamese || '';
                         let zh = p.chinese || '';
                         let ja = p.japanese || '';
                         let fr = p.french || '';
+                        let bType = p.blockType !== undefined && p.blockType !== null ? parseInt(p.blockType) : 1;
+
+                        // Tạo badge hiển thị loại Block
+                        let blockBadge = '';
+                        switch (bType) {
+                            case 0:
+                                blockBadge = '<span class="px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-xs font-semibold">0 - Đầu chương</span>';
+                                break;
+                            case 2:
+                                blockBadge = '<span class="px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-semibold">2 - Đoạn mới</span>';
+                                break;
+                            case 4:
+                                blockBadge = '<span class="px-2.5 py-1 bg-purple-50 text-purple-600 border border-purple-200 rounded-lg text-xs font-semibold">4 - Lời thoại</span>';
+                                break;
+                            default:
+                                blockBadge = '<span class="px-2.5 py-1 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium">1 - Nối dòng</span>';
+                                break;
+                        }
 
                         html += `
-            <tr class="group hover:bg-indigo-50/30 transition-all">
-                <td class="px-6 py-5">
-                    <input type="checkbox" class="user-checkbox w-5 h-5" value="${p.paragraphId}">
-                </td>
-                <td class="px-4 py-5">
-                    <div class="text-xs text-gray-400 mb-1">
-                        ${p.storyTitle || ''} → ${p.chapterTitle || ''}
-                    </div>
-                </td>
-                <td class="px-6 py-5 text-center">
-                    <span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">
-                        ${p.paragraphOrder}
-                    </span>
-                </td>
-                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${en}">
-                    ${en}
-                </td>
-                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${vn}">
-                    ${vn}
-                </td>
-                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${zh}">
-                    ${zh}
-                </td>
-                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${ja}">
-                    ${ja}
-                </td>
-                <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${fr}">
-                    ${fr}
-                </td>
-
-                <td class="px-8 py-5 text-right">
-                    <div class="flex justify-end gap-3">
-                        <button type="button"
-                                onclick="openModal('edit', ${p.paragraphId})"
-                                class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
-                            <i class="fas fa-pencil-alt text-[11px]"></i>
-                        </button>
-                                <button type="button"
-                                                onclick="openChapterEditor(${p.chapterId})">
-                                        class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
-                                    <i class="fas fa-pencil-alt text-[11px]"></i>
-                                </button>
-                        <button onclick="deleteParagraph(${p.paragraphId})"
-                            class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all">
-                            <i class="fas fa-trash-alt text-[11px]"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>`;
+                    <tr class="group hover:bg-indigo-50/30 transition-all">
+                        <td class="px-6 py-5">
+                            <input type="checkbox" class="user-checkbox w-5 h-5" value="${p.paragraphId}">
+                        </td>
+                        <td class="px-4 py-5">
+                            <div class="text-xs text-gray-400 mb-1">
+                                ${p.storyTitle || ''} → ${p.chapterTitle || ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">
+                                ${p.paragraphOrder}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${en}">
+                            ${en}
+                        </td>
+                        <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${vn}">
+                            ${vn}
+                        </td>
+                        <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${zh}">
+                            ${zh}
+                        </td>
+                        <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${ja}">
+                            ${ja}
+                        </td>
+                        <td class="px-6 py-5 max-w-xs truncate text-gray-600 text-sm" title="${fr}">
+                            ${fr}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap">
+                            ${blockBadge}
+                        </td>
+                        <td class="px-8 py-5 text-right">
+                                    <div class="flex justify-end gap-2">
+                                    <button type="button"
+                                            title="Chèn đoạn mới ngay sau đoạn này"
+                                            onclick="openInsertParagraphModal(${p.chapterId}, ${p.paragraphOrder})"
+                                            class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center">
+                                        <i class="fas fa-plus text-[11px]"></i>
+                                    </button>
+                                    <button type="button"
+                                            title="Chỉnh sửa câu"
+                                            onclick="openModal('edit', ${p.paragraphId})"
+                                            class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
+                                        <i class="fas fa-pencil-alt text-[11px]"></i>
+                                    </button>
+                                    <button type="button"
+                                            title="Đọc & Sửa theo chương"
+                                            onclick="openChapterEditor(${p.chapterId})"
+                                            class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center">
+                                        <i class="fas fa-book-open text-[11px]"></i>
+                                    </button>
+                                    <button onclick="deleteParagraph(${p.paragraphId})"
+                                            title="Xóa câu"
+                                            class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center">
+                                        <i class="fas fa-trash-alt text-[11px]"></i>
+                                    </button>
+                                </div>
+                        </td>
+                    </tr>`;
                     });
 
-			$body.html(html);
-			renderPagination(data.currentPage, data.totalPages);
-		},
-		error: function () {
-			$body.html(`
-				<tr>
-					<td colspan="6" class="text-center py-10 text-red-500">
-						Error loading data.
-					</td>
-				</tr>
-			`);
-		}
-	});
-}
+                    $body.html(html);
+                    renderPagination(data.currentPage, data.totalPages);
+                },
+                error: function() {
+                    $body.html(`
+                        <tr>
+                            <td colspan="10" class="text-center py-10 text-red-500">
+                                Error loading data.
+                            </td>
+                        </tr>
+                    `);
+                }
+            });
+        }
 $(document).ready(function () {
 	const savedPage = localStorage.getItem('paragraphPage');
 	currentPage = savedPage ? parseInt(savedPage) : 1;
@@ -1690,77 +2213,148 @@ $(document).ready(function() {
 
 @*DELETE MULTIPLE*@
 <script>
-$(document).ready(function () {
+        $(document).ready(function () {
+            // Tick chọn tất cả
+            $('#selectAll').on('change', function () {
+                const isChecked = this.checked;
+                $('.user-checkbox').each(function () {$(this).prop('checked', isChecked)
+                           .closest('tr')
+                           .toggleClass('bg-indigo-50/50', isChecked);
+                });
+                if (typeof updateDeleteButton === 'function') updateDeleteButton();
+            });
 
-    $('#selectAll').on('change', function () {
-        const isChecked = this.checked;
+            // Tick chọn từng hàng
+            $(document).on('change', '.user-checkbox', function () {
+                const total = $('.user-checkbox').length;
+                const checked = $('.user-checkbox:checked').length;
 
-        $('.user-checkbox').each(function () {
-            $(this).prop('checked', isChecked)
-                   .closest('tr')
-                   .toggleClass('bg-indigo-50/50', isChecked);
-				   updateDeleteButton();
+                $(this).closest('tr').toggleClass('bg-indigo-50/50', this.checked);$('#selectAll').prop('checked', total > 0 && total === checked);
+
+                if (typeof updateDeleteButton === 'function') updateDeleteButton();
+            });
+
+            // Bấm nút xóa danh sách đã chọn
+            $(document).on('click', '#btnDeleteSelected', async function () {
+                const ids = $('.user-checkbox:checked')
+                    .map(function () {
+                        return parseInt(this.value);
+                    })
+                    .get();
+
+                if (ids.length === 0) {
+                    showToast('Vui lòng chọn ít nhất một đoạn văn!', 'error');
+                    return;
+                }
+
+                const confirmed = await safeConfirm(
+                    `Bạn có chắc chắn muốn xóa <strong>${ids.length}</strong> đoạn văn đã chọn?<br><small class="text-red-400">Hành động này sẽ cập nhật lại STT của toàn bộ chương.</small>`,
+                    "Xóa hàng loạt"
+                );
+
+                if (!confirmed) return;
+
+                const $btn = $(this);$btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Đang xóa...');
+
+                $.ajax({
+                    url: '/Admin/tblParagraphs/DeleteMultiple',
+                    type: 'POST',
+                    traditional: true, // Ép serialize mảng int[] chuẩn cho Controller ASP.NET Core
+                    data: { ids: ids },
+                    success: function (res) {
+                        if (res.success) {
+                            showToast(res.message || `Đã xóa ${res.deleted ? res.deleted.length : ids.length} đoạn văn.`, 'success');
+                            $('#selectAll').prop('checked', false);
+
+                            if (typeof updateDeleteButton === 'function') updateDeleteButton();
+                            if (typeof loadParagraphList === 'function') {
+                                loadParagraphList(currentPage);
+                            }
+                        } else {
+                            showToast(res.message || 'Lỗi khi xóa hàng loạt!', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi xóa nhiều:", xhr.responseText);
+                        const msg = xhr.responseJSON ? xhr.responseJSON.message : "Không thể kết nối đến máy chủ!";
+                        showToast(msg, 'error');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false);
+                        if (typeof updateDeleteButton === 'function') updateDeleteButton();
+                    }
+                });
+            });
         });
-    });
+                async function deleteFromCurrentEditorIndex() {
+            if (currentEditingIndex === -1 || !chapterEditorParagraphs || !chapterEditorParagraphs[currentEditingIndex]) {
+                showToast('Vui lòng chọn một đoạn để xóa!', 'error');
+                return;
+            }
 
-    $(document).on('change', '.user-checkbox', function () {
-        const total = $('.user-checkbox').length;
-        const checked = $('.user-checkbox:checked').length;
+            const targetPara = chapterEditorParagraphs[currentEditingIndex];
+            const orderNum = String(targetPara.paragraphOrder).padStart(3, '0');
 
-        $(this)
-            .closest('tr')
-            .toggleClass('bg-indigo-50/50', this.checked);
+            const confirmed = await safeConfirm(
+                `Bạn có chắc chắn muốn xóa đoạn <strong>#${orderNum}</strong> không?<br>` +
+                `<small class="text-red-500">Hệ thống sẽ tự động đánh lại số thứ tự từ 0 đến n-1 cho toàn bộ chương.</small>`,
+                "Xóa đoạn văn"
+            );
 
-        $('#selectAll').prop('checked', total > 0 && total === checked);
-		updateDeleteButton();
-    });
+            if (!confirmed) return;
 
-    $(document).on('click', '#btnDeleteSelected', async function () {
-        const ids = $('.user-checkbox:checked')
-            .map(function () {
-                return parseInt(this.value);
-            })
-            .get();
+            $.ajax({
+                url: '/Admin/tblParagraphs/Delete',
+                type: 'POST',
+                data: { id: targetPara.paragraphId },
+                success: function(res) {
+                    if (res.success) {
+                        showToast('Đã xóa đoạn và chuẩn hóa lại số thứ tự!', 'success');
 
-        if (ids.length === 0) {
-            showToast('Please select at least one chapter!', 'error');
-            return;
+                        // 1. Lưu lại vị trí index vừa xóa và chapterId
+                        const deletedIndex = currentEditingIndex;
+                        const currentChapId = chapterEditorData.chapterId;
+
+                        // 2. Tải ngầm lại dữ liệu chương để không bị chớp màn hình loading
+                        $.get('/Admin/tblParagraphs/GetChapterForEditor/' + currentChapId, function(data) {
+                            chapterEditorData = data;
+                            chapterEditorParagraphs = data.paragraphs || [];
+
+                            $('#chapterParagraphCount').text(`${chapterEditorParagraphs.length} paragraphs`);
+
+                            renderChapterEditor();
+
+                            // 3. Xử lý giữ Panel mở:
+                            if (chapterEditorParagraphs.length === 0) {
+                                // Nếu chương không còn câu nào thì mới đóng panel
+                                closeChapterSidePanel();
+                            } else {
+                                // Chọn câu tiếp theo (hoặc lùi lại 1 câu nếu xóa câu ở vị trí cuối cùng)
+                                let nextIndex = deletedIndex;
+                                if (nextIndex >= chapterEditorParagraphs.length) {
+                                    nextIndex = chapterEditorParagraphs.length - 1;
+                                }
+
+                                // Mở và nạp câu kế tiếp vào panel luôn
+                                openChapterSidePanel(nextIndex);
+                                scrollToEditorParagraph(nextIndex);
+                            }
+
+                            // 4. Cập nhật lại danh sách table bên ngoài nếu có
+                            if (typeof loadParagraphList === 'function') {
+                                loadParagraphList(currentPage);
+                            }
+                        });
+                    } else {
+                        showToast(res.message || 'Xóa thất bại!', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Lỗi xóa từ Editor:", xhr.responseText);
+                    showToast('Lỗi kết nối máy chủ khi xóa đoạn!', 'error');
+                }
+            });
         }
-
-        const confirmed = await customConfirm(
-		`Are you sure you want to delete <strong>${ids.length}</strong> paragraphs ?<br>` +
-		`<small class="text-red-400">This action cannot be undone.</small>`,
-		"Delete Multiple"
-		);
-
-		if (!confirmed) return;
-
-        $.ajax({
-            url: '/Admin/tblParagraphs/DeleteMultiple',
-            type: 'POST',
-            traditional: true,
-            data: { ids: ids },
-            success: function (res) {
-				if (res.blocked && res.blocked.length > 0) {
-					showToast(
-						`Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-						`Because it was used to link foreign keys.`, 
-						'error'
-					);
-				}
-				if (res.deleted && res.deleted.length > 0) {
-					showToast(`Deleted ${res.deleted.length} paragraph.`, 'error');
-				}
-				const savedPage = localStorage.getItem('storyPage');
-				currentPage = savedPage ? parseInt(savedPage) : 1;
-				loadParagraphList(); 
-				$('#selectAll').prop('checked', false);
-			}
-
-        });
-    });
-
-});
         function switchParagraphLanguage(language) {
 
             $('.paragraph-language-content')
@@ -1953,101 +2547,105 @@ $(document).ready(function () {
 
         });
     }
-    function buildChapterEditorLanguageTabs() {
+        function buildChapterEditorLanguageTabs() {
+            const languages = [
+                { key: 'english', label: '🇺🇸 EN', fullName: 'English' },
+                { key: 'vietnamese', label: '🇻🇳 VN', fullName: 'Vietnamese' },
+                { key: 'chinese', label: '🇨🇳 ZH', fullName: 'Chinese' },
+                { key: 'japanese', label: '🇯🇵 JP', fullName: 'Japanese' },
+                { key: 'french', label: '🇫🇷 FR', fullName: 'French' }
+            ];
 
-        const languages = [
-            {
-                key: 'english',
-                label: '🇺🇸 English'
-            },
-            {
-                key: 'vietnamese',
-                label: '🇻🇳 Vietnamese'
-            },
-            {
-                key: 'chinese',
-                label: '🇨🇳 Chinese'
-            },
-            {
-                key: 'japanese',
-                label: '🇯🇵 Japanese'
-            },
-            {
-                key: 'french',
-                label: '🇫🇷 French'
+            const $mainContainer = $('#chapterEditorLanguageTabs');
+            const $sideContainer = $('#sidePanelLangTabs');
+
+            if ($mainContainer.length) $mainContainer.empty();
+            if ($sideContainer.length) $sideContainer.empty();
+
+            let firstLanguage = null;
+
+            languages.forEach(function(lang) {
+                // Tận dụng hàm hasLanguageContent có sẵn để kiểm tra
+                if (!hasLanguageContent(lang.key)) {
+                    return;
+                }
+
+                if (!firstLanguage) {
+                    firstLanguage = lang.key;
+                }
+
+                // 1. Render tab ở Header chính (nếu có)
+                if ($mainContainer.length) {
+                    $mainContainer.append(`
+                        <button type="button"
+                                class="chapter-editor-language-tab"
+                                data-language="${lang.key}"
+                                onclick="changeChapterEditorLanguage('${lang.key}')">
+                            ${lang.label}
+                        </button>
+                    `);
+                }
+
+                // 2. Render tab ở Editor Side Panel
+                if ($sideContainer.length) {
+                    $sideContainer.append(`
+                        <button type="button"
+                                id="sideTab_${lang.key}"
+                                class="side-panel-lang-tab px-3 py-1.5 text-xs rounded-xl transition font-medium text-gray-500 hover:bg-gray-100"
+                                data-language="${lang.key}"
+                                onclick="changeChapterEditorLanguage('${lang.key}')">
+                            ${lang.label}
+                        </button>
+                    `);
+                }
+            });
+
+            if (!currentEditorLanguage && firstLanguage) {
+                currentEditorLanguage = firstLanguage;
             }
-        ];
 
-        const $container =
-            $('#chapterEditorLanguageTabs');
-
-        $container.empty();
-
-        let firstLanguage = null;
-
-        languages.forEach(function(lang) {
-            if (!hasLanguageContent(lang.key)) {
-                return;
-            }
-            if (!firstLanguage) {
-                firstLanguage = lang.key;
-            }
-            $container.append(`
-
-                <button
-                    type="button"
-
-                    class="chapter-editor-language-tab"
-
-                    data-language="${lang.key}"
-
-                    onclick="changeChapterEditorLanguage('${lang.key}')">
-
-                    ${lang.label}
-
-                </button>
-
-            `);
-
-        });
-
-        if (firstLanguage) {
-            currentEditorLanguage =
-                firstLanguage;
             updateActiveEditorLanguageTab();
         }
-    }
-    function changeChapterEditorLanguage(language) {
+        function changeChapterEditorLanguage(language) {
+            if (!hasLanguageContent(language)) {
+                return;
+            }
 
-        if (!hasLanguageContent(language)) {
+            currentEditorLanguage = language;
+            currentSideTabLang = language;
 
-            return;
+            updateActiveEditorLanguageTab();
 
+            renderChapterEditor();
+
+            if (currentEditingIndex !== -1 && sideQuill) {
+                const paragraph = chapterEditorParagraphs[currentEditingIndex];
+                if (paragraph) {
+                    const textValue = paragraph[currentEditorLanguage] || '';
+                    sideQuill.root.innerHTML = textValue;
+                }
+
+                $('#sideCurrentLangLabel').text(currentEditorLanguage.toUpperCase());
+
+                $(`.editor-reader-paragraph[data-paragraph-index="${currentEditingIndex}"]`).addClass('active editing-live');
+            }
         }
+        function updateActiveEditorLanguageTab() {
+            // Header chính
+            $('.chapter-editor-language-tab').removeClass('active');
+            $(`.chapter-editor-language-tab[data-language="${currentEditorLanguage}"]`).addClass('active');
 
-        currentEditorLanguage =
-            language;
+            // Side Panel
+            $('.side-panel-lang-tab')
+                .removeClass('bg-teal-50 text-teal-700 font-bold border border-teal-200 shadow-sm')
+                .addClass('text-gray-500 font-medium');
 
+            $(`#sideTab_${currentEditorLanguage}`)
+                .addClass('bg-teal-50 text-teal-700 font-bold border border-teal-200 shadow-sm')
+                .removeClass('text-gray-500 font-medium');
 
-        updateActiveEditorLanguageTab();
-
-
-        renderChapterEditor();
-
-
-        closeChapterSidePanel();
-    }
-    function updateActiveEditorLanguageTab() {
-
-        $('.chapter-editor-language-tab')
-            .removeClass('active');
-
-
-        $(
-            `.chapter-editor-language-tab[data-language="${currentEditorLanguage}"]`
-        )
-            .addClass('active');
-    }
+            $('#sideCurrentLangLabel').text(currentEditorLanguage.toUpperCase());
+        }
     function getEditorParagraphText(paragraph, language) {
 
         const value = paragraph[language];
@@ -2061,125 +2659,173 @@ $(document).ready(function () {
 
         return value;
     }
-    function renderChapterEditor() {
+        function renderChapterEditor() {
+            const $container = $('#chapterEditorParagraphList');
 
-        const $container =
-            $('#chapterEditorParagraphList');
+            if (!chapterEditorParagraphs || chapterEditorParagraphs.length === 0) {
+                $container.html('<div class="text-center text-gray-400 py-20">Chapter này chưa có paragraph.</div>');
+                $('#chapterParagraphCounter').text('0 / 0');
+                return;
+            }
 
+            let html = '<div class="chapter-editor-reader-inner">';
+            let isBlockOpen = false;
+            let previousWasDialogue = false;
 
-        if (!chapterEditorParagraphs ||
-            chapterEditorParagraphs.length === 0) {
+            // Helper bóc tách URL và Caption từ chuỗi [img:URL|Caption] hoặc [img:URL]
+            function extractImgInfo(text) {
+                if (!text) return null;
+                // Bóc tách cả trường hợp có ký tự hoặc thẻ HTML dính xung quanh
+                const match = text.match(/\[img\s*:\s*([^\]|]+)(?:\|([^\]]*))?\]/i);
+                if (!match) return null;
 
-            $container.html(`
+                return {
+                    fullTag: match[0],
+                    url: match[1].trim(),
+                    caption: match[2] ? match[2].trim() : ''
+                };
+            }
 
-                <div class="text-center text-gray-400 py-20">
+            chapterEditorParagraphs.forEach(function (p, index) {
+                let rawContent = getEditorParagraphText(p, currentEditorLanguage) || '';
 
-                    Chapter này chưa có paragraph.
+                // Đọc an toàn blockType
+                let blockType = 1;
+                if (p.blockType !== undefined && p.blockType !== null) {
+                    blockType = parseInt(p.blockType);
+                } else if (p.BlockType !== undefined && p.BlockType !== null) {
+                    blockType = parseInt(p.BlockType);
+                } else if (index === 0) {
+                    blockType = 0;
+                }
 
-                </div>
+                const order = p.paragraphOrder;
 
-            `);
+                // 1. Quét ảnh trong ngôn ngữ hiện tại
+                let currentImgInfo = extractImgInfo(rawContent);
+                let finalUrl = '';
+                let finalCaption = '';
+                let fullTagToRemove = '';
 
-            $('#chapterParagraphCounter')
-                .text('0 / 0');
+                if (currentImgInfo) {
+                    finalUrl = currentImgInfo.url;
+                    finalCaption = currentImgInfo.caption;
+                    fullTagToRemove = currentImgInfo.fullTag;
+                } else {
+                    // 2. Dự phòng: Quét qua các ngôn ngữ khác để lấy URL nếu ngôn ngữ hiện tại chưa gắn
+                    const fallbackOrder = [p.english, p.vietnamese, p.chinese, p.japanese, p.french];
+                    for (let item of fallbackOrder) {
+                        const info = extractImgInfo(item);
+                        if (info) {
+                            finalUrl = info.url;
+                            finalCaption = info.caption; // Lấy tạm caption dự phòng
+                            break;
+                        }
+                    }
+                }
 
-            return;
+                // 3. Nếu tìm được URL nhưng chưa có caption, quét thêm Tiếng Việt / Tiếng Anh để tìm caption
+                if (finalUrl && !finalCaption) {
+                    const vnInfo = extractImgInfo(p.vietnamese);
+                    const enInfo = extractImgInfo(p.english);
+                    if (vnInfo && vnInfo.caption) finalCaption = vnInfo.caption;
+                    else if (enInfo && enInfo.caption) finalCaption = enInfo.caption;
+                }
+
+                let imgAfterHtml = '';
+
+                if (finalUrl) {
+                    const captionHtml = finalCaption
+                        ? `<div class="story-illustration-caption"><i class="fa-solid fa-camera"></i> ${finalCaption}</div>`
+                        : '';
+
+                    // Luôn luôn gán vào imgAfterHtml (hiển thị sau câu chữ)
+                    imgAfterHtml = `
+                                <div class="story-illustration-block">
+                                    <img src="${finalUrl}" alt="${finalCaption || 'Illustration #' + order}" onerror="this.src='/assets/image/placeholder.png';">
+                                    ${captionHtml}
+                                </div>
+                            `;
+
+                    // Xóa triệt để thẻ [img:...] khỏi nội dung câu chữ dù nó nằm ở vị trí nào
+                    if (fullTagToRemove) {
+                        rawContent = rawContent.replace(fullTagToRemove, '').trim();
+                    }
+                }
+
+                // Xóa phòng hờ tất cả các tag [img...] còn sót trong chuỗi chữ
+                rawContent = rawContent.replace(/\[img[\s\S]*?\]/gi, '').trim();
+
+                const content = stripBlockTags(rawContent);
+
+                // --- LOGIC MỞ KHỐI CHỮ (0, 2, 4) ---
+                const shouldStartNewBlock = (index === 0) ||
+                    (blockType === 0 || blockType === 2 || blockType === 4) ||
+                    previousWasDialogue;
+
+                if (shouldStartNewBlock) {
+                    if (isBlockOpen) {
+                        html += '</div>';
+                    }
+
+                    let blockClass = 'para-block-start';
+                    if (blockType === 2) blockClass = 'para-block-indent';
+                    else if (blockType === 4) blockClass = 'para-block-dialogue';
+                    else if (blockType === 1 && previousWasDialogue) blockClass = 'para-block-indent';
+
+                    html += `<div class="${blockClass}">`;
+                    isBlockOpen = true;
+                }
+
+                // Đánh dấu highlight nếu đang được chọn sửa trên Side Panel
+                const isEditingThis = (typeof currentEditingIndex !== 'undefined' && currentEditingIndex === index);
+                const editingClasses = isEditingThis ? ' active editing-live' : '';
+
+                // --- RENDER NỘI DUNG CHỮ ---
+                html += `<span class="editor-reader-paragraph${editingClasses}"
+                                      data-paragraph-id="${p.paragraphId}"
+                                      data-paragraph-index="${index}"
+                                      data-paragraph-order="${order}"
+                                      title="#${String(order).padStart(3, '0')} (Kiểu: ${blockType})">`;
+
+                if (content === null || content === '') {
+                    // Nếu câu chỉ có ảnh và không có chữ thì không in chữ báo thiếu
+                    if (!finalUrl) {
+                        html += `<span class="italic text-gray-400">[Chưa có nội dung ${getEditorLanguageName(currentEditorLanguage)}]</span>`;
+                    }
+                } else {
+                    html += content;
+                }
+
+                html += `</span> `;
+
+                previousWasDialogue = (blockType === 4);
+
+                // --- LUÔN LUÔN XỬ LÝ ẢNH SAU CÂU ---
+                if (imgAfterHtml) {
+                    // Đóng khối text hiện tại trước khi in ảnh để ảnh không bị dính thụt lề 1cm của khối chữ
+                    if (isBlockOpen) {
+                        html += '</div>';
+                        isBlockOpen = false;
+                    }
+                    html += imgAfterHtml;
+                    previousWasDialogue = false; // Reset cờ sau ảnh để câu kế tiếp không bị hiểu nhầm là nối sau lời thoại
+                }
+            });
+
+            if (isBlockOpen) {
+                html += '</div>';
+            }
+
+            html += '</div>';
+
+            $container.html(html);
+            updateChapterEditorCounter();
+            initChapterEditorScrollObserver();
         }
-
-
-        let html = '';
-
-
-        chapterEditorParagraphs.forEach(function(paragraph, index) {
-
-            const content =
-                getEditorParagraphText(
-                    paragraph,
-                    currentEditorLanguage
-                );
-
-
-            const order =
-                paragraph.paragraphOrder;
-
-
-            html += `
-
-                <div
-
-                    class="editor-reader-paragraph"
-
-                    data-paragraph-id="${paragraph.paragraphId}"
-
-                    data-paragraph-index="${index}"
-
-                    data-paragraph-order="${order}">
-
-
-                    <div class="editor-paragraph-number">
-
-                        #${String(order).padStart(3, '0')}
-
-                    </div>
-
-
-                    <div class="editor-paragraph-content">
-
-            `;
-
-
-            if (content === null) {
-
-                html += `
-
-                    <div class="editor-paragraph-unavailable">
-
-                        <i class="fa-solid fa-circle-exclamation"></i>
-
-                        Nội dung
-                        ${getEditorLanguageName(currentEditorLanguage)}
-                        chưa có.
-
-                    </div>
-
-                `;
-
-            }
-            else {
-
-                /*
-                    * Quan trọng:
-                    * API đang trả HTML từ Quill.
-                    *
-                    * Không escape HTML ở đây.
-                    *
-                    * Vì reader hiện tại của bạn cũng đang
-                    * xử lý nội dung rich text.
-                    */
-
-                html += content;
-
-            }
-
-
-            html += `
-
-                    </div>
-
-                </div>
-
-            `;
-
-        });
-
-
-        $container.html(html);
-
-
-        updateChapterEditorCounter();
-
-
-        initChapterEditorScrollObserver();
+    function stripBlockTags(str) {
+        if (!str) return null;
+        return str.replace(/<\/?p[^>]*>/gi, '').replace(/<br\s*\/?>/gi, ' ').trim();
     }
     function getEditorParagraphText(paragraph, language) {
 
@@ -2363,26 +3009,21 @@ $(document).ready(function () {
     }
     function normalizeQuillHtml(html) {
         if (!html) return null;
+        let clean = html.trim();
 
-        html = html.trim();
-
-        // Nội dung rỗng của Quill
-        if (
-            html === '' ||
-            html === '<p><br></p>' ||
-            html === '<p></p>'
-        ) {
+        if (clean === '' || clean === '<p><br></p>' || clean === '<p></p>') {
             return null;
         }
 
-        // Nếu toàn bộ nội dung chỉ có đúng 1 <p>...</p>
-        const match = html.match(/^<p>([\s\S]*)<\/p>$/);
-
-        if (match) {
-            return match[1].trim();
+        // Bóc sạch thẻ <p> ngoài cùng do Quill tự bọc
+        if (clean.startsWith('<p>') && clean.endsWith('</p>')) {
+            clean = clean.slice(3, -4);
         }
 
-        return html;
+        // Phòng ngừa trường hợp người dùng copy-paste nội dung có thẻ <br> hoặc <p> từ web khác vào
+        clean = clean.replace(/<\/?p[^>]*>/gi, '').replace(/<br\s*\/?>/gi, ' ').trim();
+
+        return clean;
     }
     function initChapterEditorScrollObserver() {
 
@@ -2457,141 +3098,6 @@ $(document).ready(function () {
                     .observe(paragraph);
 
             });
-    }
-    function openChapterSidePanel(index) {
-
-        const paragraph =
-            chapterEditorParagraphs[index];
-
-
-        if (!paragraph) {
-
-            return;
-
-        }
-
-
-        const order =
-            paragraph.paragraphOrder;
-
-
-        $('#sidePanelParagraphNumber')
-            .text(
-                `#${String(order).padStart(3, '0')}`
-            );
-
-
-        const languages = [
-
-            {
-                key: 'english',
-                label: '🇺🇸 English'
-            },
-
-            {
-                key: 'vietnamese',
-                label: '🇻🇳 Vietnamese'
-            },
-
-            {
-                key: 'chinese',
-                label: '🇨🇳 Chinese'
-            },
-
-            {
-                key: 'japanese',
-                label: '🇯🇵 Japanese'
-            },
-
-            {
-                key: 'french',
-                label: '🇫🇷 French'
-            }
-
-        ];
-
-
-        let html = '';
-
-
-        languages.forEach(function(lang) {
-
-            const value =
-                paragraph[lang.key];
-
-
-            /*
-                * NULL thật sự => không render editor.
-                */
-
-            if (
-                value === null ||
-                value === undefined ||
-                value.trim() === ''
-            ) {
-
-                return;
-
-            }
-
-
-            html += `
-
-                <div class="chapter-language-editor">
-
-                    <div class="chapter-language-editor-label">
-
-                        <span>
-                            ${lang.label}
-                        </span>
-
-                    </div>
-
-
-                    <div class="chapter-language-editor-content">
-
-                        ${value}
-
-                    </div>
-
-                </div>
-
-            `;
-
-        });
-
-
-        if (!html) {
-
-            html = `
-
-                <div class="text-center text-gray-400 py-10">
-
-                    Paragraph này chưa có nội dung.
-
-                </div>
-
-            `;
-
-        }
-
-
-        $('#chapterEditorSideContent')
-            .html(html);
-
-
-        $('#chapterEditorSidePanel')
-            .addClass('open');
-
-    }
-    function closeChapterSidePanel() {
-
-        $('#chapterEditorSidePanel')
-            .removeClass('open');
-
-
-        $('.editor-reader-paragraph')
-            .removeClass('active');
     }
 
 </script>
@@ -2726,9 +3232,8 @@ $(document).ready(function () {
 .paragraph-editor .ql-container {
     border-radius: 0 0 8px 8px;
 }
-
     /* =========================================================
-       CHAPTER READER / EDITOR
+       CHAPTER EDITOR
     ========================================================= */
 
     .chapter-editor-window {
@@ -2736,11 +3241,11 @@ $(document).ready(function () {
         height: 94vh;
         margin: 3vh auto;
         background: #ffffff;
-        border-radius: 20px;
+        border-radius: 18px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
     }
 
 
@@ -2749,101 +3254,80 @@ $(document).ready(function () {
     ========================================================= */
 
     .chapter-editor-header {
-        flex-shrink: 0;
         position: relative;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
-        padding: 18px 28px;
+        justify-content: center;
+        padding: 18px 60px;
         background: #ffffff;
         border-bottom: 1px solid #e5e7eb;
     }
 
-
-    .chapter-editor-close {
-        position: absolute;
-        right: 18px;
-        top: 18px;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #6b7280;
-        transition: all .2s;
+    .chapter-editor-header-inner {
+        text-align: center;
     }
 
+    .chapter-editor-story-title {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: #374151;
+    }
 
-        .chapter-editor-close:hover {
-            background: #f3f4f6;
-            color: #111827;
-            transform: rotate(90deg);
-        }
-
-
-    /* =========================================================
-       META
-    ========================================================= */
+    .chapter-editor-chapter-title {
+        margin: 4px 0 8px;
+        font-size: 16px;
+        line-height: 1.4;
+        font-weight: 500;
+        color: #0d9488;
+    }
 
     .chapter-editor-meta {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 18px;
-        margin-top: 7px;
-        font-size: 13px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
         color: #9ca3af;
     }
 
-
         .chapter-editor-meta span {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 5px;
         }
 
-
-    /* =========================================================
-       LANGUAGE TABS
-    ========================================================= */
-
-    .chapter-editor-language-tabs {
-        flex-shrink: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 20px;
-        background: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
-        overflow-x: auto;
-    }
-
-
-    .chapter-editor-language-tab {
-        padding: 7px 14px;
-        border-radius: 10px;
-        border: 1px solid transparent;
-        font-size: 13px;
-        font-weight: 600;
-        color: #6b7280;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: all .2s;
-    }
-
-
-        .chapter-editor-language-tab:hover {
-            background: #ffffff;
-            color: #0f766e;
+        .chapter-editor-meta i {
+            font-size: 11px;
         }
 
 
-        .chapter-editor-language-tab.active {
-            background: #ffffff;
-            color: #0f766e;
-            border-color: #99f6e4;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    /* =========================================================
+       CLOSE
+    ========================================================= */
+
+    .chapter-editor-close {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease;
+    }
+
+        .chapter-editor-close:hover {
+            background: #f3f4f6;
+            color: #374151;
         }
 
 
@@ -2861,88 +3345,187 @@ $(document).ready(function () {
 
 
     /* =========================================================
-       READER
+       READER WRAPPER
     ========================================================= */
 
-    .chapter-editor-reader {
+    .chapter-editor-reader-wrapper {
         flex: 1;
         min-width: 0;
-        overflow-y: auto;
-        padding: 45px 7vw 120px;
-        background: #fafafa;
-        font-family: 'Lora', serif !important;
-        line-height: 2 !important;
-    }
-
-
-    /*
-       Reader giống người đọc thật.
-       Không card.
-       Không background riêng từng paragraph.
-    */
-
-    .editor-reader-paragraph {
-        max-width: 850px;
-        margin: 0 auto 24px;
-        cursor: pointer;
-        transition: opacity .15s;
-    }
-
-
-        .editor-reader-paragraph:hover {
-            opacity: .72;
-        }
-
-
-    /* Số paragraph */
-
-    .editor-paragraph-number {
-        margin-bottom: 3px;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-        color: #b0b7c3;
-        user-select: none;
-    }
-
-
-    /* Nội dung */
-
-    .editor-paragraph-content {
-        font-size: 18px;
-        line-height: 2;
-        color: #1f2937;
-    }
-
-
-    /*
-       Paragraph đang được chọn
-    */
-
-    .editor-reader-paragraph.active {
-        opacity: 1;
-    }
-
-
-        .editor-reader-paragraph.active
-        .editor-paragraph-number {
-            color: #0d9488;
-        }
-
-
-    /* NULL */
-
-    .editor-paragraph-unavailable {
-        color: #9ca3af;
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-        font-style: italic;
+        min-height: 0;
+        overflow: hidden;
+        transition: width .25s ease;
     }
 
 
     /* =========================================================
-       SIDE EDITOR
+       READER
     ========================================================= */
+
+    .chapter-editor-reader {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        padding: 40px 60px 80px;
+        background: #fafafa;
+        font-family: 'Lora', serif !important;
+        font-size: 18px;
+        line-height: 2 !important;
+        color: #111827;
+        text-align: justify;
+    }
+
+    /* Khung giới hạn độ rộng trang sách */
+    .chapter-editor-reader-inner {
+        max-width: 850px;
+        margin: 0 auto;
+        text-align: justify;
+    }
+
+    /* Biến mỗi paragraph thành dạng inline để chảy nối tiếp nhau */
+    .chapter-editor-reader .editor-reader-paragraph {
+        display: inline !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        cursor: pointer;
+        text-align: justify;
+        transition: background-color .15s ease, color .15s ease;
+    }
+
+    .editor-reader-paragraph.active {
+        color: #0f766e !important;
+        background-color: rgba(20, 184, 166, 0.12);
+        border-radius: 4px;
+    }
+
+    .editor-reader-paragraph:hover {
+        color: #0f766e;
+    }
+
+
+    /* =========================================================
+       PARAGRAPH NUMBER
+    ========================================================= */
+    .editor-paragraph-number {
+        position: absolute;
+        left: -45px;
+        top: 5px;
+        width: 35px;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        line-height: 1.4;
+        color: #aeb5c0;
+        text-align: right;
+        user-select: none;
+        opacity: 0;
+        transition: opacity .15s ease;
+    }
+
+
+    /*
+       Chỉ hiện số khi hover.
+    */
+
+    .editor-reader-paragraph:hover .editor-paragraph-number {
+        opacity: 1;
+    }
+
+
+    /* =========================================================
+       SELECTED PARAGRAPH
+    ========================================================= */
+
+        .editor-reader-paragraph.active .editor-paragraph-number {
+            opacity: 1;
+            color: #14b8a6;
+            font-weight: 700;
+        }
+
+
+    /*
+       Không background card.
+       Không border box.
+    */
+
+    .editor-reader-paragraph:hover {
+        color: #0f766e;
+    }
+
+
+    /* =========================================================
+       CONTENT
+    ========================================================= */
+
+    .editor-paragraph-content {
+        display: inline !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: 'Lora', serif !important;
+        font-size: 18px;
+        line-height: 2;
+        color: inherit;
+    }
+
+    .editor-paragraph-content p {
+        display: inline !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    /* Giữ khoảng cách giữa 2 thẻ p liền kề nếu có */
+    .editor-paragraph-content p + p::before {
+        content: " ";
+    }
+
+        /*
+       <br> vẫn hoạt động bình thường.
+    */
+
+        .editor-paragraph-content br {
+            display: block;
+            content: "";
+            margin: 0;
+        }
+
+
+    /* =========================================================
+       UNAVAILABLE LANGUAGE / CONTENT
+    ========================================================= */
+
+    .editor-paragraph-unavailable {
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #9ca3af;
+    }
+
+
+    /* =========================================================
+       LOADING
+    ========================================================= */
+
+    .chapter-editor-loading {
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        color: #9ca3af;
+    }
+
+        .chapter-editor-loading i {
+            font-size: 24px;
+        }
+
+
+    /* =========================================================
+        SIDE EDITOR
+     ========================================================= */
 
     .chapter-editor-side-panel {
         width: 480px;
@@ -2954,10 +3537,6 @@ $(document).ready(function () {
         box-shadow: -5px 0 20px rgba(0, 0, 0, .05);
     }
 
-
-        .chapter-editor-side-panel.open {
-            display: flex;
-        }
 
 
     /* Header */
@@ -2999,8 +3578,8 @@ $(document).ready(function () {
 
 
     /* =========================================================
-       LANGUAGE EDITOR BLOCK
-    ========================================================= */
+        LANGUAGE EDITOR BLOCK
+     ========================================================= */
 
     .chapter-language-editor {
         margin-bottom: 24px;
@@ -3033,35 +3612,67 @@ $(document).ready(function () {
 
 
     /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    .chapter-editor-side-empty {
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        color: #9ca3af;
+    }
+
+        .chapter-editor-side-empty i {
+            font-size: 25px;
+        }
+
+        .chapter-editor-side-empty p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+
+    /* =========================================================
        FOOTER
     ========================================================= */
 
     .chapter-editor-bottom-bar {
         flex-shrink: 0;
+        min-height: 58px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 14px;
-        padding: 11px 20px;
-        background: rgba(255,255,255,.96);
-        backdrop-filter: blur(10px);
+        gap: 22px;
+        padding: 8px 18px;
+        background: rgba(255, 255, 255, .96);
         border-top: 1px solid #e5e7eb;
-        box-shadow: 0 -4px 15px rgba(0,0,0,.05);
     }
 
+
+    /* =========================================================
+       NAVIGATION
+    ========================================================= */
 
     .chapter-editor-nav-button {
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 7px;
-        padding: 8px 14px;
-        border-radius: 10px;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-family: Arial, sans-serif;
         font-size: 13px;
-        font-weight: 600;
-        color: #4b5563;
-        transition: all .2s;
+        cursor: pointer;
+        border-radius: 7px;
+        transition: background .2s ease, color .2s ease;
     }
-
 
         .chapter-editor-nav-button:hover {
             background: #f3f4f6;
@@ -3069,38 +3680,188 @@ $(document).ready(function () {
         }
 
 
+    /* =========================================================
+       COUNTER
+    ========================================================= */
+
     .chapter-editor-counter {
-        min-width: 80px;
+        min-width: 75px;
         text-align: center;
-        font-size: 14px;
-        font-weight: 700;
-        color: #374151;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
     }
 
+
+    /* =========================================================
+       SAVE
+    ========================================================= */
 
     .chapter-editor-save-button {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        padding: 9px 16px;
         margin-left: 10px;
-        border-radius: 10px;
-        background: #14b8a6;
-        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 9px 15px;
+        border: none;
+        border-radius: 7px;
+        background: #0d9488;
+        color: white;
+        font-family: Arial, sans-serif;
         font-size: 13px;
-        font-weight: 700;
-        opacity: .5;
-        cursor: not-allowed;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s ease, opacity .2s ease;
     }
 
+        .chapter-editor-save-button:hover:not(:disabled) {
+            background: #0f766e;
+        }
 
-        .chapter-editor-save-button:not(:disabled) {
-            opacity: 1;
-            cursor: pointer;
+        .chapter-editor-save-button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
         }
 
 
-            .chapter-editor-save-button:not(:disabled):hover {
-                background: #0d9488;
+    /* =========================================================
+       SCROLLBAR
+    ========================================================= */
+
+    .chapter-editor-reader::-webkit-scrollbar,
+    .chapter-editor-side-content::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .chapter-editor-reader::-webkit-scrollbar-track,
+    .chapter-editor-side-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chapter-editor-reader::-webkit-scrollbar-thumb,
+    .chapter-editor-side-content::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+    }
+
+        .chapter-editor-reader::-webkit-scrollbar-thumb:hover,
+        .chapter-editor-side-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    /* Container bài đọc */
+    .chapter-editor-reader-inner {
+        max-width: 850px;
+        margin: 0 auto;
+        text-align: justify;
+        line-height: 2;
+    }
+
+    /* Các khối đoạn văn */
+    .para-block-start {
+        margin-top: 1.5rem;
+        display: block;
+        text-indent: 1cm;
+    }
+
+    .para-block-indent {
+        margin-top: 1.25rem;
+        text-indent: 1cm; /* Lùi đầu dòng 1cm */
+        display: block;
+    }
+
+    .para-block-dialogue {
+        margin-top: 0.75rem;
+        display: block;
+        text-indent: 1cm; /* Lùi đầu dòng 1cm */
+    }
+
+        .para-block-dialogue::before {
+            content: "- "; /* Hoặc "— " theo phong cách sách */
+            font-weight: bold;
+            color: #374151;
+        }
+
+    /* Từng câu để click dịch / sửa */
+    .editor-reader-paragraph {
+        display: inline !important;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+        .editor-reader-paragraph.active {
+            background-color: rgba(20, 184, 166, 0.15);
+            color: #0f766e;
+            border-radius: 4px;
+        }
+
+    .story-illustration-block {
+        display: block !important;
+        margin: 1.5rem auto !important;
+        text-align: center;
+        width: 100%;
+        clear: both;
+    }
+
+        .story-illustration-block img {
+            display: block;
+            max-width: 90%;
+            max-height: 550px;
+            margin: 0 auto;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e5e7eb;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+        }
+
+            .story-illustration-block img:hover {
+                transform: scale(1.01);
             }
+    .story-illustration-caption {
+        margin-top: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4b5563;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+        .story-illustration-caption i {
+            font-size: 12px;
+            color: #0d9488;
+        }
+    /* Styling cho Side Panel */
+    .chapter-editor-side-panel.open {
+        display: flex !important;
+        width: 440px;
+    }
+
+    #sideQuillEditorContainer .ql-toolbar.ql-snow {
+        border: none;
+        border-bottom: 1px solid #f3f4f6;
+        background: #fafafa;
+        padding: 6px 8px;
+    }
+
+    #sideQuillEditorContainer .ql-container.ql-snow {
+        border: none;
+    }
+
+    #sideQuillEditor .ql-editor {
+        min-height: 140px;
+        padding: 12px;
+        line-height: 1.8;
+    }
+
+    /* Đánh dấu câu đang được sửa trực tiếp */
+    .editor-reader-paragraph.editing-live {
+        outline: 2px dashed #0d9488 !important;
+        background-color: rgba(13, 148, 136, 0.08) !important;
+        border-radius: 4px;
+    }
 </style>

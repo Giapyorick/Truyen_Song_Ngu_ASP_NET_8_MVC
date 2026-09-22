@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="7.5.2" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.25" />
     <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.20" />
@@ -22,6 +24,10 @@
 
   <ItemGroup>
     <Folder Include="Service\" />
+    <Folder Include="wwwroot\js\admin\tblUsers\" />
+    <Folder Include="wwwroot\js\admin\tblParagraphs\" />
+    <Folder Include="wwwroot\js\admin\tblChapters\" />
+    <Folder Include="wwwroot\js\admin\tblStories\" />
   </ItemGroup>
 
 </Project>

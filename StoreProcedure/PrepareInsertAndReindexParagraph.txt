@@ -1,0 +1,57 @@
+CREATE OR ALTER PROCEDURE sp_PrepareInsertAndReindexParagraph
+    @ChapID INT,
+    @TargetOrder INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DECLARE @TotalRows INT = 0;
+        DECLARE @MinOrder INT = 0;
+        DECLARE @MaxOrder INT = 0;
+        DECLARE @UniqueOrders INT = 0;
+
+        -- 1. Thống kê nhanh trạng thái thứ tự hiện tại của chương
+        SELECT 
+            @TotalRows = COUNT(1),
+            @MinOrder = ISNULL(MIN(ParagraphOrder), 0),
+            @MaxOrder = ISNULL(MAX(ParagraphOrder), 0),
+            @UniqueOrders = COUNT(DISTINCT ParagraphOrder)
+        FROM [dbo].[tblParagraph]
+        WHERE [ChapID] = @ChapID;
+
+        -- 2. Kiểm tra tính liên tục (bắt đầu từ 0, không lặp, không nhảy cóc)
+        -- Nếu SAI lệch chuỗi 0 -> (n - 1), chuẩn hóa lại trước
+        IF (@TotalRows > 0 AND (@MinOrder <> 0 OR @MaxOrder <> (@TotalRows - 1) OR @UniqueOrders <> @TotalRows))
+        BEGIN
+            ;WITH Reindexed AS (
+                SELECT 
+                    ParagraphOrder,
+                    (ROW_NUMBER() OVER (ORDER BY ParagraphOrder ASC, ParagraphID ASC) - 1) AS NewOrder
+                FROM [dbo].[tblParagraph]
+                WHERE [ChapID] = @ChapID
+            )
+            UPDATE Reindexed
+            SET ParagraphOrder = NewOrder
+            WHERE ParagraphOrder <> NewOrder;
+        END
+
+        -- 3. Dồn các đoạn đứng sau @TargetOrder lên +1 để tạo ô trống chuẩn
+        UPDATE [dbo].[tblParagraph]
+        SET ParagraphOrder = ParagraphOrder + 1
+        WHERE [ChapID] = @ChapID 
+          AND ParagraphOrder > @TargetOrder;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+EXEC sp_PrepareInsertAndReindexParagraph @ChapID = 4, @TargetOrder = 0;
+
+SELECT * FROM tblParagraph WHERE ChapID = 4

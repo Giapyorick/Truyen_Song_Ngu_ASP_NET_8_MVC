@@ -1,0 +1,498 @@
+﻿/* Phông chữ & định dạng bài đọc */
+.reading-content {
+line-height: 2 !important;
+font-family: 'Lora', serif !important;
+text-align: justify;
+}
+
+/* Các khối đoạn văn theo BlockType */
+.reading-content .para-block-start {
+margin-top: 1.5rem !important;
+display: block !important;
+text-indent: 1cm !important;
+clear: both !important;
+}
+
+.reading-content .para-block-indent {
+margin-top: 1.25rem !important;
+text-indent: 1cm !important;
+display: block !important;
+clear: both !important;
+}
+
+.reading-content .para-block-dialogue {
+margin-top: 0.75rem !important;
+display: block !important;
+text-indent: 1cm !important;
+clear: both !important;
+}
+
+.reading-content .para-block-dialogue::before {
+content: "- " !important;
+font-weight: bold !important;
+color: inherit !important;
+}
+
+/* Định dạng câu inline */
+.reading-content .text-segment {
+display: inline !important;
+cursor: pointer !important;
+background-color: transparent !important;
+border-radius: 4px !important;
+text-indent: 0 !important;
+}
+
+.reading-content .text-segment.is-translated {
+color: inherit !important;
+}
+
+.reading-content .text-segment p {
+display: inline !important;
+margin: 0 !important;
+padding: 0 !important;
+}
+
+/* Khung hiển thị ảnh minh họa */
+.story-illustration-block {
+display: block !important;
+margin: 2rem auto !important;
+text-align: center !important;
+text-indent: 0 !important;
+width: 100% !important;
+clear: both !important;
+}
+
+.story-illustration-block img {
+display: block !important;
+max-width: 90% !important;
+max-height: 550px !important;
+margin: 0 auto !important;
+border-radius: 16px !important;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+border: 1px solid #e5e7eb !important;
+object-fit: contain !important;
+}
+
+.story-illustration-caption {
+margin-top: 10px !important;
+font-size: 14px !important;
+font-weight: 500 !important;
+font-style: italic !important;
+display: flex !important;
+align-items: center !important;
+justify-content: center !important;
+gap: 6px !important;
+text-indent: 0 !important;
+color: #64748b;
+}
+
+.story-illustration-caption i {
+font-size: 12px !important;
+color: #0d9488 !important;
+}
+
+/* Lớp phủ Focus Mode */
+#focusModeOverlay {
+z-index: -1 !important;
+pointer-events: none;
+scrollbar-width: none !important;
+-ms-overflow-style: none !important;
+}
+
+#focusModeOverlay::-webkit-scrollbar,
+#fixedBottomBar::-webkit-scrollbar {
+display: none !important;
+}
+
+#focusModeOverlay.block {
+z-index: 1000 !important;
+pointer-events: auto;
+}
+
+#rightActionControls, #chat-box {
+z-index: 9999 !important;
+}
+
+/* Theme Biến thể */
+#themeSelectorGroup button {
+width: 24px !important;
+height: 24px !important;
+flex-shrink: 0 !important;
+border-radius: 50% !important;
+}
+
+#themeSelectorGroup button[data-theme="light"] {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+#themeSelectorGroup button[data-theme="sepia"] {
+    background-color: #f4ecd8 !important;
+    border: 1px solid rgba(180, 83, 9, 0.3) !important;
+}
+
+#themeSelectorGroup button[data-theme="dark"] {
+    background-color: #1e293b !important;
+    border: 1px solid #475569 !important;
+}
+#focusModeOverlay.theme-light {
+background-color: #f1f5f9;
+}
+
+#focusModeOverlay.theme-light #focusContentContainer,
+#mainWrapper.theme-light {
+color: #1e293b !important;
+}
+
+#mainWrapper.theme-light .text-segment {
+color: #1e293b !important;
+}
+
+#focusModeOverlay.theme-sepia {
+background-color: #eaddca;
+}
+
+#focusModeOverlay.theme-sepia #focusContentContainer,
+#mainWrapper.theme-sepia {
+background-color: #fdf6e3 !important;
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia .text-segment {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia .story-illustration-caption {
+color: #786248 !important;
+}
+
+.theme-sepia #fixedBottomBar {
+background-color: rgba(244, 236, 216, 0.95) !important;
+border-color: #e4dcbc !important;
+}
+
+.theme-sepia #fixedBottomBar div {
+background-color: #fbf7ee !important;
+border-color: #e4dcbc !important;
+color: #433422 !important;
+}
+
+.theme-sepia #chapterSelect, .theme-sepia #fixedBottomBar button {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia #storyChapterHeader {
+background-color: #f4ecd8 !important;
+border-color: #e4dcbc !important;
+}
+
+#mainWrapper.theme-sepia #txtStoryTitle {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia #txtChapterTitle {
+color: #854d0e !important;
+}
+
+#focusModeOverlay.theme-dark {
+background-color: #020617;
+}
+
+#focusModeOverlay.theme-dark #focusContentContainer,
+#mainWrapper.theme-dark {
+background-color: #1e293b !important;
+color: #f1f5f9 !important;
+border: 1px solid #334155;
+}
+
+#mainWrapper.theme-dark .text-segment {
+color: #f1f5f9 !important;
+}
+
+#mainWrapper.theme-dark .story-illustration-block img {
+border-color: #334155 !important;
+}
+
+#mainWrapper.theme-dark .story-illustration-caption {
+color: #94a3b8 !important;
+}
+
+.theme-dark #fixedBottomBar {
+background-color: rgba(30, 41, 59, 0.95) !important;
+border-color: #334155 !important;
+}
+
+.theme-dark #fixedBottomBar div {
+background-color: #0f172a !important;
+border-color: #334155 !important;
+color: #f1f5f9 !important;
+}
+
+.theme-dark #chapterSelect, .theme-dark #fixedBottomBar button {
+color: #f1f5f9 !important;
+}
+
+.theme-dark .hint-bar {
+background-color: #1e293b !important;
+border-color: #334155 !important;
+}
+
+#mainWrapper.theme-dark #storyChapterHeader {
+background-color: #0f172a !important;
+border-color: #1e293b !important;
+}
+
+#mainWrapper.theme-dark #txtStoryTitle {
+color: #f8fafc !important;
+}
+
+#mainWrapper.theme-dark #txtChapterTitle {
+color: #38bdf8 !important;
+}
+
+/* ==========================================================================
+   1. THANH ĐIỀU KHIỂN CHÍNH (#fixedBottomBar)
+   ========================================================================== */
+#fixedBottomBar {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 20px !important;
+    transform: translateX(-50%) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.4) inset !important;
+    /* Transition mượt mà cả khi mở và tắt Focus Mode */
+    transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1), bottom 0.45s cubic-bezier(0.25, 1, 0.5, 1), transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), padding 0.35s ease, border-radius 0.35s ease, gap 0.35s ease, background 0.3s ease !important;
+    will-change: left, bottom, transform;
+}
+    #fixedBottomBar select {
+        background: transparent !important;
+        border: none !important;
+        color: #0f766e !important;
+        -webkit-text-fill-color: #0f766e !important;
+        font-weight: 700 !important;
+        outline: none !important;
+        cursor: pointer;
+    }
+        /* Chỉ giữ nền trắng bên trong menu dropdown khi bấm mở danh sách */
+        #fixedBottomBar select option {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+    /* Các capsule con bên trong thanh bar */
+    #fixedBottomBar > div {
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        transition: background 0.2s ease !important;
+    }
+
+    /* Màu Gradient cho chữ & icon nút */
+    #fixedBottomBar button:not(#themeSelectorGroup button),
+    #fixedBottomBar button:not(#themeSelectorGroup button) i,
+    #fixedBottomBar span,
+    #fixedBottomBar select {
+        background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        font-weight: 700 !important;
+        display: inline-block;
+    }
+
+/* Định dạng riêng cho ô hiển thị kích cỡ chữ: giữ viền ngăn cách nhưng chữ ăn màu gradient ở trên */
+#fontSizeDisplay {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    padding: 0 8px !important;
+    line-height: 1 !important;
+}
+
+        /* 2. Danh sách tùy chọn khi click bung ra (Option popup) */
+        #fixedBottomBar select option {
+            /* Menu bung của OS cần màu chữ đặc và nền rõ ràng để không bị lỗi tàng hình */
+            background-color: #ffffff !important;
+            color: #2fb5af !important; /* Màu xanh ngọc đồng bộ với dải gradient #50C9C3 */
+            -webkit-text-fill-color: #2fb5af !important;
+            font-weight: 600 !important;
+            padding: 6px 10px !important;
+        }
+    /* Khôi phục màu nền đặc và loại bỏ clip-text cho 3 nút theme */
+    #fixedBottomBar #themeSelectorGroup button {
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: initial !important;
+        display: inline-block !important;
+        opacity: 1 !important;
+    }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="light"] {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+        }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="sepia"] {
+            background: #f4ecd8 !important;
+            background-color: #f4ecd8 !important;
+            border: 1.5px solid #d4c5a9 !important;
+        }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="dark"] {
+            background: #1e293b !important;
+            background-color: #1e293b !important;
+            border: 1.5px solid #475569 !important;
+        }
+
+        /* Ngăn hover làm biến màu nền của nút theme */
+        #fixedBottomBar #themeSelectorGroup button:hover {
+            box-shadow: 0 0 0 2px rgba(80, 201, 195, 0.6) !important;
+            transform: scale(1.1);
+        }
+
+#fontSizeDisplay {
+    color: #0f766e !important;
+    -webkit-text-fill-color: #0f766e !important;
+    font-weight: 700 !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* FIX LỖI MẤT CHỮ: Khi hover chỉ làm sáng nền, KHÔNG đổi background của button */
+#fixedBottomBar button:hover {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ==========================================================================
+   2. CỤM NÚT HÀNH ĐỘNG BÊN PHẢI (#rightActionControls)
+   ========================================================================== */
+#rightActionControls {
+    bottom: 20px !important;
+    right: 20px !important;
+    transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    will-change: bottom, right;
+}
+
+    #rightActionControls button {
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(8px) saturate(140%) !important;
+        -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.65) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.4) inset !important;
+        transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease !important;
+    }
+
+        /* Hover các nút action: chỉ làm sáng nền và nảy nhẹ */
+        #rightActionControls button:hover {
+            background: rgba(255, 255, 255, 0.45) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18) !important;
+        }
+
+/* Chữ gradient của các nút action */
+#btnFocusMode .btn-text {
+    background: linear-gradient(135deg, #FF8008, #FFC837);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+}
+
+#btnTranslateAll .btn-text {
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   3. TRẠNG THÁI FOCUS MODE: DI CHUYỂN MƯỢT MÀ, XẾP DỌC BÊN PHẢI
+   ========================================================================== */
+
+/* Thanh điều hướng dạt sang mép phải và dựng dọc ở phía trên */
+#fixedBottomBar.focus-layout-active {
+    left: calc(100% - 20px) !important;
+    right: auto !important;
+    bottom: 210px !important;
+    transform: translateX(-100%) !important;
+    flex-direction: column !important; /* Chỉ xếp các capsule lớn theo chiều dọc */
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 22px !important;
+    width: max-content !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+    /* Các capsule con bên trong: LUÔN GIỮ HÀNG NGANG (row) */
+    #fixedBottomBar.focus-layout-active > div {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        padding: 4px 8px !important;
+    }
+
+    /* ÉP CỤM ĐIỀU HƯỚNG CHƯƠNG & THEME NẰM NGANG HOÀN TOÀN */
+    #fixedBottomBar.focus-layout-active #chapterNavigation,
+    #fixedBottomBar.focus-layout-active #themeSelectorGroup,
+    #fixedBottomBar.focus-layout-active #languageSelectorGroup {
+        flex-direction: row !important;
+        gap: 6px !important;
+    }
+
+    #fixedBottomBar.focus-layout-active #chapterSelect {
+        max-width: 95px !important;
+    }
+
+    /* 3 nút màu theme luôn nằm ngang ngay ngắn */
+    #fixedBottomBar.focus-layout-active #themeSelectorGroup {
+        justify-content: center !important;
+    }
+
+/* Cụm nút Action xếp dọc ở góc dưới bên phải, nối tiếp ngay bên dưới thanh bar */
+#rightActionControls.focus-layout-active {
+    bottom: 20px !important;
+    right: 20px !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 10px !important;
+}
+
+    #rightActionControls.focus-layout-active button {
+        width: fit-content !important;
+    }
+
+/* ==========================================================================
+   4. THEME SEPIA & DARK MODE
+   ========================================================================== */
+.theme-sepia #fixedBottomBar,
+.theme-sepia #rightActionControls button {
+    background: rgba(244, 236, 216, 0.4) !important;
+    border-color: rgba(228, 220, 188, 0.8) !important;
+}
+
+    .theme-sepia #fixedBottomBar button,
+    .theme-sepia #fixedBottomBar select,
+    .theme-sepia #fixedBottomBar span {
+        -webkit-text-fill-color: #634728 !important;
+        color: #634728 !important;
+    }
+
+.theme-dark #fixedBottomBar,
+.theme-dark #rightActionControls button {
+    background: rgba(15, 23, 42, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+    .theme-dark #fixedBottomBar button,
+    .theme-dark #fixedBottomBar select,
+    .theme-dark #fixedBottomBar span {
+        -webkit-text-fill-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+    }

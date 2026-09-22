@@ -56,6 +56,14 @@
               "target": "Package",
               "version": "[7.5.2, )"
             },
+            "Hangfire.AspNetCore": {
+              "target": "Package",
+              "version": "[1.8.25, )"
+            },
+            "Hangfire.SqlServer": {
+              "target": "Package",
+              "version": "[1.8.25, )"
+            },
             "Isopoh.Cryptography.Argon2": {
               "target": "Package",
               "version": "[2.0.0, )"

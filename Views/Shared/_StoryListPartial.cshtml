@@ -1,0 +1,164 @@
+﻿@using WebTruyenTranh.ViewModels
+@model IList<StoryListViewModel>
+
+@functions {
+    public (string Code, string Icon, string GradientClass, string BorderGlow) GetLangTheme(string rawLang)
+    {
+        if (string.IsNullOrWhiteSpace(rawLang)) return ("?", "🌐", "from-slate-500/20 to-slate-700/20 text-slate-300", "border-slate-500/30");
+        var key = rawLang.Trim().ToLower();
+
+        return key switch
+        {
+            "tiếng việt" or "vietnamese" or "vi" or "vie" or "vn" =>
+                ("VIE", "🇻🇳", "from-rose-500/20 via-red-500/15 to-amber-500/20 text-red-600 shadow-rose-500/10", "border-red-400/30 shadow-sm"),
+            "tiếng anh" or "english" or "en" or "eng" or "us" =>
+                ("ENG", "🇺🇸", "from-blue-600/20 via-indigo-500/15 to-cyan-500/20 text-blue-600 shadow-blue-500/10", "border-blue-400/30 shadow-sm"),
+            "tiếng trung" or "chinese" or "zh" or "cn" or "zho" =>
+                ("ZHO", "🇨🇳", "from-amber-500/20 via-orange-500/15 to-yellow-500/20 text-amber-600 shadow-amber-500/10", "border-amber-400/30 shadow-sm"),
+            "tiếng nhật" or "japanese" or "ja" or "jp" or "jpn" =>
+                ("JPN", "🇯🇵", "from-pink-500/20 via-rose-500/15 to-purple-500/20 text-pink-600 shadow-pink-500/10", "border-pink-400/30 shadow-sm"),
+            "tiếng pháp" or "french" or "fr" or "fra" =>
+                ("FRA", "🇫🇷", "from-violet-600/20 via-purple-500/15 to-indigo-500/20 text-violet-600 shadow-violet-500/10", "border-violet-400/30 shadow-sm"),
+            _ => (key.ToUpper().Length > 3 ? key.Substring(0, 3).ToUpper() : key.ToUpper(), "🌐", "from-slate-500/20 to-slate-700/20 text-slate-600", "border-slate-300")
+        };
+    }
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="story-grid">
+        @foreach (var t in Model)
+        {
+            var rawLangs = (t.Lang ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+
+            <div class="story-card group">
+                <!-- ẢNH BÌA & CHIP THÔNG SỐ -->
+                <div class="cover-box relative">
+                    <img src="/@t.Img" alt="@t.Title" loading="lazy" onerror="this.src='/assets/image/placeholder.png';" />
+                    <div class="gray-overlay"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none"></div>
+
+                    <!-- RATE, LIKE, FOLLOWER -->
+                    <div class="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-10">
+                        <div class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/65 backdrop-blur-md border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-xs font-black text-amber-600">
+                            <i class="fa-solid fa-star text-amber-500 text-[11px] drop-shadow-[0_1px_2px_rgba(245,158,11,0.3)]"></i>
+                            <span>@(t.Rate?.ToString("0.0") ?? "0.0")</span>
+                        </div>
+
+                        <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/65 backdrop-blur-md border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-[11px] font-bold text-rose-600">
+                            <i class="fa-solid fa-heart text-rose-500 text-[10px]"></i>
+                            <span>@(t.Likes?.ToString("N0") ?? "0")</span>
+                        </div>
+
+                        <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/65 backdrop-blur-md border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-[11px] font-bold text-teal-700">
+                            <i class="fa-solid fa-bookmark text-teal-600 text-[10px]"></i>
+                            <span>@(t.CountFolower?.ToString("N0") ?? "0")</span>
+                        </div>
+                    </div>
+
+                    <!-- HUY HIỆU ĐANG ĐỌC -->
+                    <div class="absolute bottom-3 left-3 right-3 z-10">
+                        @if (t.HasProgress)
+                        {
+                            <div class="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-teal-950/70 backdrop-blur-md border border-teal-400/40 text-teal-300 text-xs font-bold shadow-lg">
+                                <i class="fa-solid fa-book-open-reader text-teal-400 animate-pulse text-[11px]"></i>
+                                <span class="truncate">Chương @t.LastChapterNumber</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-slate-900/60 backdrop-blur-md border border-white/15 text-slate-300 text-xs font-semibold">
+                                <i class="fa-regular fa-compass text-[11px]"></i>
+                                <span>Chưa đọc</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- NỘI DUNG CARD -->
+                <div class="content flex flex-col flex-1 justify-between p-3.5">
+                    <div class="flex flex-col">
+                        <a href="/Stories/Detail?id=@t.StoryID"
+                           class="story-name font-black text-slate-800 hover:text-teal-600 line-clamp-2 h-[20px] text-sm md:text-[15px] leading-snug transition-colors duration-200 text-center block mb-2"
+                           title="@t.Title">
+                            @t.Title
+                        </a>
+
+                        <div class="flex items-center justify-center content-center flex-wrap gap-1.5 h-[48px] mb-2 overflow-hidden">
+                            @if (rawLangs.Any())
+                            {
+                                foreach (var item in rawLangs)
+                                {
+                                    var badge = GetLangTheme(item);
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gradient-to-r @badge.GradientClass border @badge.BorderGlow text-[10px] font-extrabold uppercase tracking-wider" title="@item">
+                                        <span>@badge.Code</span>
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-[11px] text-slate-400 italic">Đang cập nhật</span>
+                            }
+                        </div>
+
+                        <!-- 3 CHƯƠNG MỚI NHẤT -->
+                        <div class="latest-chapters-list flex flex-col justify-start gap-1.5 mb-2 pt-2 border-t border-slate-100 h-[104px]">
+                            @if (t.LatestChapters != null && t.LatestChapters.Any())
+                            {
+                                foreach (var ch in t.LatestChapters)
+                                {
+                                    <a href="/Paragraphs/Content?chapterId=@ch.ChapterId"
+                                       class="group/ch flex items-center justify-between px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-teal-50 border border-slate-200/60 hover:border-teal-300 transition-all duration-200 text-[11px] h-[28px] shrink-0"
+                                       title="@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? $"Chương {ch.ChapterNumber}" : ch.ChapterTitle)">
+                                        <span class="font-bold text-slate-700 group-hover/ch:text-teal-700 truncate">
+                                            Chương @ch.ChapterNumber@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? "" : $": {ch.ChapterTitle}")
+                                        </span>
+                                        <i class="fa-solid fa-angle-right text-[9px] text-slate-400 group-hover/ch:text-teal-600 transition-transform group-hover/ch:translate-x-0.5"></i>
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <div class="flex items-center justify-center h-full text-[11px] text-slate-400 italic">
+                                    Chưa có chương
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTON -->
+                    <div class="action-buttons flex gap-2 pt-2 border-t border-slate-100 mt-auto">
+                        <a href="/Stories/Detail?id=@t.StoryID"
+                           class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs text-white btn-grad-detail active:scale-95">
+                            <i class="fa-solid fa-book-open text-[11px]"></i>
+                            <span>Chi tiết</span>
+                        </a>
+
+                        @if (t.HasProgress)
+                        {
+                            <a href="/Paragraphs/Content?chapterId=@t.LastChapterId"
+                               class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_auto] hover:bg-[position:right_center] shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.45)] hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+                                <i class="fa-solid fa-bolt text-[11px]"></i>
+                                <span>Đọc tiếp</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="bg-white rounded-3xl p-16 text-center border border-gray-100 space-y-3">
+        <div class="w-16 h-16 mx-auto rounded-full bg-teal-50 text-teal-400 flex items-center justify-center text-2xl">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <h3 class="font-bold text-gray-700 text-lg">Chưa có truyện nào</h3>
+        <p class="text-xs text-gray-400 max-w-sm mx-auto">
+            Hiện tại thể loại này chưa được cập nhật truyện mới. Bạn vui lòng chọn thể loại khác nhé!
+        </p>
+    </div>
+}

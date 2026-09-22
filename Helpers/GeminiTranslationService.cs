@@ -1,48 +1,79 @@
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using WebTruyenTranh.Helpers;
 
-public class GeminiTranslationService : IAiTranslationService
+namespace WebTruyenTranh.Services
 {
-    private readonly HttpClient _http;
-    private readonly string _apiKey;
-
-    public GeminiTranslationService(HttpClient http, IConfiguration config)
+    public class GeminiTranslationService : IAiTranslationService
     {
-        _http = http;
-        _apiKey = config["Groq:ApiKey"] ?? throw new ArgumentNullException("Chưa cấu hình Groq:ApiKey trong appsettings.json!");
-    }
+        private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
+        private readonly ILogger<GeminiTranslationService> _logger;
 
-    public async Task<string> GetAiResponse(string prompt)
-    {
-        var url = "https://api.groq.com/openai/v1/chat/completions";
-
-        var payload = new
-        {
-            model = "llama-3.3-70b-versatile",
-            messages = new[]
+        public GeminiTranslationService(
+            HttpClient httpClient,
+            IConfiguration configuration,
+            ILogger<GeminiTranslationService> logger)
             {
-                new { role = "system", content = "You are a professional translator for stories and comics. Translate the input accurately and naturally." },
-                new { role = "user", content = prompt }
-            },
-            temperature = 0.3
-        };
+                _httpClient = httpClient;
+                _httpClient.Timeout = TimeSpan.FromSeconds(120); // Đặt trần timeout 2 phút
+                _apiKey = configuration["Groq:ApiKey"] ?? configuration["Gemini:ApiKey"] ?? "";
+                _logger = logger;
+            }
 
-        var request = new HttpRequestMessage(HttpMethod.Post, url);
-        request.Headers.Add("Authorization", $"Bearer {_apiKey}");
-        request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-
-        var response = await _http.SendAsync(request);
-        var result = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
+        public async Task<string> GetAiResponse(string prompt)
         {
-            throw new Exception($"Lỗi Groq API [{response.StatusCode}]: {result}");
-        }
+            string endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
-        using var doc = JsonDocument.Parse(result);
-        return doc.RootElement.GetProperty("choices")[0]
-                  .GetProperty("message")
-                  .GetProperty("content").GetString() ?? "";
+            var requestPayload = new
+            {
+                model = "groq/compound-mini",
+                messages = new[]
+                 {
+                    new { role = "system", content = "You are a professional literary translator. Always output valid raw JSON array only." },
+                    new { role = "user", content = prompt }
+                },
+                max_tokens = 4096, // Tăng trần token output để không bị cụt đuôi JSON
+                temperature = 0.2
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            request.Content = new StringContent(JsonSerializer.Serialize(requestPayload), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError($"[Groq API Error] {response.StatusCode} | {responseString}");
+                throw new Exception($"Lỗi Groq API [{response.StatusCode}]: {responseString}");
+            }
+
+            using var doc = JsonDocument.Parse(responseString);
+            var messageElem = doc.RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message");
+
+            // Đọc content, nếu model trả về trong reasoning thì vẫn bắt được
+            string content = "";
+            if (messageElem.TryGetProperty("content", out var contentProp) && contentProp.ValueKind == JsonValueKind.String)
+            {
+                content = contentProp.GetString() ?? "";
+            }
+
+            if (string.IsNullOrWhiteSpace(content) && messageElem.TryGetProperty("reasoning_content", out var reasoningProp))
+            {
+                content = reasoningProp.GetString() ?? "";
+            }
+
+            return content.Trim();
+        }
     }
 }

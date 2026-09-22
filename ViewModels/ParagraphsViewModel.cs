@@ -18,6 +18,7 @@ public partial class ParagraphsViewModel
 
     public string? Chinese { get; set; } = null!;
     public string? Japanese { get; set; } = null!;
+    public int? BlockType { get; set; } = 1;
 
 
 }

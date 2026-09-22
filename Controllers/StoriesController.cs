@@ -50,7 +50,76 @@ namespace WebTruyenTranh.Controllers
 
             return View(stories);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetStoriesInfinite(string type = "likes", int? categoryId = null, int page = 1, int pageSize = 8)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
+            var query = _context.TblStories.AsNoTracking();
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query = from s in query
+                        join cs in _context.TblCategoryOfStories on s.StoryId equals cs.StoryId
+                        where cs.CategoryId == categoryId.Value
+                        select s;
+            }
+
+            query = type.ToLower() switch
+            {
+                "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate),
+                "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes),
+                "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate),
+                _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower)
+            };
+
+            var stories = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new
+                {
+                    Story = s,
+                    Progress = _context.TblUserReadingProgresses
+                        .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
+                        .Select(p => new
+                        {
+                            p.LastChapterId,
+                            ChapterNumber = _context.TblChapters
+                                .Where(c => c.ChapterId == p.LastChapterId)
+                                .Select(c => (int?)c.ChapterNumber)
+                                .FirstOrDefault()
+                        })
+                        .FirstOrDefault(),
+                    LatestChapters = _context.TblChapters
+                        .Where(ch => ch.StoryId == s.StoryId)
+                        .OrderByDescending(ch => ch.ChapterNumber)
+                        .Take(3)
+                        .Select(ch => new LatestChapterItemViewModel
+                        {
+                            ChapterId = ch.ChapterId,
+                            ChapterNumber = ch.ChapterNumber,
+                            ChapterTitle = ch.Title
+                        }).ToList()
+                })
+                .Select(x => new StoryListViewModel
+                {
+                    StoryID = x.Story.StoryId,
+                    Title = x.Story.Title,
+                    Img = x.Story.Img,
+                    Lang = x.Story.Lang,
+                    Rate = x.Story.Rate,
+                    Likes = x.Story.Likes,
+                    CountFolower = x.Story.CountFolower,
+                    CountRate = x.Story.CountRate,
+                    HasProgress = x.Progress != null,
+                    LastChapterId = x.Progress != null ? x.Progress.LastChapterId : null,
+                    LastChapterNumber = x.Progress != null ? x.Progress.ChapterNumber : null,
+                    LatestChapters = x.LatestChapters
+                })
+                .ToListAsync();
+
+            return PartialView("_StoryCardsPartial", stories);
+        }
         public async Task<IActionResult> Detail(int id)
         {
             var story = await _context.TblStories

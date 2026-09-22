@@ -27,6 +27,8 @@ public partial class TblStory
 
     public string? Status { get; set; }
 
+    public string? Lang { get; set; }
+
     public virtual TblAuthor? Author { get; set; }
 
     public virtual ICollection<TblCategoryOfStory> TblCategoryOfStories { get; set; } = new List<TblCategoryOfStory>();

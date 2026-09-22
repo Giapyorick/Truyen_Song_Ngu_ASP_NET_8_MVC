@@ -1,0 +1,114 @@
+﻿@model WebTruyenTranh.ViewModels.UsersViewModel
+
+<!-- ================= 1. MODAL ĐĂNG NHẬP ================= -->
+<div id="loginModalOverlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md hidden items-center justify-center z-[999] transition-all duration-300">
+    <div id="loginModalContent" class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform translate-y-12 opacity-0 scale-95 transition-all duration-300 relative p-8">
+
+        <!-- Nút đóng -->
+        <button type="button" onclick="closeLoginModal()" class="absolute right-5 top-5 text-gray-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button>
+
+        <div class="text-center mb-6">
+            <h2 class="text-2xl sm:text-3xl font-black text-cus">Đăng Nhập</h2>
+            <p class="text-xs text-gray-400 mt-1">Chào mừng bạn quay lại với Web Truyện</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-700 ml-1">Email</label>
+                <input id="loginEmail" type="email" class="form-control-custom text-sm" placeholder="example@email.com" required />
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-700 ml-1">Mật khẩu</label>
+                <input id="loginPassword" type="password" class="form-control-custom text-sm" placeholder="••••••••" required />
+            </div>
+
+            <p id="loginError" class="text-xs text-rose-500 font-semibold text-center hidden pt-1"></p>
+
+            <button type="submit" class="btn-login-grad mt-2">
+                <span class="btn-text">Đăng Nhập</span>
+            </button>
+
+            <div class="mt-4 text-center border-t border-slate-100 pt-4">
+                <p class="text-gray-400 text-xs">Chưa có tài khoản?</p>
+                <button type="button" onclick="openRegisterModal()" class="text-xs font-bold text-teal-600 hover:underline mt-1">
+                    <i class="fas fa-user-plus mr-1"></i> Tạo tài khoản mới ngay
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================= 2. MODAL ĐĂNG KÝ ================= -->
+<div id="registerModalOverlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md hidden items-center justify-center z-[999] transition-all duration-300">
+    <div id="registerModalContent" class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden transform translate-y-12 opacity-0 scale-95 transition-all duration-300 relative">
+
+        <div class="p-5 border-b border-gray-100 relative bg-gradient-to-r from-teal-50 to-white flex items-center justify-between">
+            <h3 class="text-xl font-extrabold text-cus">Đăng Ký Thành Viên</h3>
+            <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button>
+        </div>
+
+        <form id="registerUserForm" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            <input type="hidden" name="UserId" id="regUserId" value="0">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Cột Avatar -->
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="w-32 h-32 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+                        <img id="imgPreview" src="" class="w-full h-full object-cover hidden" />
+                        <i id="uploadIcon" class="fas fa-camera text-gray-300 text-2xl"></i>
+                    </div>
+                    <input type="file" name="formFile" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    <button type="button" onclick="$('#imageInput').click()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold hover:bg-gray-50">
+                        Chọn ảnh
+                    </button>
+                </div>
+
+                <!-- Cột thông tin -->
+                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Họ và tên</label>
+                        <input type="text" name="Name" class="form-control-custom text-xs" placeholder="Nguyễn Văn A" required>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Số điện thoại</label>
+                        <input type="text" name="Phone" class="form-control-custom text-xs" placeholder="09xxxxxxxx">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Ngày sinh</label>
+                        <input type="date" name="DoB" class="form-control-custom text-xs datepicker" placeholder="yyyy-mm-dd">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Giới tính</label>
+                        <select name="Gender" class="select2-custom">
+                            <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="Male">Nam</option>
+                            <option data-color="linear-gradient(135deg, #ff758c, #ff7eb3)" value="Female">Nữ</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Email</label>
+                        <input type="email" name="Email" class="form-control-custom text-xs" placeholder="email@gmail.com" required>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="text-[11px] font-bold text-slate-700 uppercase">Mật khẩu</label>
+                        <input type="password" name="Passwork" class="form-control-custom text-xs" placeholder="••••••••" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-3 border-t border-slate-100">
+                <button type="button" onclick="closeRegisterModal()" class="flex-1 py-2.5 rounded-xl font-bold text-xs btn-grad-cancel">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="flex-1 py-2.5 rounded-xl font-bold text-xs btn-login-grad text-white">
+                    Tạo Tài Khoản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

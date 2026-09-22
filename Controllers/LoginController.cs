@@ -33,17 +33,20 @@ namespace WebTruyenTranh.Controllers
                 return Json(new
                 {
                     success = false,
-                    message = "Email or passwork is incorrect"
+                    message = "Email hoặc mật khẩu không chính xác!"
                 });
             }
 
+            // BẮT BUỘC: Lưu thông tin vào Session khi đăng nhập thành công
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("UserName", user.Name ?? user.Email);
 
             return Json(new
             {
                 success = true,
-                debugUserId = HttpContext.Session.GetInt32("UserId"),
-                debugUserName = HttpContext.Session.GetString("UserName"),
-                redirectUrl = Url.Action("Index", "Home")
+                message = "Đăng nhập thành công!",
+                userId = user.UserId,
+                userName = user.Name
             });
         }
 

@@ -1,0 +1,18 @@
+CREATE OR ALTER PROCEDURE sp_ReindexParagraphOrder
+    @ChapID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    ;WITH Reindexed AS (
+        SELECT 
+            ParagraphOrder,
+            (ROW_NUMBER() OVER (ORDER BY ParagraphOrder ASC, ParagraphID ASC) - 1) AS CorrectOrder
+        FROM [dbo].[tblParagraph]
+        WHERE [ChapID] = @ChapID
+    )
+    UPDATE Reindexed
+    SET ParagraphOrder = CorrectOrder
+    WHERE ParagraphOrder <> CorrectOrder;
+END;

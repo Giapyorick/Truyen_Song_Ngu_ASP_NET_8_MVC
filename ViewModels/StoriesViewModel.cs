@@ -27,7 +27,8 @@ public partial class StoriesViewModel
     public int? CountRate { get; set; }
 
     public string? Status { get; set; }
-	[NotMapped]
+    public string? Lang { get; set; }
+    [NotMapped]
 	public IFormFile? formFile {get; set;}
 	public List<int> CategoryIds { get; set; } = new();
 

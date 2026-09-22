@@ -1,0 +1,90 @@
+﻿/* auth-modal.css */
+:root {
+--primary-color: #50C9C3;
+--primary-gradient: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+}
+
+.text-cus {
+background: var(--primary-gradient);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-shadow: 0 2px 6px rgba(15, 3, 28, 0.1);
+}
+
+.text-field {
+background: linear-gradient(135deg, #0250c5 0%, #d43f8d 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+/* Nút bấm gradient đồng bộ */
+.btn-login-grad {
+width: 100%;
+padding: 12px;
+background-image: var(--primary-gradient);
+text-align: center;
+transition: 0.5s;
+background-size: 200% auto;
+color: white;
+box-shadow: 0 4px 15px rgba(80, 201, 195, 0.3);
+cursor: pointer;
+border: none;
+border-radius: 12px;
+font-weight: 700;
+}
+
+.btn-login-grad:hover {
+background-position: right center;
+color: #fff;
+}
+
+.btn-grad-cancel {
+background: #e2e8f0;
+color: #475569;
+}
+
+.btn-grad-cancel:hover {
+background: #cbd5e1;
+}
+
+/* Modal Form Styles */
+.form-control-custom {
+width: 100%;
+padding: 10px 14px;
+border: 2px solid #edeff2;
+border-radius: 12px;
+outline: none;
+color: #1e293b;
+transition: border-color 0.3s ease;
+}
+
+.form-control-custom:focus {
+border-color: #50C9C3;
+}
+
+/* Select2 custom override inside modal */
+.select2-container--open {
+z-index: 999999999 !important;
+}
+
+.select2-container {
+width: 100% !important;
+}
+
+.select2-container--default .select2-selection--single {
+border: 2px solid #edf2f7 !important;
+border-radius: 12px !important;
+height: 44px !important;
+display: flex;
+align-items: center;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+line-height: normal !important;
+padding-left: 14px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+height: 42px !important;
+right: 10px !important;
+}

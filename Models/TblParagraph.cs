@@ -20,5 +20,6 @@ public partial class TblParagraph
     public string? Japanese { get; set; } = null!;
 
     public string? French { get; set; } = null!;
+    public int? BlockType { get; set; } = 1;
     public virtual TblChapter Chap { get; set; } = null!;
 }
