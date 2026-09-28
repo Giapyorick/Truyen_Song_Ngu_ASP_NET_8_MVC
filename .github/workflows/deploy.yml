@@ -5,11 +5,12 @@ on:
     branches:
       - main
       - develop
-  workflow_dispatch:   # 👈 enables manual trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,18 +18,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'   # 👈 upgraded to .NET 1
+          dotnet-version: '8.0.x'
 
       - name: Restore dependencies
         run: dotnet restore ./WebTruyenTranh.csproj
 
-      - name: Inject secrets into appsettings.json
+      - name: Inject secrets
         run: |
           jq '.Groq.ApiKey = "${{ secrets.GROQ_API_KEY }}" |
               .ConnectionStrings.DefaultConnection = "${{ secrets.MONSTER_DB_CONNECTION }}" |
               .MailSettings.Mail = "${{ secrets.MAIL_USERNAME }}" |
               .MailSettings.Password = "${{ secrets.MAIL_PASSWORD }}"' \
-              ./appsettings.json > tmp.json && mv tmp.json ./appsettings.json
+              ./appsettings.json > tmp.json
+          mv tmp.json ./appsettings.json
 
       - name: Build
         run: dotnet build ./WebTruyenTranh.csproj --configuration Release --no-restore
@@ -36,24 +38,46 @@ jobs:
       - name: Publish
         run: dotnet publish ./WebTruyenTranh.csproj -c Release -o ./publish/
 
-      - name: Upload publish artifact
+      - name: Copy app_offline.htm
+        run: cp ./app_offline.htm ./publish/app_offline.htm
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: publish
           path: ./publish/
+
   deploy-main:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
+
     steps:
-      - name: Download publish artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: publish
           path: ./publish/
 
-      - name: Deploy to Production FTP
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Put app offline
+        run: |
+          lftp -c "
+            set ftp:ssl-force true;
+            set ssl:verify-certificate no;
+            open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' ${{ secrets.FTP_SERVER }};
+            cd /wwwroot;
+            put ./publish/app_offline.htm -o app_offline.htm;
+            bye
+          "
+
+      - name: Wait
+        run: sleep 10
+
+      - name: Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -61,20 +85,51 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./publish/
           server-dir: /wwwroot/
+          exclude: |
+            app_offline.htm
+
+      - name: Remove app offline
+        run: |
+          lftp -c "
+            set ftp:ssl-force true;
+            set ssl:verify-certificate no;
+            open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' ${{ secrets.FTP_SERVER }};
+            cd /wwwroot;
+            rm app_offline.htm;
+            bye
+          "
 
   deploy-develop:
     needs: build
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: develop
+
     steps:
-      - name: Download publish artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: publish
           path: ./publish/
 
-      - name: Deploy to Staging FTP
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Put app offline
+        run: |
+          lftp -c "
+            set ftp:ssl-force true;
+            set ssl:verify-certificate no;
+            open -u '${{ secrets.FTP_USERNAME_DEV }}','${{ secrets.FTP_PASSWORD_DEV }}' ${{ secrets.FTP_SERVER_DEV }};
+            cd /wwwroot;
+            put ./publish/app_offline.htm -o app_offline.htm;
+            bye
+          "
+
+      - name: Wait
+        run: sleep 10
+
+      - name: Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_DEV }}
@@ -82,3 +137,16 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD_DEV }}
           local-dir: ./publish/
           server-dir: /wwwroot/
+          exclude: |
+            app_offline.htm
+
+      - name: Remove app offline
+        run: |
+          lftp -c "
+            set ftp:ssl-force true;
+            set ssl:verify-certificate no;
+            open -u '${{ secrets.FTP_USERNAME_DEV }}','${{ secrets.FTP_PASSWORD_DEV }}' ${{ secrets.FTP_SERVER_DEV }};
+            cd /wwwroot;
+            rm app_offline.htm;
+            bye
+          "
