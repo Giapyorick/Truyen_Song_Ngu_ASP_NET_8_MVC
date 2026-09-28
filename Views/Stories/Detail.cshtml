@@ -1,0 +1,226 @@
+@model WebTruyenTranh.Models.TblStory
+@{
+    bool isLiked = ViewBag.IsLiked ?? false;
+    bool isFollowed = ViewBag.IsFollowed ?? false;
+    int userRating = ViewBag.UserRating ?? 0;
+}
+<link rel="stylesheet" href="~/css/Index/storyDetail.css" asp-append-version="true">
+<div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card border-0 shadow-xl overflow-hidden st-detail-card" style="border-radius: 32px; background: #ffffff; max-width: 1180px; width: 100%;">
+        <div class="card-body p-4 p-lg-5">
+
+            <!-- ROW PHÍA TRÊN -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="st-top-row">
+
+                        <div class="st-image-col st-image-section">
+                            <div class="card st-panel h-100 overflow-hidden position-relative">
+                                <div class="st-image-wrapper">
+                                    <img src="/@Model.Img" class="st-main-img" alt="@Model.Title">
+                                    <div class="st-image-overlay d-flex align-items-center justify-content-center p-4">
+                                        <div class="px-3 text-center st-overlay-content w-100">
+                                            <span class="st-status-badge">
+                                                <span class="st-dot"></span> @Model.Status
+                                            </span>
+                                            <h2 class="st-overlay-title mt-2">@Model.Title</h2>
+                                            <h2 class="st-overlay-title mt-2">@Model.Author.AuthorName</h2>
+                                            <div class="st-description-scroll text-white">
+                                                @Model.Description
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="position-absolute top-0 start-0 m-3" style="z-index: 10;">
+                                        <span class="badge st-badge-id">#ID @Model.StoryId</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="st-info-col st-info-section">
+                            <div class="card st-panel h-100">
+                                <div class="card-body d-flex flex-column p-4">
+
+                                    <!-- 1. PHẦN TIÊU ĐỀ & TRẠNG THÁI -->
+                                    <div class="mb-2">
+                                        <h3 class="fw-bold fs-4 text-cus mb-2"><i class="fas text-cus fa-book me-1"></i> Categories</h3>
+                                    </div>
+
+                                    <!-- 2. PHẦN THỂ LOẠI (CATEGORIES) MỚI THÊM VÀO -->
+                                    <div class="mt-2 mb-3">
+                                        <div class="d-flex flex-wrap gap-1.5 st-category-wrapper">
+                                            @if (Model.TblCategoryOfStories != null && Model.TblCategoryOfStories.Any())
+                                            {
+                                                foreach (var item in Model.TblCategoryOfStories)
+                                                {
+                                                    if (item.Category != null)
+                                                    {
+                                                        <span class="badge st-badge-cat text-xs px-2.5 py-1.5 fw-semibold">
+                                                            <i class="fas fa-tags me-1 text-muted opacity-60"></i> @item.Category.Name
+                                                        </span>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small italic">Not categorized</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <hr class="text-muted opacity-10 my-2">
+
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-4 mt-2 w-100 st-stat-box-wrapper">
+
+                                        <!-- 1. ĐÁNH GIÁ (RATING 5 NGÔI SAO LẮP ĐẦY KHÔNG THẬP PHÂN) -->
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap position-relative group" id="cardRate" style="border-color: #fde68a;">
+                                            <div class="st-stat-value text-wait fw-bold fs-6">
+                                                <span id="avgRate">@(Model.Rate != null ? Math.Round((double)Model.Rate).ToString("0") : "0")</span><small class="text-muted fs-xs">/5</small>
+                                            </div>
+
+                                            <!-- Thêm data-userrating để lưu số sao đã vote -->
+                                            <div class="star-rating-box my-1" id="starRatingGroup" data-userrating="@userRating" data-current="@(Model.Rate != null ? Math.Round((double)Model.Rate) : 0)">
+                                                <i class="fa-regular fa-star star-item" data-value="1" onclick="handleRate(@Model.StoryId, 1)"></i>
+                                                <i class="fa-regular fa-star star-item" data-value="2" onclick="handleRate(@Model.StoryId, 2)"></i>
+                                                <i class="fa-regular fa-star star-item" data-value="3" onclick="handleRate(@Model.StoryId, 3)"></i>
+                                                <i class="fa-regular fa-star star-item" data-value="4" onclick="handleRate(@Model.StoryId, 4)"></i>
+                                                <i class="fa-regular fa-star star-item" data-value="5" onclick="handleRate(@Model.StoryId, 5)"></i>
+                                            </div>
+
+                                            <div class="st-stat-label text-wait opacity-75" style="font-size: 0.7rem;">
+                                                <span id="countRate">@(Model.CountRate ?? 0)</span> ratings
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. LƯỢT THÍCH (CLICK ĐỂ LIKE / UNLIKE) -->
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap interactive-card @(isLiked ? "active" : "")"
+                                             id="cardLike"
+                                             onclick="handleLike(@Model.StoryId)">
+                                            <div class="st-stat-value text-deny fw-bold fs-6">
+                                                <i class="@(isLiked ? "fa-solid" : "fa-regular") fa-heart text-deny" id="iconLike"></i>
+                                                <span id="likesCount">@(Model.Likes ?? 0)</span>
+                                            </div>
+                                            <div class="st-stat-label text-deny opacity-75" style="font-size: 0.7rem;" id="labelLike">
+                                                @(isLiked ? "Liked" : "Like")
+                                            </div>
+                                        </div>
+
+                                        <!-- 3. THEO DÕI (CLICK ĐỂ THEO DÕI / BỎ THEO DÕI) -->
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap interactive-card @(isFollowed ? "active" : "")"
+                                             id="cardFollow"
+                                             onclick="handleFollow(@Model.StoryId)">
+                                            <div class="st-stat-value text-accepted fw-bold fs-6">
+                                                <i class="@(isFollowed ? "fa-solid" : "fa-regular") fa-bookmark text-accepted" id="iconFollow"></i>
+                                                <span id="followersCount">@(Model.CountFolower ?? 0)</span>
+                                            </div>
+                                            <div class="st-stat-label text-accepted opacity-75" style="font-size: 0.7rem;" id="labelFollow">
+                                                @(isFollowed ? "Following" : "Follow")
+                                            </div>
+                                        </div>
+
+                                        <!-- 4. KHỐI NÚT HÀNH ĐỘNG Ở ĐÁY CARD -->
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-main fw-bold fs-6"><i class="fas fa-book-open text-main"></i> Read Now</div>
+                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">120 reads</div>
+                                        </div>
+                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
+                                            <div class="st-stat-value text-main fw-bold fs-6"><i class="fas fa-exclamation text-main"></i> Report</div>
+                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">0 reports</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="st-lower-row mt-4 mt-lg-5">
+                <div class="st-glass-card st-chapters-container">
+                    <div class="st-tabs-header mb-4">
+                        <div class="st-tab-capsule ">
+                            <i class="fa-solid fa-layer-group text-main"></i>
+                            <span class="text-main">Chapter List</span>
+                        </div>
+                    </div>
+
+                    <div id="chapters-panel">
+                        @await Component.InvokeAsync("ChaptersList", new { storyId = Model.StoryId })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/stories/stories-interaction.js" asp-append-version="true"></script>
+}
+<style>
+    /* Khung cơ bản cho các card */
+    .st-stat-card {
+        background: #ffffff !important;
+        border-radius: 14px;
+        transition: all 0.25s ease;
+        user-select: none;
+    }
+
+    .interactive-card {
+        cursor: pointer;
+    }
+
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+        }
+
+        .interactive-card:active {
+            transform: scale(0.97);
+        }
+
+    /* --- TRẠNG THÁI ACTIVE: NỀN FULL MÀU GRADIENT, CHỮ TRẮNG --- */
+
+    /* 1. Lượt thích (Deny gradient) */
+    #cardLike.active {
+        background: linear-gradient(135deg, #F45C43, #EB3349) !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 14px rgba(235, 51, 73, 0.35);
+    }
+
+        #cardLike.active .st-stat-value,
+        #cardLike.active .st-stat-label,
+        #cardLike.active i {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+    /* 2. Theo dõi (Accepted gradient) */
+    #cardFollow.active {
+        background: linear-gradient(135deg, #93F9B9, #1D976C) !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 14px rgba(29, 151, 108, 0.35);
+    }
+
+        #cardFollow.active .st-stat-value,
+        #cardFollow.active .st-stat-label,
+        #cardFollow.active i {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+    /* --- NGÔI SAO --- */
+    .star-rating-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .star-item {
+        font-size: 0.95rem;
+        color: #f59e0b;
+        cursor: pointer;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+        .star-item:hover {
+            transform: scale(1.2);
+        }
+</style>

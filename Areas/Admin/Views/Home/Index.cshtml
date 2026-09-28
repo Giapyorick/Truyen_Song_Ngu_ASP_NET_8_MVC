@@ -1,0 +1,63 @@
+<main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white shadow-sm p-4 flex justify-between items-center px-8">
+            <h1 id="page-title" class="text-xl font-semibold text-gray-700 tracking-wider">Dashboard</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-info-grad font-medium">Hello, Admin!</span>
+                <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" class="w-10 h-10 rounded-full shadow-md">
+            </div>
+        </header>
+
+        <div id="main-view" class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-wait">
+					<div class="flex justify-between items-start">
+						<div>
+							<p class="text-gray-500 font-medium mb-1">Pending</p>
+							<h2 class="text-4xl font-extrabold text-wait">45</h2>
+						</div>
+						<div class="p-3 bg-orange-50 rounded-lg text-orange-500">
+							<i class="fas fa-clock fa-lg"></i>
+						</div>
+					</div>
+					<div class="mt-4 text-sm text-gray-400">
+						<span class="text-orange-500 font-bold"><i class="fas fa-arrow-up"></i> 5%</span> compared to yesterday
+					</div>
+				</div>
+
+				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-accepted">
+					<div class="flex justify-between items-start">
+						<div>
+							<p class="text-gray-500 font-medium mb-1">Approved</p>
+							<h2 class="text-4xl font-extrabold text-accepted">1,280</h2>
+						</div>
+						<div class="p-3 bg-green-50 rounded-lg text-green-500">
+							<i class="fas fa-check-circle fa-lg"></i>
+						</div>
+					</div>
+					<div class="mt-4 text-sm text-gray-400">
+						<span class="text-green-500 font-bold"><i class="fas fa-arrow-up"></i> 12%</span>in this month
+					</div>
+				</div>
+
+				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-deny">
+					<div class="flex justify-between items-start">
+						<div>
+							<p class="text-gray-500 font-medium mb-1">Denied</p>
+							<h2 class="text-4xl font-extrabold text-deny">12</h2>
+						</div>
+						<div class="p-3 bg-red-50 rounded-lg text-red-500">
+							<i class="fas fa-times-circle fa-lg"></i>
+						</div>
+					</div>
+					<div class="mt-4 text-sm text-gray-400">
+						<span class="text-red-500 font-bold"><i class="fas fa-arrow-down"></i> 2%</span> in system
+					</div>
+				</div>
+
+			</div>
+        </div>
+
+        <div id="loader" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+        </div>
+</main>

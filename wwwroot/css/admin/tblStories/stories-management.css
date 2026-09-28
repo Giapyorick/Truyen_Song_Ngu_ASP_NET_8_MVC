@@ -1,0 +1,154 @@
+﻿/* Badge trạng thái */
+.active {
+    background: linear-gradient(135deg, #93F9B9, #1D976C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.inactive {
+    background: linear-gradient(135deg, #F45C43, #EB3349);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.posting {
+    background: linear-gradient(135deg, #00c6fb, #005bea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.comingsoon {
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.male {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+.female {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.35);
+}
+
+/* Custom Select2 */
+.select2-container--open {
+    z-index: 999999999 !important;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-selection__rendered {
+    line-height: 45px !important;
+    padding-left: 15px !important;
+    font-size: 14px;
+}
+
+.select2-container--default .select2-selection--single {
+    border: 2px solid #edf2f7 !important;
+    border-radius: 12px !important;
+    height: 50px !important;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+    .select2-container--default .select2-selection--single:focus,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1) !important;
+    }
+
+.status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: normal !important;
+    padding-left: 15px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 48px !important;
+    right: 10px !important;
+}
+
+.select2-dropdown {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+    background-color: #f3f0ff !important;
+    color: #201f21 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered span {
+    display: flex;
+    align-items: center;
+}
+
+.select2-results__option {
+    padding: 10px 15px !important;
+}
+/* Multi-select Tags Styling for Select2 (#storyLang) */
+.select2-container--default .select2-selection--multiple {
+    border: 2px solid #edf2f7 !important;
+    border-radius: 12px !important;
+    min-height: 48px !important;
+    padding: 4px 8px !important;
+    background-color: #f3f4f6 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+    transition: all 0.3s ease;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #c084fc !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.15) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    margin: 2px !important;
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin-right: 6px !important;
+    font-weight: bold !important;
+    border: none !important;
+}
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #ffffff !important;
+        background: transparent !important;
+    }

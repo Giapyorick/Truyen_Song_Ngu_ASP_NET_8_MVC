@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.HideHotSidebar = false;
+}
+
+<div class="w-full">
+    @await Component.InvokeAsync("StoriesList")
+</div>
+
+@section Scripts {
+    <script src="~/js/infinite_scroll.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (typeof InfiniteScroller !== 'undefined') {
+                const homeScroller = new InfiniteScroller({
+                    gridSelector: '#mainStoryGrid',
+                    triggerSelector: '#infiniteScrollTrigger',
+                    spinnerSelector: '#scrollSpinner',
+                    noMoreSelector: '#noMoreData',
+                    endpoint: '/Stories/GetStoriesInfinite',
+                    pageSize: 8,
+                    params: { type: 'likes' }
+                });
+            }
+        });
+    </script>
+}

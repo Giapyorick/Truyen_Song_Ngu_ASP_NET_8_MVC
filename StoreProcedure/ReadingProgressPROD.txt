@@ -1,0 +1,26 @@
+USE TruyenSongNgu;
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_SaveUserReadingProgress]
+    @UserID INT,
+    @StoryID INT,
+    @ChapterID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra xem đã có tiến độ của user cho truyện này chưa
+    IF EXISTS (SELECT 1 FROM [dbo].[tblUserReadingProgress] WHERE [UserID] = @UserID AND [StoryID] = @StoryID)
+    BEGIN
+        UPDATE [dbo].[tblUserReadingProgress]
+        SET [LastChapterID] = @ChapterID,
+            [UpdatedAt] = GETDATE()   -- Đã sửa thành UpdatedAt
+        WHERE [UserID] = @UserID AND [StoryID] = @StoryID;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO [dbo].[tblUserReadingProgress] ([UserID], [StoryID], [LastChapterID], [UpdatedAt])
+        VALUES (@UserID, @StoryID, @ChapterID, GETDATE());
+    END
+END
+GO

@@ -1,0 +1,10 @@
+Vietnam|VN|🇻🇳
+United States|US|🇺🇸
+Japan|JP|🇯🇵
+South Korea|KR|🇰🇷
+China|CN|🇨🇳
+France|FR|🇫🇷
+Germany|DE|🇩🇪
+United Kingdom|GB|🇬🇧
+Canada|CA|🇨🇦
+Australia|AU|🇦🇺

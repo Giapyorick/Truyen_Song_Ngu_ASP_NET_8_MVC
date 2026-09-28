@@ -1,0 +1,77 @@
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Reading Experience";
+    var chapterId = ViewBag.ChapterId;
+    ViewBag.HideHotSidebar = true;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="/css/content.css" asp-append-version="true">
+<link rel="stylesheet" href="/css/reading-component.css" asp-append-version="true">
+
+<!-- Nạp giao diện đọc truyện từ Partial View -->
+<partial name="_ReadingViewPartial" />
+
+<!-- Khung Chatbot AI (nếu có) -->
+<partial name="_AiChatBoxPartial" optional="true" />
+
+@section Scripts {
+    <script>
+        var currentChapterId = @chapterId;
+    </script>
+    <!-- asp-append-version giúp tự động xóa cache khi file JS có thay đổi -->
+    <script src="~/js/reading-component.js" asp-append-version="true"></script>
+    <script src="~/js/ai-chatbox.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function () {
+            if (typeof ReadingViewer !== 'undefined') {
+                window.readerModule = new ReadingViewer({
+                    chapterId: currentChapterId
+                });
+                window.readerModule.init();
+            } else {
+                console.error("Error: ReadingViewer class not ready. Please check the file path ~/js/reading-component.js!");
+            }
+        });
+    </script>
+}
+<style>
+    /* 1. Giải phóng toàn bộ thẻ cha của Layout khi chứa trang đọc truyện */
+
+.main-container:has(#mainWrapper) {
+display: block !important;
+width: 100% !important;
+max-width: 100% !important;
+padding: 0 1rem !important; /* Bỏ lề 5% quá lớn của layout cũ */
+margin: 0 auto !important;
+}
+
+.main-container:has(#mainWrapper) .primary-content {
+display: block !important;
+width: 100% !important;
+max-width: 100% !important;
+}
+
+.main-container:has(#mainWrapper) .hot-sidebar {
+display: none !important;
+}
+
+    /* 2. Ép chiều ngang khung đọc truyện (#mainWrapper) nở rộng ra */
+
+#mainWrapper {
+max-width: 1100px !important; /* Bạn có thể tăng lên 1200px nếu muốn rộng hơn */
+width: 100% !important;
+margin: 0 auto !important; /* Căn giữa màn hình */
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Thêm viền bóng nhẹ cho trang sách nổi bật */
+}
+
+/* 3. Đảm bảo phần nội dung chữ bên trong tận dụng trọn vẹn bề ngang */
+#paragraphList {
+width: 100% !important;
+max-width: 100% !important;
+padding: 2.5rem 3rem !important; /* Canh lề 2 bên trang sách vừa vặn */
+box-sizing: border-box !important;
+}
+</style>

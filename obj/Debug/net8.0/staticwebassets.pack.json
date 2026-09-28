@@ -1,0 +1,473 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\WebTruyenTranh.bundle.scp.css",
+      "PackagePath": "staticwebassets\\WebTruyenTranh.85e8k1fby0.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_1c30371a-2ce1-4109-a1ce-920f29255896.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_1c30371a-2ce1-4109-a1ce-920f29255896.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_4c141851-5438-4958-b848-01c465400933.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_4c141851-5438-4958-b848-01c465400933.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_52c1967a-0190-40a0-bfcf-d87fd4ef6337.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_52c1967a-0190-40a0-bfcf-d87fd4ef6337.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_5be60895-6b98-4714-a96d-97e38dcf1fa5.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_5be60895-6b98-4714-a96d-97e38dcf1fa5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_6e2a7e38-c1f2-42cc-9962-b7ca8f0163b9.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_6e2a7e38-c1f2-42cc-9962-b7ca8f0163b9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_8d5a411b-b1d3-4458-8cee-11d255f59dcd.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_8d5a411b-b1d3-4458-8cee-11d255f59dcd.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_aa467905-b984-4fbd-a9fb-b64f93bcaf11.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_aa467905-b984-4fbd-a9fb-b64f93bcaf11.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_b17173c5-35dc-43ba-91db-fc0476cb225b.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_b17173c5-35dc-43ba-91db-fc0476cb225b.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_b5be0b2c-fa34-4afe-a16e-57c2db7d28f5.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_b5be0b2c-fa34-4afe-a16e-57c2db7d28f5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_b9d5cfb7-4393-4b5a-934c-aa133677c7ca.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_b9d5cfb7-4393-4b5a-934c-aa133677c7ca.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_be4b738f-8a6f-4d9e-a925-ef0ee51d68d1.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_be4b738f-8a6f-4d9e-a925-ef0ee51d68d1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_c04dd71f-36cb-4f7d-b4c4-6760a07831c7.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_c04dd71f-36cb-4f7d-b4c4-6760a07831c7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_d2247fad-0a61-4812-8af0-954cfb42efb7.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_d2247fad-0a61-4812-8af0-954cfb42efb7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_d86a40e7-5c36-41a9-afcd-d8c700a05192.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_d86a40e7-5c36-41a9-afcd-d8c700a05192.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_eb065161-1d9c-479a-98a6-e459ebd48612.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_eb065161-1d9c-479a-98a6-e459ebd48612.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\authors\\Author_f5cb0d01-0665-4f34-897c-b13f30e53d6e.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\authors\\Author_f5cb0d01-0665-4f34-897c-b13f30e53d6e.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_09faab9f-ced7-48cc-9783-48a0c4fef20a.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_09faab9f-ced7-48cc-9783-48a0c4fef20a.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_0a232419-21b3-43d1-a02c-e238c5576f31.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_0a232419-21b3-43d1-a02c-e238c5576f31.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_1bb12373-4496-40ec-befd-072c45291435.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_1bb12373-4496-40ec-befd-072c45291435.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_28411dcd-deb6-4afb-9165-108d50527ddc.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_28411dcd-deb6-4afb-9165-108d50527ddc.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_312afedb-3c50-447f-be82-b89fc3656ac9.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_312afedb-3c50-447f-be82-b89fc3656ac9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_34a0a021-1550-4c7f-bbc9-0ab761f82087.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_34a0a021-1550-4c7f-bbc9-0ab761f82087.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_3a25c7c1-c8b2-4c40-9860-7fbb22c2ba60.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_3a25c7c1-c8b2-4c40-9860-7fbb22c2ba60.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_449a9861-6cd9-4887-9114-ff61672ff4e7.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_449a9861-6cd9-4887-9114-ff61672ff4e7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_5c1da1bd-3ec3-47ef-88e8-7e7d1e560597.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_5c1da1bd-3ec3-47ef-88e8-7e7d1e560597.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_674f5354-e5a5-49b0-b817-d6047d3c0512.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_674f5354-e5a5-49b0-b817-d6047d3c0512.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_721a3568-598f-4981-b60f-11f83dabda6b.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_721a3568-598f-4981-b60f-11f83dabda6b.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_c452dd8e-ea44-4e05-9d9a-36ccfc42f295.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_c452dd8e-ea44-4e05-9d9a-36ccfc42f295.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_d9ff96ec-90e8-4143-a449-34a413718478.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_d9ff96ec-90e8-4143-a449-34a413718478.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_e29e9688-b872-43b9-bb3e-85ff1e272044.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_e29e9688-b872-43b9-bb3e-85ff1e272044.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_ea677530-a686-4a36-93ad-47c64e85a52d.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_ea677530-a686-4a36-93ad-47c64e85a52d.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\stories\\Story_f423e887-0abf-40a6-a8a2-59f5f7b9b20e.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\stories\\Story_f423e887-0abf-40a6-a8a2-59f5f7b9b20e.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_244a7865-d009-40d5-88ea-0b55137ddc5e.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_244a7865-d009-40d5-88ea-0b55137ddc5e.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_2e29233b-0837-4ef8-b4a5-ee7c49a22520.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_2e29233b-0837-4ef8-b4a5-ee7c49a22520.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_3235b737-cc59-4410-b85b-5e6c7c40cd13.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_3235b737-cc59-4410-b85b-5e6c7c40cd13.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_3b794f24-0a17-4984-89d7-9cc360fb0a8c.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_3b794f24-0a17-4984-89d7-9cc360fb0a8c.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_51191fbe-8e37-4f51-bbc6-6f75997ab61f.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_51191fbe-8e37-4f51-bbc6-6f75997ab61f.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_614e0f52-3813-4fc4-97b8-fd751ba5e1ec.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_614e0f52-3813-4fc4-97b8-fd751ba5e1ec.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_7befc8bd-056b-4cd8-926b-3aaba16b4ba2.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_7befc8bd-056b-4cd8-926b-3aaba16b4ba2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_8e38319a-cf53-480d-8d2c-aceb452afa3b.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_8e38319a-cf53-480d-8d2c-aceb452afa3b.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_b0145a1a-e272-4866-99c2-dcec83eb11b8.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_b0145a1a-e272-4866-99c2-dcec83eb11b8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_b5b55afc-852b-4dc1-9782-9086ea540562.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_b5b55afc-852b-4dc1-9782-9086ea540562.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\image\\users\\User_ecde2c97-8bdb-49e5-9f2d-e03c0bc79248.jpg",
+      "PackagePath": "staticwebassets\\assets\\image\\users\\User_ecde2c97-8bdb-49e5-9f2d-e03c0bc79248.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\template\\Author_Template.xlsx",
+      "PackagePath": "staticwebassets\\assets\\template\\Author_Template.xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\template\\Category_Template.xlsx",
+      "PackagePath": "staticwebassets\\assets\\template\\Category_Template.xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\template\\Chapter_Template.xlsx",
+      "PackagePath": "staticwebassets\\assets\\template\\Chapter_Template.xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\template\\Story_Template.xlsx",
+      "PackagePath": "staticwebassets\\assets\\template\\Story_Template.xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\assets\\template\\User_Template.xlsx",
+      "PackagePath": "staticwebassets\\assets\\template\\User_Template.xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\css\\content.css",
+      "PackagePath": "staticwebassets\\css\\content.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\data\\countries.txt",
+      "PackagePath": "staticwebassets\\data\\countries.txt"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\data\\countries_with_flag.txt",
+      "PackagePath": "staticwebassets\\data\\countries_with_flag.txt"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Admin\\Documents\\TaiLieu\\WebTruyenTranh\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.WebTruyenTranh.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.WebTruyenTranh.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.WebTruyenTranh.props",
+      "PackagePath": "build\\WebTruyenTranh.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.WebTruyenTranh.props",
+      "PackagePath": "buildMultiTargeting\\WebTruyenTranh.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.WebTruyenTranh.props",
+      "PackagePath": "buildTransitive\\WebTruyenTranh.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Dịch Truyện Tranh";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Hệ Thống Dịch Truyện Tranh Tự Động</h2>
+
+    <!-- Thông báo lỗi / Thành công -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Lỗi:</strong> @ViewBag.Error
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Thành công:</strong> @ViewBag.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- FORM NHẬP THÔNG TIN & TẢI ÁNH -->
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Thêm trang truyện</h5>
+                </div>
+                <div class="card-body">
+                    <form id="translateForm" asp-area="Admin" asp-controller="MangaTranslate" asp-action="Translate" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Mã Truyện:</label>
+                            <input type="text" name="maTruyen" class="form-control" placeholder="VD: OP" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Mã Chương:</label>
+                            <input type="text" name="maChuong" class="form-control" placeholder="VD: C101" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Số Trang:</label>
+                            <input type="number" name="maTrang" class="form-control" value="1" min="1" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Chọn Ảnh Trang Truyện:</label>
+                            <input type="file" name="mangaFile" id="mangaFileInput" class="form-control" accept="image/*" required onchange="previewSelectedImage(event)" />
+                        </div>
+
+                        <!-- Preview ảnh gốc -->
+                        <div class="mb-3 text-center" id="originalPreviewContainer" style="display:none;">
+                            <label class="form-label d-block text-muted">Ảnh Gốc Cho Trước:</label>
+                            <img id="originalPreview" src="#" alt="Preview" class="img-fluid img-thumbnail" style="max-height: 250px;" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2" id="btnSubmit">
+                            <span id="btnText">Dịch & Lưu Ảnh</span>
+                            <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2" role="status" style="display:none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- HIỂN THỊ KẾT QUẢ ÁNH ĐÃ DỊCH -->
+        <div class="col-md-7 mt-4 mt-md-0">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Kết Quả Dịch</h5>
+                </div>
+                <div class="card-body text-center" style="min-height: 350px;">
+                    @if (ViewBag.ImageUrl != null)
+                    {
+                        <div class="mb-3">
+                            <img src="@ViewBag.ImageUrl" alt="Translated Manga" class="img-fluid border rounded shadow-sm" style="max-height: 550px;" />
+                        </div>
+                        <a href="@ViewBag.ImageUrl" download class="btn btn-outline-success">
+                            <i class="bi bi-download"></i> Tải Ảnh Đã Dịch
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted py-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-image mb-3" viewBox="0 0 16 16">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z" />
+                            </svg>
+                            <p>Chưa có dữ liệu. Vui lòng tải ảnh lên để bắt đầu dịch.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hàm hiển thị preview ảnh gốc ngay khi chọn file
+        function previewSelectedImage(event) {
+            const input = event.target;
+            const previewContainer = document.getElementById('originalPreviewContainer');
+            const previewImage = document.getElementById('originalPreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        // Bật loading spinner khi gửi form (tránh người dùng bấm nhiều lần do AI dịch tốn vài giây)
+        document.getElementById('translateForm').addEventListener('submit', function () {
+            const btnSubmit = document.getElementById('btnSubmit');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const btnText = document.getElementById('btnText');
+
+            btnSubmit.disabled = true;
+            btnSpinner.style.display = 'inline-block';
+            btnText.innerText = 'Đang dịch ảnh (Vui lòng chờ)...';
+        });
+    </script>
+}

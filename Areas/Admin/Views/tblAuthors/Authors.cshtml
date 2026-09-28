@@ -1,0 +1,86 @@
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- CSS Thư viện & Custom CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+<link rel="stylesheet" href="~/css/admin/tblAuthors/authors-management.css" asp-append-version="true" />
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+    <div class="space-y-10 m-10">
+        <div class="flex flex-col items-center gap-4">
+            <h2 class="text-2xl font-bold text-cus tracking-tight">Authors Management</h2>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+            <!-- Filter Bar -->
+            <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="relative w-40 sm:w-64">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="filterSearch" placeholder="Search by name, email..." class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
+                </div>
+
+                <div class="w-40">
+                    <select id="filterGender" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Gender</option>
+                        <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="Male">Male</option>
+                        <option data-color="linear-gradient(135deg, #ff758c, #ff7eb3)" value="Female">Female</option>
+                    </select>
+                </div>
+
+                <div class="w-40">
+                    <select id="filterStatus" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Status</option>
+                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Active">Active</option>
+                        <option data-color="linear-gradient(135deg, #F45C43, #EB3349)" value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="exportExcel()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-export mr-2"></i>Export</button>
+                    <button onclick="openImportModal()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg hover:-translate-y-1 transition-all duration-300"><i class="fas fa-file-import mr-2"></i>Import</button>
+                    <button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg hover:-translate-y-1 transition-all duration-300" disabled><i class="fas fa-trash-alt mr-2"></i>Delete</button>
+                    <button onclick="openModal('add')" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <i class="fas fa-plus-circle mr-2"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 text-gray-400 text-[11px] uppercase tracking-[0.15em] border-b border-gray-100">
+                            <th class="px-6 py-4 w-10 text-center">
+                                <input type="checkbox" id="selectAll" class="w-5 h-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                            </th>
+                            <th class="px-4 py-4 text-gray font-bold">Information</th>
+                            <th class="px-6 py-4 text-gray font-bold">DoB (y-m-d)</th>
+                            <th class="px-6 py-4 text-gray font-bold text-center">Gender</th>
+                            <th class="px-6 py-4 text-gray font-bold text-center">Status</th>
+                            <th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list-body" class="divide-y divide-gray-50"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Container -->
+            <div id="pagination-container" class="flex justify-center items-center gap-2 py-4"></div>
+        </div>
+    </div>
+</main>
+
+<!-- Partial chứa các Modal -->
+@await Html.PartialAsync("_AuthorModalsPartial")
+
+@section Scripts {
+    <!-- Thư viện phụ trợ -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- JS Module đã tách -->
+    <script src="~/js/admin/tblAuthors/authors-ui.js" asp-append-version="true"></script>
+    <script src="~/js/admin/tblAuthors/authors-crud.js" asp-append-version="true"></script>
+}
