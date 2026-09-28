@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WebTruyenTranh")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a16c21b39efee506a1c1f4c3499bae86f163f80")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c0a93b969d97afd7767101ff70536ae1b0f2bb02")]
 [assembly: System.Reflection.AssemblyProductAttribute("WebTruyenTranh")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WebTruyenTranh")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

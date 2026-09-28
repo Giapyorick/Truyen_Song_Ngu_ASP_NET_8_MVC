@@ -39,20 +39,49 @@
                 <span class="logo-sub">NOVEL</span>
             </div>
         </a>
-
         <nav class="main-nav">
             @{
-                // Lấy tên Controller của trang hiện tại đang truy cập
                 string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
             }
-            <ul>
+            <ul class="flex items-center">
                 <li>
-                    <!-- Tự động thêm 'active' nếu Controller hiện tại là Home -->
                     <a asp-controller="Home" asp-action="Index"
                        class="nav-link @(currentController.Equals("Home", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-house"></i>
                         <span>Home</span>
                     </a>
+                </li>
+                
+
+                <!-- NÚT TÌM KIẾM NẰM TRONG KHUNG CÙNG CÁC MỤC KHÁC -->
+                <li class="relative flex items-center">
+                    <!-- Icon kính lúp mặc định -->
+                    <button type="button"
+                            id="btnOpenSearch"
+                            class="nav-link flex items-center justify-center p-2 text-slate-600 hover:text-teal-700 transition"
+                            title="Search stories">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+
+                    <!-- Khung nhập chữ mở rộng khi click -->
+                    <div id="searchBarContainer"
+                         class="hidden opacity-0 scale-95 transition-all duration-300 origin-right items-center pl-1 pr-2">
+                        <div class="relative flex items-center">
+                            <input type="text"
+                                   id="liveSearchInput"
+                                   autocomplete="off"
+                                   placeholder="Search stories..."
+                                   class="w-48 sm:w-64 pl-8 pr-7 py-1 text-xs rounded-full border border-teal-300/60 bg-white/90 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-200 outline-none transition text-slate-700 shadow-sm" />
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-teal-600 text-[11px] pointer-events-none"></i>
+
+                            <!-- Nút tắt / xóa từ khóa -->
+                            <button type="button"
+                                    id="btnCloseSearch"
+                                    class="absolute right-2 text-slate-400 hover:text-rose-500 text-xs transition">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
                 </li>
                 <li>
                     <a href="#" class="nav-link">
@@ -62,7 +91,6 @@
                     </a>
                 </li>
                 <li>
-                    <!-- Tự động thêm 'active' nếu Controller hiện tại là Categories -->
                     <a asp-controller="Categories" asp-action="Index"
                        class="nav-link @(currentController.Equals("Categories", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-layer-group"></i>
@@ -70,7 +98,6 @@
                     </a>
                 </li>
                 <li>
-                    <!-- Tự động thêm 'active' nếu Controller hiện tại là Rankings -->
                     <a asp-controller="Rankings" asp-action="Index"
                        class="nav-link @(currentController.Equals("Rankings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-chart-simple"></i>
@@ -317,6 +344,174 @@
                     setTimeout(() => { toast.remove(); }, 500);
                 }, duration);
             }
+            $(document).ready(function () {
+                let searchDebounce = null;
+                const $input = $('#liveSearchInput');
+                const $btnClear = $('#btnClearSearch');
+
+                $input.on('input', function () {
+                    const keyword = $(this).val();
+
+                    if (keyword.trim().length > 0) {
+                        $btnClear.removeClass('hidden');
+                    } else {
+                        $btnClear.addClass('hidden');
+                    }
+
+                    clearTimeout(searchDebounce);
+                    // Đợi người dùng dừng gõ 300ms rồi mới gửi AJAX cập nhật danh sách
+                    searchDebounce = setTimeout(function () {
+                        performLiveSearch(keyword);
+                    }, 300);
+                });
+
+                $btnClear.on('click', function () {
+                    $input.val('').trigger('input').focus();
+                });
+
+                function performLiveSearch(keyword) {
+                    const $grid = $('#mainStoryGrid');
+                    if ($grid.length === 0) return; // Nếu đang không ở trang có danh sách truyện thì bỏ qua
+
+                    // Hiệu ứng mờ nhẹ danh sách trong khi tải
+                    $grid.addClass('opacity-50 pointer-events-none');
+
+                    $.ajax({
+                        url: '/Home/FilterStories',
+                        type: 'GET',
+                        data: { keyword: keyword },
+                        success: function (html) {
+                            if (html && html.trim().length > 0) {
+                                $grid.html(html); $('#noMoreData').addClass('hidden');
+                            } else {
+                                $grid.html(`
+                                    <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                        <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
+                                        <p class="text-sm font-semibold">No stories match your search keyword.</p>
+                                    </div>
+                                `);
+                            }
+
+                            // Cập nhật tiêu đề hiển thị
+                            const $title = $('.section-title');
+                            if (keyword.trim().length > 0) {
+                                $title.html(`Search Results for: <span class="text-teal-600">"${keyword}"</span>`);
+                                $('#infiniteScrollTrigger').addClass('hidden'); // Tạm ẩn trigger cuộn trang khi đang search
+                            } else {
+                                $title.text('Latest Stories'); $('#infiniteScrollTrigger').removeClass('hidden');
+                            }
+                        },
+                        error: function () {
+                            showToast('Failed to search stories!', 'error');
+                        },
+                        complete: function () {
+                            $grid.removeClass('opacity-50 pointer-events-none');
+                        }
+                    });
+                }
+            });
+            $(document).ready(function () {
+                let searchDebounce = null;
+                const $btnOpen = $('#btnOpenSearch');
+                const $container = $('#searchBarContainer');
+                const $input = $('#liveSearchInput');
+                const $btnClose = $('#btnCloseSearch');
+
+                // 1. Nhấp vào kính lúp: ẩn icon, mở ô nhập văn bản
+                $btnOpen.on('click', function (e) {
+                    e.stopPropagation();
+                    $btnOpen.addClass('hidden'); $container.removeClass('hidden flex').addClass('flex');
+
+                    requestAnimationFrame(() => {
+                        $container.removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100'); $input.focus();
+                    });
+                });
+
+                // 2. Nhấp nút X: đóng thanh tìm kiếm và khôi phục danh sách truyện
+                $btnClose.on('click', function (e) {
+                    e.stopPropagation();
+                    closeSearchBar();
+                });
+
+                // 3. Nhấp chuột ra ngoài: tự đóng nếu không có nội dung tìm kiếm
+                $(document).on('click', function (e) {
+                    if (!$(e.target).closest('#searchBarContainer, #btnOpenSearch').length) {
+                        if ($input.val().trim().length === 0) {
+                            closeSearchBar();
+                        }
+                    }
+                });
+
+                // 4. Nhấn phím Escape: đóng thanh tìm kiếm
+                $(document).on('keydown', function (e) {
+                    if (e.key === 'Escape' && !$container.hasClass('hidden')) {
+                        closeSearchBar();
+                    }
+                });
+
+                function closeSearchBar() {
+                    if ($input.val().trim().length > 0) {
+                        $input.val('');
+                        performLiveSearch(''); // Khôi phục lại danh sách ban đầu
+                    }
+
+                    $container.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
+                    setTimeout(() => {
+                        $container.removeClass('flex').addClass('hidden'); $btnOpen.removeClass('hidden');
+                    }, 200);
+                }
+
+                // 5. Lắng nghe gõ phím và gọi AJAX lọc danh sách truyện (Debounce 300ms)
+                $input.on('input', function () {
+                    const keyword = $(this).val();
+
+                    clearTimeout(searchDebounce);
+                    searchDebounce = setTimeout(function () {
+                        performLiveSearch(keyword);
+                    }, 300);
+                });
+
+                function performLiveSearch(keyword) {
+                    const $grid = $('#mainStoryGrid');
+                    if ($grid.length === 0) return;
+
+                    $grid.addClass('opacity-50 pointer-events-none');
+
+                    $.ajax({
+                        url: '/Home/FilterStories',
+                        type: 'GET',
+                        data: { keyword: keyword },
+                        success: function (html) {
+                            if (html && html.trim().length > 0) {
+                                $grid.html(html); $('#noMoreData').addClass('hidden');
+                            } else {
+                                $grid.html(`
+                                    <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                        <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
+                                        <p class="text-sm font-semibold">No stories match your search keyword.</p>
+                                    </div>
+                                `);
+                            }
+
+                            const $title = $('.section-title');
+                            if (keyword.trim().length > 0) {
+                                $title.html(`Search Results for: <span class="text-teal-600">"${keyword}"</span>`);
+                                $('#infiniteScrollTrigger').addClass('hidden');
+                            } else {
+                                $title.text('Latest Stories'); $('#infiniteScrollTrigger').removeClass('hidden');
+                            }
+                        },
+                        error: function () {
+                            if (typeof showToast === 'function') {
+                                showToast('Failed to search stories!', 'error');
+                            }
+                        },
+                        complete: function () {
+                            $grid.removeClass('opacity-50 pointer-events-none');
+                        }
+                    });
+                }
+            });
     </script>
 
     <style>
