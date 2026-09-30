@@ -30,9 +30,6 @@ namespace WebTruyenTranh.Controllers
             return View();
         }
 
-        // ========================================================
-        // 1. ACTION ĐĂNG NHẬP (CHECKLOGIN)
-        // ========================================================
         [HttpPost]
         public async Task<IActionResult> CheckLogin(string email, string password)
         {
@@ -90,18 +87,19 @@ namespace WebTruyenTranh.Controllers
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
             HttpContext.Session.SetString("UserAvatar", user.Img ?? "");
 
+            int tempUserId = HttpContext.Session.GetInt32("TempPassword_UserId") ?? 0;
+            bool mustChangePassword = (tempUserId == user.UserId);
+
             return Json(new
             {
                 success = true,
                 message = "Signed in successfully!",
                 userId = user.UserId,
-                userName = user.Name
+                userName = user.Name,
+                requireChangePassword = mustChangePassword // <-- Cờ báo Client mở modal đổi mật khẩu
             });
         }
 
-        // ========================================================
-        // 2. ACTION ĐĂNG KÝ TÀI KHOẢN MỚI (REGISTER)
-        // ========================================================
         [HttpPost]
         public async Task<IActionResult> Register(UsersViewModel model)
         {
@@ -178,9 +176,6 @@ namespace WebTruyenTranh.Controllers
             }
         }
 
-        // ========================================================
-        // 3. ACTION ĐĂNG XUẤT (LOGOUT)
-        // ========================================================
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string? email, [FromServices] IEmailSenderService emailSender)
         {
@@ -225,6 +220,7 @@ namespace WebTruyenTranh.Controllers
                 string tempPassword = Guid.NewGuid().ToString("N").Substring(0, 8);
                 user.Passwork = PasswordHasher.Hash(tempPassword);
                 await _context.SaveChangesAsync();
+                HttpContext.Session.SetInt32("TempPassword_UserId", user.UserId);
 
                 // 4. Gửi email
                 string emailSubject = "Bilingual Manga - Temporary Password Recovery";
@@ -243,6 +239,7 @@ namespace WebTruyenTranh.Controllers
 
                 await emailSender.SendEmailAsync(cleanEmail, emailSubject, emailBody);
 
+
                 return Json(new
                 {
                     success = true,
@@ -258,6 +255,60 @@ namespace WebTruyenTranh.Controllers
                     message = "Mail error: " + ex.Message
                 });
             }
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(string newPassword, string confirmPassword)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId <= 0)
+            {
+                return Json(new { success = false, message = "Please sign in first!" });
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Trim().Length < 6)
+            {
+                return Json(new { success = false, message = "New password must be at least 6 characters!" });
+            }
+
+            if (newPassword.Trim() != (confirmPassword ?? "").Trim())
+            {
+                return Json(new { success = false, message = "Confirm password does not match!" });
+            }
+
+            var user = await _context.TblUsers.FindAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found!" });
+            }
+
+            // Cập nhật mật khẩu mới đã băm
+            user.Passwork = PasswordHasher.Hash(newPassword.Trim());
+            await _context.SaveChangesAsync();
+
+            // Xóa cờ mật khẩu tạm
+            HttpContext.Session.Remove("TempPassword_UserId");
+
+            return Json(new
+            {
+                success = true,
+                message = "Password updated successfully!"
+            });
+        }
+        [HttpPost]
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            // 1. Xóa toàn bộ Session đăng nhập
+            HttpContext.Session.Clear();
+
+            // 2. Nếu là gọi qua AJAX thì trả về JSON để Client mở modal
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Headers.Accept.ToString().Contains("application/json"))
+            {
+                return Json(new { success = true, message = "Logged out successfully!" });
+            }
+
+            // Nếu người dùng truy cập trực tiếp bằng URL thì về trang chủ kèm cờ mở modal
+            return RedirectToAction("Index", "Home", new { openLogin = true });
         }
     }
 }

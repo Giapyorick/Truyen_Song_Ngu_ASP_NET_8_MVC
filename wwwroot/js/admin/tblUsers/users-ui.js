@@ -46,6 +46,8 @@ function openModal(mode, id = null) {
         $('#modalTitle').text('Add member');
         $('#userId').val('0');
         $('#passwordContainer').show();
+        $('#userGender').val('Male').trigger('change.select2');
+        $('#userStatus').val('Active').trigger('change.select2');
     } else {
         // Trường hợp cập nhật
         $('#modalTitle').text('Update member');
@@ -61,6 +63,8 @@ function openModal(mode, id = null) {
             $('#userEmail').val(data.email);
             $('#userPhone').val(data.phone);
             $('#userDoB').val(data.doB);
+
+            // Chỉ cập nhật Select2 cho các thẻ select trong modal
             $('#userGender').val(data.gender).trigger('change.select2');
             $('#userStatus').val(data.status).trigger('change.select2');
 
@@ -77,7 +81,8 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-    $('.select2-custom').trigger('change');
+
+    // ĐÃ XÓA: $('.select2-custom').trigger('change'); (Tránh kích hoạt nhầm bộ lọc ngoài bảng)
 
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }

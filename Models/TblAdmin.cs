@@ -1,21 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebTruyenTranh.Models;
-
-public partial class TblAdmin
+namespace WebTruyenTranh.Models
 {
-    public int AdminId { get; set; }
+    [Table("tbl_Admins")]
+    public partial class TblAdmin
+    {
+        [Key]
+        public int AdminId { get; set; }
 
-    public string Username { get; set; } = null!;
+        [Required]
+        [StringLength(50)]
+        public string Username { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+        [Required]
+        [StringLength(255)]
+        public string PasswordHash { get; set; } = null!;
 
-    public string? FullName { get; set; }
+        [StringLength(100)]
+        public string? FullName { get; set; }
 
-    public string? Email { get; set; }
+        [Required]  
+        [StringLength(20)]
+        public string Role { get; set; } = "Viewer"; 
 
-    public bool? Status { get; set; }
+        public bool IsActive { get; set; } = true;
 
-    public DateTime? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime? LastLogin { get; set; }
+    }
 }

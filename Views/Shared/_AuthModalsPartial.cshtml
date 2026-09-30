@@ -194,3 +194,45 @@
         </form>
     </div>
 </div>
+@* 4. MODAL BẮT BUỘC ĐỔI MẬT KHẨU TẠM THỜI *@
+<div id="forceChangePasswordModalOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-[9999] transition-all duration-300">
+    <div id="forceChangePasswordModalContent" class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300 ease-out p-8 text-center space-y-5">
+
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 text-2xl shadow-inner">
+            <i class="fa-solid fa-key"></i>
+        </div>
+
+        <div>
+            <h3 class="text-xl font-black text-cus tracking-tight">Set New Password</h3>
+            <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                You have signed in using a <strong>temporary password</strong>.<br>
+                For security reasons, please create a new password to continue.
+            </p>
+        </div>
+
+        <form id="forceChangePasswordForm" class="space-y-4 text-left">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">New Password *</label>
+                <input type="password" id="forceNewPassword" required minlength="6"
+                       class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all"
+                       placeholder="At least 6 characters">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">Confirm New Password *</label>
+                <input type="password" id="forceConfirmPassword" required minlength="6"
+                       class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all"
+                       placeholder="Re-enter new password">
+            </div>
+
+            <p id="forceChangePasswordError" class="text-xs text-rose-500 font-semibold hidden"></p>
+
+            <div class="pt-2">
+                <button type="submit" id="btnForceChangePasswordSubmit"
+                        class="w-full !m-0 !py-3.5 btn-grad text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg hover:shadow-teal-500/25 active:scale-95 transition-all">
+                    Update Password & Proceed
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

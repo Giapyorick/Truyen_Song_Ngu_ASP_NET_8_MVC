@@ -84,23 +84,54 @@
                             </select>
                         </div>
 
-                        <!-- THÊM MỚI: CHỌN DANH SÁCH NGÔN NGỮ THIẾT LẬP SẴN -->
-                        <div class="space-y-1 md:col-span-2">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1 flex justify-between items-center">
-                                <span>Supported Languages</span>
-                                <span class="text-[10px] text-teal-600 font-semibold">* English & Vietnamese are default</span>
+                        <!-- Container bọc thẻ ngôn ngữ -->
+                        <div class="space-y-2 md:col-span-2">
+                        <div class="p-3 bg-gray-50/80 border border-gray-100 rounded-2xl flex flex-wrap gap-2 items-center">
+                            <!-- English (Cố định, luôn chọn) -->
+                            <label class="lang-chip lang-selected cursor-not-allowed select-none">
+                                <input type="checkbox" name="StoryLanguages" value="Tiếng Anh" checked disabled class="hidden">
+                                <span class="flag">🇺🇸</span>
+                                <span class="label">English</span>
+                                <span class="code">EN</span>
+                                <i class="fa-solid fa-lock text-[9px] opacity-75 ml-0.5"></i>
                             </label>
-                            <select name="Lang" id="storyLang" multiple="multiple"
-                                    class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
-                                <option value="Tiếng Anh" selected>🇺🇸 English (Tiếng Anh)</option>
-                                <option value="Tiếng Việt" selected>🇻🇳 Vietnamese (Tiếng Việt)</option>
-                                <option value="Tiếng Trung">🇨🇳 Chinese (Tiếng Trung)</option>
-                                <option value="Tiếng Nhật">🇯🇵 Japanese (Tiếng Nhật)</option>
-                                <option value="Tiếng Pháp">🇫🇷 French (Tiếng Pháp)</option>
-                            </select>
+
+                            <!-- Vietnamese (Cố định, luôn chọn) -->
+                            <label class="lang-chip lang-selected cursor-not-allowed select-none">
+                                <input type="checkbox" name="StoryLanguages" value="Tiếng Việt" checked disabled class="hidden">
+                                <span class="flag">🇻🇳</span>
+                                <span class="label">Vietnamese</span>
+                                <span class="code">VN</span>
+                                <i class="fa-solid fa-lock text-[9px] opacity-75 ml-0.5"></i>
+                            </label>
+
+                            <!-- Chinese -->
+                            <label class="lang-chip cursor-pointer select-none">
+                                <input type="checkbox" name="StoryLanguages" value="Tiếng Trung" class="hidden lang-checkbox">
+                                <span class="flag">🇨🇳</span>
+                                <span class="label">Chinese</span>
+                                <span class="code">ZH</span>
+                            </label>
+
+                            <!-- Japanese -->
+                            <label class="lang-chip cursor-pointer select-none">
+                                <input type="checkbox" name="StoryLanguages" value="Tiếng Nhật" class="hidden lang-checkbox">
+                                <span class="flag">🇯🇵</span>
+                                <span class="label">Japanese</span>
+                                <span class="code">JA</span>
+                            </label>
+
+                            <!-- French -->
+                            <label class="lang-chip cursor-pointer select-none">
+                                <input type="checkbox" name="StoryLanguages" value="Tiếng Pháp" class="hidden lang-checkbox">
+                                <span class="flag">🇫🇷</span>
+                                <span class="label">French</span>
+                                <span class="code">FR</span>
+                            </label>
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
 
             <div class="pt-6 flex gap-4">

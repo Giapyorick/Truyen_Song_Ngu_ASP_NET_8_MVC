@@ -1,11 +1,17 @@
 /* users-crud.js - Xử lý API, Lọc dữ liệu, Phân trang, CRUD người dùng, Xóa nhiều & Import/Export Excel */
 
-let currentPage = 1;
+let savedUserPage = localStorage.getItem('userPage');
+let currentPage = savedUserPage ? parseInt(savedUserPage) : 1;
 const pageSize = 5;
 
 // Tải danh sách người dùng qua AJAX
-function loadUserList(page = 1) {
-    currentPage = page;
+function loadUserList(page = null) {
+    if (page !== null && page !== undefined) {
+        currentPage = parseInt(page);
+    }
+
+    localStorage.setItem('userPage', currentPage);
+
     const $body = $('#user-list-body');
     const genderVal = $('#filterGender').val();
     const statusVal = $('#filterStatus').val();
@@ -25,6 +31,11 @@ function loadUserList(page = 1) {
             let html = '';
             console.log("Data received from the Server:", data);
             if (!data.users || data.users.length === 0) {
+                // Nếu trang hiện tại bị trống và đang ở trang > 1 thì lùi 1 trang
+                if (currentPage > 1) {
+                    loadUserList(currentPage - 1);
+                    return;
+                }
                 $body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
                 $('#pagination-container').html('');
                 return;
@@ -97,18 +108,26 @@ function loadUserList(page = 1) {
             });
 
             $body.html(html);
-            renderPagination(data.currentPage, data.totalPages);
+            renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
         },
         error: function (xhr) {
             $body.html('<tr><td colspan="6" class="text-center py-10 text-red-500">Error loading data.</td></tr>');
+            if (typeof showToast === 'function') {
+                showToast('Error loading user data!', 'error');
+            }
         }
     });
 }
 
 // Xóa một người dùng đơn lẻ
-function deleteUser(id) {
-    if (confirm('Are you sure to remove this member? This action cannot be undone.')) {
+async function deleteUser(id) {
+    const confirmed = await customConfirm(
+        `Are you sure to remove this user?<br><small class="text-red-400">This action cannot be undone.</small>`,
+        "Delete User"
+    );
+
+    if (confirmed) {
         const $row = $(`button[onclick="deleteUser(${id})"]`).closest('tr');
         $row.addClass('opacity-50 pointer-events-none');
 
@@ -118,17 +137,28 @@ function deleteUser(id) {
             data: { id: id },
             success: function (response) {
                 if (response.success) {
-                    $row.fadeOut(400, function () {
-                        $(this).remove();
-                        alert(response.message);
-                    });
+                    if (typeof showToast === 'function') {
+                        showToast(response.message, 'success');
+                    }
+
+                    // Nếu là dòng duy nhất còn lại trên trang và đang ở trang > 1 thì lùi 1 trang
+                    const remainingRows = $('#user-list-body tr').length - 1;
+                    if (remainingRows <= 0 && currentPage > 1) {
+                        currentPage--;
+                    }
+
+                    loadUserList(currentPage);
                 } else {
-                    alert("Error: " + response.message);
+                    if (typeof showToast === 'function') {
+                        showToast(response.message || 'Error occurred while deleting!', 'error');
+                    }
                     $row.removeClass('opacity-50 pointer-events-none');
                 }
             },
             error: function () {
-                alert("Cannot connect to the server to delete.");
+                if (typeof showToast === 'function') {
+                    showToast('Cannot connect to the server to delete.', 'error');
+                }
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         });
@@ -154,7 +184,8 @@ $('#userForm').on('submit', function (e) {
     const formData = new FormData(this);
 
     const userId = $('#userId').val();
-    const url = (userId == "0" || userId == "") ? '/Admin/tblUsers/Add' : '/Admin/tblUsers/Update';
+    const isAdding = (userId == "0" || userId == "" || !userId);
+    const url = isAdding ? '/Admin/tblUsers/Add' : '/Admin/tblUsers/Update';
 
     submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
 
@@ -166,17 +197,30 @@ $('#userForm').on('submit', function (e) {
         processData: false,
         success: function (response) {
             if (response.success) {
-                alert(response.message);
+                if (typeof showToast === 'function') {
+                    showToast(response.message, 'success');
+                }
                 closeModal();
-                const savedPage = localStorage.getItem('userPage');
-                currentPage = savedPage ? parseInt(savedPage) : 1;
-                loadUserList(currentPage);
+
+                // THÊM MỚI: Về trang 1
+                // CẬP NHẬT: Ở nguyên currentPage hiện tại
+                if (isAdding) {
+                    loadUserList(1);
+                } else {
+                    const savedPage = localStorage.getItem('userPage');
+                    const targetPage = savedPage ? parseInt(savedPage) : currentPage;
+                    loadUserList(targetPage);
+                }
             } else {
-                alert("Error: " + response.message);
+                if (typeof showToast === 'function') {
+                    showToast(response.message || 'Operation failed!', 'error');
+                }
             }
         },
         error: function () {
-            alert("Cannot connect to the server.");
+            if (typeof showToast === 'function') {
+                showToast('Cannot connect to the server.', 'error');
+            }
         },
         complete: function () {
             submitBtn.prop('disabled', false).html('Save Changes');
@@ -188,7 +232,9 @@ $('#userForm').on('submit', function (e) {
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (fileInput.files.length === 0) {
-        alert('Please choose an Excel file!');
+        if (typeof showToast === 'function') {
+            showToast('Please choose an Excel file!', 'error');
+        }
         return;
     }
 
@@ -206,26 +252,32 @@ function executeImport() {
         contentType: false,
         success: function (res) {
             if (res.success) {
-                alert(res.message);
+                if (typeof showToast === 'function') {
+                    showToast(res.message, 'success');
+                }
                 closeImportModal();
                 loadUserList(1);
             } else {
-                alert(res.message);
+                if (typeof showToast === 'function') {
+                    showToast(res.message, 'error');
+                }
             }
         },
         error: function (xhr) {
-            var errMsg = 'Error during importing file!';
+            let errMsg = 'Error during importing file!';
             try {
-                var res = JSON.parse(xhr.responseText);
+                const res = JSON.parse(xhr.responseText);
                 if (res) {
                     if (res.message) errMsg = res.message;
-                    if (res.detail) errMsg += '\n\nDetails:\n' + res.detail;
+                    if (res.detail) errMsg += ' - Details: ' + res.detail;
                 }
             } catch (e) {
                 // Bỏ qua lỗi parse JSON
             }
 
-            alert(errMsg);
+            if (typeof showToast === 'function') {
+                showToast(errMsg, 'error');
+            }
             console.error('ImportExcel error', xhr);
         },
         complete: function () {
@@ -369,7 +421,7 @@ $(document).ready(function () {
     });
 
     // Xóa nhiều người dùng đã chọn
-    $(document).on('click', '#btnDeleteSelected', function () {
+    $(document).on('click', '#btnDeleteSelected', async function () {
         const ids = $('.user-checkbox:checked')
             .map(function () {
                 return parseInt(this.value);
@@ -377,11 +429,18 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            alert('Please select at least one user!');
+            if (typeof showToast === 'function') {
+                showToast('Please select at least one user!', 'error');
+            }
             return;
         }
 
-        if (!confirm(`Delete ${ids.length} user(s)? This action cannot be undone.`)) return;
+        const confirmed = await customConfirm(
+            `Are you sure to remove <b>${ids.length}</b> user(s)?<br><small class="text-red-400">This action cannot be undone.</small>`,
+            "Delete Users"
+        );
+
+        if (!confirmed) return;
 
         $.ajax({
             url: '/Admin/tblUsers/DeleteMultiple',
@@ -390,18 +449,29 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
                 if (res.blocked && res.blocked.length > 0) {
-                    alert(
-                        `Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-                        `Because it was used to link foreign keys.`
-                    );
+                    if (typeof showToast === 'function') {
+                        showToast(`Cannot delete ID: ${res.blocked.join(', ')} due to foreign key constraints.`, 'error');
+                    }
                 }
                 if (res.deleted && res.deleted.length > 0) {
-                    alert(`Deleted ${res.deleted.length} user(s) successfully.`);
+                    if (typeof showToast === 'function') {
+                        showToast(`Deleted ${res.deleted.length} user(s) successfully.`, 'success');
+                    }
                 }
-                const savedPage = localStorage.getItem('userPage');
-                currentPage = savedPage ? parseInt(savedPage) : 1;
+
+                // Nếu xóa sạch toàn bộ hàng đang có trên trang và đang ở trang > 1
+                const totalOnPage = $('.user-checkbox').length;
+                if (ids.length >= totalOnPage && currentPage > 1) {
+                    currentPage--;
+                }
+
                 loadUserList(currentPage);
                 $('#selectAll').prop('checked', false);
+            },
+            error: function () {
+                if (typeof showToast === 'function') {
+                    showToast('Failed to delete selected users from server.', 'error');
+                }
             }
         });
     });

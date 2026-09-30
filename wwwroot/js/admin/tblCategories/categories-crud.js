@@ -1,11 +1,19 @@
-﻿/* categories-crud.js - Xử lý API, Bộ lọc, CRUD, Phân trang, Xóa nhiều, Import và Export */
+﻿/* categories-crud.js */
 
-let currentPage = 1;
+// 1. Lấy trang đã lưu từ localStorage, nếu không có mới lấy 1
+let savedCategoryPage = localStorage.getItem('categoryPage');
+let currentPage = savedCategoryPage ? parseInt(savedCategoryPage) : 1;
 const pageSize = 5;
 
 // Tải danh sách thể loại từ server qua AJAX
-function loadCategoryList(page = 1) {
-    currentPage = page;
+function loadCategoryList(page = null) {
+    if (page !== null && page !== undefined) {
+        currentPage = parseInt(page);
+    }
+
+    // Lưu ngay trang hiện tại vào bộ nhớ trình duyệt
+    localStorage.setItem('categoryPage', currentPage);
+
     const $body = $('#user-list-body');
     const statusVal = $('#filterStatus').val();
     const filters = {
@@ -21,8 +29,14 @@ function loadCategoryList(page = 1) {
         data: filters,
         success: function (data) {
             let html = '';
-            console.log("Data received from the Server:", data);
+
+            // Nếu không có dữ liệu
             if (!data.categories || data.categories.length === 0) {
+                // Nếu đang ở trang > 1 mà không có dữ liệu (do vừa xóa hết), tự lùi 1 trang
+                if (currentPage > 1) {
+                    loadCategoryList(currentPage - 1);
+                    return;
+                }
                 $body.html('<tr><td colspan="5" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
                 $('#pagination-container').html('');
                 return;
@@ -55,20 +69,12 @@ function loadCategoryList(page = 1) {
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
                             <button onclick="openModal('edit', ${category.categoryId})"
-                                class="w-7 aspect-square p-0
-                                    flex items-center justify-center
-                                    rounded-lg btn-grad bg-blue-50
-                                    hover:bg-blue-600 hover:text-white
-                                    transition-all duration-200">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
                             <button onclick="deleteCategory(${category.categoryId})"
-                                class="w-7 aspect-square p-0
-                                    flex items-center justify-center
-                                    rounded-lg btn-grad-cancel bg-red-50
-                                    hover:bg-red-600 hover:text-white
-                                    transition-all duration-200">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -77,7 +83,8 @@ function loadCategoryList(page = 1) {
             });
 
             $body.html(html);
-            renderPagination(data.currentPage, data.totalPages);
+            // Ưu tiên currentPage của biến JS để tránh lỗi backend trả về lệch
+            renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
         },
         error: function (xhr) {
@@ -86,7 +93,6 @@ function loadCategoryList(page = 1) {
     });
 }
 
-// Xóa một thể loại đơn lẻ
 async function deleteCategory(id) {
     const confirmed = await customConfirm(
         `Are you sure to remove this category?<br><small class="text-red-400">This action cannot be undone.</small>`,
@@ -102,10 +108,16 @@ async function deleteCategory(id) {
             data: { id: id },
             success: function (response) {
                 if (response.success) {
-                    $row.fadeOut(400, function () {
-                        $(this).remove();
-                        showToast(response.message, 'success');
-                    });
+                    showToast(response.message, 'success');
+
+                    // Nếu dòng vừa xóa là dòng duy nhất trên trang hiện tại và không phải trang 1
+                    const remainingRows = $('#user-list-body tr').length - 1;
+                    if (remainingRows <= 0 && currentPage > 1) {
+                        currentPage--;
+                    }
+
+                    // Tải lại đúng trang hiện tại
+                    loadCategoryList(currentPage);
                 } else {
                     showToast("Error: " + response.message, 'error');
                     $row.removeClass('opacity-50 pointer-events-none');
@@ -171,7 +183,8 @@ $('#userForm').on('submit', function (e) {
     const submitBtn = $(this).find('button[type="submit"]');
     const formData = new FormData(this);
     const categoryId = $('#categoryId').val();
-    const url = (categoryId == "0" || categoryId == "") ? '/Admin/tblCategories/Add' : '/Admin/tblCategories/Update';
+    const isAdding = (categoryId == "0" || categoryId == "" || !categoryId);
+    const url = isAdding ? '/Admin/tblCategories/Add' : '/Admin/tblCategories/Update';
 
     submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
 
@@ -185,7 +198,15 @@ $('#userForm').on('submit', function (e) {
             if (response.success) {
                 showToast(response.message, 'success');
                 closeModal();
-                loadCategoryList();
+
+                if (isAdding) {
+                    loadCategoryList(1);
+                } else {
+                    // Lấy lại đúng trang đã lưu trước đó trong bộ nhớ
+                    const savedPage = localStorage.getItem('categoryPage');
+                    const targetPage = savedPage ? parseInt(savedPage) : currentPage;
+                    loadCategoryList(targetPage);
+                }
             } else {
                 showToast("Error: " + response.message, 'error');
             }
@@ -198,7 +219,6 @@ $('#userForm').on('submit', function (e) {
         }
     });
 });
-
 // Render thanh phân trang
 function renderPagination(currentPage, totalPages) {
     const container = $('#pagination-container');
@@ -373,7 +393,15 @@ $(document).ready(function () {
                 if (res.deleted && res.deleted.length > 0) {
                     showToast(`Deleted ${res.deleted.length} category(ies) successfully.`, 'success');
                 }
-                loadCategoryList();
+
+                // Nếu xóa hết các dòng đang hiển thị và đang ở trang > 1 thì lùi về 1 trang
+                const totalOnPage = $('.user-checkbox').length;
+                if (ids.length >= totalOnPage && currentPage > 1) {
+                    currentPage--;
+                }
+
+                // Tải lại giữ nguyên phân trang
+                loadCategoryList(currentPage);
                 $('#selectAll').prop('checked', false);
             }
         });

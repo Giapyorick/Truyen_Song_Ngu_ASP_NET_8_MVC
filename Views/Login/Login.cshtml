@@ -20,7 +20,7 @@
                 <span asp-validation-for="Passwork" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn-login">
+            <button type="submit" class="btn-login !m-0 !py-3.5">
                 <span class="btn-text">Login</span>
             </button>
             <p id="loginError" class="error-text"></p>
@@ -180,37 +180,44 @@ $(document).ready(function () {
     $('#loginForm').on('submit', function (e) {
         e.preventDefault();
 
-        const $btn = $('.btn-login');
-        const $error = $('#loginError');
-
+        const $btn = $('#btnLoginSubmit, .btn-login');
         $btn.prop('disabled', true);
-        $btn.find('.btn-text').text('Logining...');
-        $error.hide();
 
         $.ajax({
-            url: '/Login/Login',
+            url: '/Login/CheckLogin',
             type: 'POST',
             data: {
-                Email: $('#Email').val(),
-                Passwork: $('#Passwork').val()
+                email: $('#loginEmail, #Email').val(),
+                password: $('#loginPassword, #Passwork').val()
             },
             success: function (res) {
                 if (res.success) {
-                    window.location.href = res.redirectUrl;
+                    // NẾU TÀI KHOẢN ĐANG DÙNG MẬT KHẨU TẠM -> BẬT MODAL ĐỔI MẬT KHẨU
+                    if (res.requireChangePassword) {
+                        if (typeof closeLoginModal === 'function') closeLoginModal();
+                        openForceChangePasswordModal();
+                    } else {
+                        if (typeof showToast === 'function') showToast(res.message, 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    }
                 } else {
-                    $error.text(res.message).show();
+                    if (typeof showToast === 'function') {
+                        showToast(res.message, 'error');
+                    } else {
+                        $('#loginError').text(res.message).show();
+                    }
                 }
             },
             error: function () {
-                $error.text('An error occurred, please try again later').show();
+                alert('Cannot connect to authentication server!');
             },
             complete: function () {
                 $btn.prop('disabled', false);
-                $btn.find('.btn-text').text('Login');
             }
         });
     });
-
     $('#userForm').on('submit', function (e) {
         e.preventDefault();
 
@@ -242,7 +249,62 @@ $(document).ready(function () {
         });
     });
 });
+function openForceChangePasswordModal() {
+    const $overlay = $('#forceChangePasswordModalOverlay');
+    const $content = $('#forceChangePasswordModalContent');
 
+    $('#forceChangePasswordForm')[0].reset();
+    $('#forceChangePasswordError').addClass('hidden').text('');
+
+    $overlay.removeClass('hidden').addClass('flex');
+    setTimeout(() => {
+        $content.removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100');
+    }, 10);
+}
+
+// 3. Xử lý gửi Form Đổi mật khẩu mới
+$('#forceChangePasswordForm').on('submit', function (e) {
+    e.preventDefault();
+
+    const newPass = $('#forceNewPassword').val().trim();
+    const confirmPass = $('#forceConfirmPassword').val().trim();
+    const $err = $('#forceChangePasswordError');
+    const $btn = $('#btnForceChangePasswordSubmit');
+
+    if (newPass.length < 6) {
+        $err.removeClass('hidden').text('Password must be at least 6 characters!');
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        $err.removeClass('hidden').text('Confirm password does not match!');
+        return;
+    }
+
+    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin mr-1"></i> Updating...');
+
+    $.ajax({
+        url: '/Login/ChangePassword',
+        type: 'POST',
+        data: {
+            newPassword: newPass,
+            confirmPassword: confirmPass
+        },
+        success: function (res) {
+            if (res.success) {
+                alert('Password updated successfully! Welcome back.');
+                window.location.reload(); // Tải lại trang với mật khẩu đã an toàn
+            } else {
+                $err.removeClass('hidden').text(res.message);
+                $btn.prop('disabled', false).text('Update Password & Proceed');
+            }
+        },
+        error: function () {
+            $err.removeClass('hidden').text('System error occurred. Please try again!');
+            $btn.prop('disabled', false).text('Update Password & Proceed');
+        }
+    });
+});
 
 function openRegisterModal() {
     const $overlay = $('#modalOverlay');

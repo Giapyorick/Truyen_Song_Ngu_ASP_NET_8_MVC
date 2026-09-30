@@ -36,6 +36,7 @@ function openModal(mode, id = null) {
     if (mode === 'add') {
         $('#modalTitle').text('Add category');
         $('#categoryId').val('0');
+        $('#categoryStatus').val('Active').trigger('change.select2');
     } else {
         // Trường hợp cập nhật
         $('#modalTitle').text('Update category');
@@ -49,7 +50,8 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-    $('.select2-custom').trigger('change');
+
+    // ĐÃ XÓA: $('.select2-custom').trigger('change'); (Dòng này làm kích hoạt nhầm bộ lọc và nhảy về trang 1)
 
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }

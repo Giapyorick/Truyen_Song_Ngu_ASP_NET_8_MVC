@@ -512,6 +512,46 @@
                     });
                 }
             });
+            $(document).ready(function () {
+                // Đọc tham số trên URL
+                const urlParams = new URLSearchParams(window.location.search);
+
+                if (urlParams.get('openLogin') === 'true' || urlParams.get('openLogin') === '1') {
+                    // Mở Modal Login
+                    if (typeof openLoginModal === 'function') {
+                        openLoginModal();
+                    } else {
+                        // Fallback nếu chưa định nghĩa hàm openLoginModal
+                        $('#loginModalOverlay').removeClass('hidden').addClass('flex');
+                        setTimeout(() => {
+                            $('#loginModalContent').removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100');
+                        }, 10);
+                    }
+
+                    // Xóa sạch '?openLogin=true' trên thanh địa chỉ URL để giữ link đẹp và không bị lặp lại khi F5
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }
+            });
+            function openLoginModal() {
+                const $overlay = $('#loginModalOverlay');
+                const $content = $('#loginModalContent');
+
+                $overlay.removeClass('hidden').addClass('flex');
+                setTimeout(() => {
+                    $content.removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100');
+                }, 10);
+            }
+
+            function closeLoginModal() {
+                const $overlay = $('#loginModalOverlay');
+                const $content = $('#loginModalContent');
+
+                $content.removeClass('translate-y-0 opacity-100').addClass('translate-y-10 opacity-0');
+                setTimeout(() => {
+                    $overlay.removeClass('flex').addClass('hidden');
+                }, 300);
+            }
     </script>
 
     <style>

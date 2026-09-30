@@ -32,7 +32,8 @@
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
 
-        <div class="story-card group">
+        <!-- BẮT BUỘC PHẢI CÓ data-story-id="@t.StoryID" Ở ĐÂY -->
+        <div class="story-card group" data-story-id="@t.StoryID">
             <!-- ẢNH BÌA & CHIP THÔNG SỐ -->
             <div class="cover-box relative">
                 <img src="/@t.Img" alt="@t.Title" loading="lazy" onerror="this.src='/assets/image/placeholder.png';" />

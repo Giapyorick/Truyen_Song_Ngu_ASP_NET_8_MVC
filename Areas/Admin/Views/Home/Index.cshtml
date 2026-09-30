@@ -1,63 +1,178 @@
-<main class="flex-1 flex flex-col overflow-y-auto">
-        <header class="bg-white shadow-sm p-4 flex justify-between items-center px-8">
-            <h1 id="page-title" class="text-xl font-semibold text-gray-700 tracking-wider">Dashboard</h1>
-            <div class="flex items-center gap-4">
-                <span class="text-info-grad font-medium">Hello, Admin!</span>
-                <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" class="w-10 h-10 rounded-full shadow-md">
+@{
+    ViewData["Title"] = "Dashboard";
+    // Lấy thông tin tài khoản và phân quyền từ Session
+    var adminFullName = Context.Session.GetString("AdminFullName") ?? Context.Session.GetString("AdminUser") ?? "Admin User";
+    var currentUserRole = Context.Session.GetString("AdminRole") ?? "Viewer";
+    var isViewer = string.Equals(currentUserRole, "Viewer", StringComparison.OrdinalIgnoreCase);
+}
+
+<main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
+    <!-- Top Header Bar -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 py-4 px-8 flex justify-between items-center shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        <div>
+            <h1 id="page-title" class="text-xl font-black text-cus tracking-tight">System Overview</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Welcome back to the comic book administration portal</p>
+        </div>
+
+        <!-- Thông tin User đang đăng nhập & Avatar -->
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div class="text-sm font-bold text-gray-800">Hello, @adminFullName!</div>
+                <div class="flex items-center justify-end gap-1.5 mt-0.5">
+                    @if (isViewer)
+                    {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200/60">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            Viewer (Read-Only)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-600 border border-teal-200/60">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                            Super Admin
+                        </span>
+                    }
+                </div>
             </div>
-        </header>
 
-        <div id="main-view" class="p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-wait">
-					<div class="flex justify-between items-start">
-						<div>
-							<p class="text-gray-500 font-medium mb-1">Pending</p>
-							<h2 class="text-4xl font-extrabold text-wait">45</h2>
-						</div>
-						<div class="p-3 bg-orange-50 rounded-lg text-orange-500">
-							<i class="fas fa-clock fa-lg"></i>
-						</div>
-					</div>
-					<div class="mt-4 text-sm text-gray-400">
-						<span class="text-orange-500 font-bold"><i class="fas fa-arrow-up"></i> 5%</span> compared to yesterday
-					</div>
-				</div>
+            <!-- Avatar hiển thị chữ cái đầu -->
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-teal-500/20 text-sm">
+                @adminFullName.Substring(0, 1).ToUpper()
+            </div>
+        </div>
+    </header>
 
-				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-accepted">
-					<div class="flex justify-between items-start">
-						<div>
-							<p class="text-gray-500 font-medium mb-1">Approved</p>
-							<h2 class="text-4xl font-extrabold text-accepted">1,280</h2>
-						</div>
-						<div class="p-3 bg-green-50 rounded-lg text-green-500">
-							<i class="fas fa-check-circle fa-lg"></i>
-						</div>
-					</div>
-					<div class="mt-4 text-sm text-gray-400">
-						<span class="text-green-500 font-bold"><i class="fas fa-arrow-up"></i> 12%</span>in this month
-					</div>
-				</div>
+    <!-- Nội dung chính Dashboard -->
+    <div id="main-view" class="p-8 space-y-8">
+        
+        <!-- Hàng thẻ thống kê trạng thái (Statistic Cards) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Thẻ 1: Pending Requests -->
+            <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-wait hover:shadow-lg transition-all duration-300 border border-slate-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pending Approval</p>
+                        <h2 class="text-3xl font-black text-wait">45</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner">
+                        <i class="fas fa-clock fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-xs text-gray-400">
+                    <span class="text-amber-500 font-bold flex items-center gap-1">
+                        <i class="fas fa-arrow-trend-up"></i> +5.4%
+                    </span>
+                    <span>since yesterday</span>
+                </div>
+            </div>
 
-				<div class="stat-card bg-white p-6 rounded-2xl shadow-sm shadow-deny">
-					<div class="flex justify-between items-start">
-						<div>
-							<p class="text-gray-500 font-medium mb-1">Denied</p>
-							<h2 class="text-4xl font-extrabold text-deny">12</h2>
-						</div>
-						<div class="p-3 bg-red-50 rounded-lg text-red-500">
-							<i class="fas fa-times-circle fa-lg"></i>
-						</div>
-					</div>
-					<div class="mt-4 text-sm text-gray-400">
-						<span class="text-red-500 font-bold"><i class="fas fa-arrow-down"></i> 2%</span> in system
-					</div>
-				</div>
+            <!-- Thẻ 2: Approved / Active Chapters -->
+            <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-accepted hover:shadow-lg transition-all duration-300 border border-slate-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Approved & Published</p>
+                        <h2 class="text-3xl font-black text-accepted">1,280</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-xs text-gray-400">
+                    <span class="text-emerald-500 font-bold flex items-center gap-1">
+                        <i class="fas fa-arrow-trend-up"></i> +12.8%
+                    </span>
+                    <span>total this month</span>
+                </div>
+            </div>
 
-			</div>
+            <!-- Thẻ 3: Rejected / Blocked -->
+            <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-deny hover:shadow-lg transition-all duration-300 border border-slate-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Rejected Contents</p>
+                        <h2 class="text-3xl font-black text-deny">12</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner">
+                        <i class="fas fa-times-circle fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-xs text-gray-400">
+                    <span class="text-rose-500 font-bold flex items-center gap-1">
+                        <i class="fas fa-arrow-trend-down"></i> -2.1%
+                    </span>
+                    <span>locked by safety filter</span>
+                </div>
+            </div>
         </div>
 
-        <div id="loader" class="text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+        <!-- Khối phím tắt thao tác nhanh & Khung banner giới thiệu -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Cột trái: Quick Navigation Actions -->
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 lg:col-span-2 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-extrabold text-gray-800 text-sm uppercase tracking-wider">Quick Management</h3>
+                    <span class="text-[11px] text-gray-400 font-medium">Core modules shortcut</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                    <a asp-area="Admin" asp-controller="tblStories" asp-action="Stories"
+                       class="p-4 rounded-2xl bg-slate-50 hover:bg-teal-50/50 border border-slate-100 hover:border-teal-200 transition-all text-center group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-teal-600 mb-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-teal-600">Stories</div>
+                    </a>
+
+                    <a asp-area="Admin" asp-controller="tblChapters" asp-action="Chapters"
+                       class="p-4 rounded-2xl bg-slate-50 hover:bg-cyan-50/50 border border-slate-100 hover:border-cyan-200 transition-all text-center group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-cyan-600 mb-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-list-check"></i>
+                        </div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-cyan-600">Chapters</div>
+                    </a>
+
+                    <a asp-area="Admin" asp-controller="tblParagraphs" asp-action="Paragraphs"
+                       class="p-4 rounded-2xl bg-slate-50 hover:bg-indigo-50/50 border border-slate-100 hover:border-indigo-200 transition-all text-center group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 mb-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-paragraph"></i>
+                        </div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-indigo-600">Paragraphs</div>
+                    </a>
+
+                    <a asp-area="Admin" asp-controller="tblAdmins" asp-action="Admins"
+                       class="p-4 rounded-2xl bg-slate-50 hover:bg-purple-50/50 border border-slate-100 hover:border-purple-200 transition-all text-center group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-purple-600 mb-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-shield-halved"></i>
+                        </div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-purple-600">Admins & RBAC</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cột phải: Thông báo bảo mật phiên bản hệ thống -->
+            <div class="bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-transparent p-6 rounded-[2rem] border border-teal-100/80 flex flex-col justify-between">
+                <div>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-teal-500 text-white shadow-sm">
+                        Security Status
+                    </span>
+                    <h4 class="text-base font-extrabold text-gray-800 mt-3">Role-Based Access Control</h4>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                        Viewer mode enforces read-only state across all management tables. All write, update, and delete actions are monitored and secured via Argon2 hashing and server-side interceptors.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-teal-200/40 flex items-center justify-between text-[11px] text-teal-700 font-semibold">
+                    <span>Protected Environment</span>
+                    <i class="fas fa-shield-alt text-teal-600"></i>
+                </div>
+            </div>
         </div>
+
+    </div>
+
+    <!-- Spinner hiển thị khi tải trang qua AJAX -->
+    <div id="loader" class="text-center py-20 hidden">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-teal-400 border-t-transparent"></div>
+    </div>
 </main>

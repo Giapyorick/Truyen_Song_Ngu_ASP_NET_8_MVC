@@ -16,6 +16,7 @@ using System.Drawing;
 namespace WebTruyenTranh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AdminAuthorize]
     public class tblCategoriesController : Controller
     {
         private readonly ILogger<tblUsersController> _logger;
@@ -94,7 +95,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
         }
         [HttpPost]
-		public async Task<IActionResult> Add(CategoriesViewModel model)
+        [AdminRoleAuthorize]
+        public async Task<IActionResult> Add(CategoriesViewModel model)
 		{
 			if (!ModelState.IsValid)
 				return Json(new { success = false, message = "Data errors" });
@@ -119,6 +121,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 			}
 		}
 		[HttpPost]
+		[AdminRoleAuthorize]
 		public async Task<IActionResult> Update(CategoriesViewModel model)
 		{
 			var category = await _context.TblCategories.FindAsync(model.CategoryId);
@@ -156,7 +159,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult DeleteMultiple(List<int> ids)
+        [AdminRoleAuthorize]
+        public IActionResult DeleteMultiple(List<int> ids)
 		{
 			if (ids == null || !ids.Any())
 				return BadRequest("No categories selected.");
@@ -249,7 +253,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ImportExcel(IFormFile file)
+        [AdminRoleAuthorize]
+        public async Task<IActionResult> ImportExcel(IFormFile file)
 		{
 			if (file == null || file.Length <= 0)
 				return Json(new { success = false, message = "Please select file!" });

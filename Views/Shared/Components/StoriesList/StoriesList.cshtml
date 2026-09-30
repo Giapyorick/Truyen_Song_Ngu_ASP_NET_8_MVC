@@ -11,14 +11,13 @@
 
     <!-- KHUNG CHỨA THẺ TRUYỆN -->
     <div class="story-grid" id="mainStoryGrid">
-        @await Html.PartialAsync("_StoryCardsPartial", Model)
     </div>
 
     <!-- PHẦN TỬ QUAN SÁT ĐÁY MÀN HÌNH -->
     <div id="infiniteScrollTrigger" class="py-10 flex flex-col items-center justify-center gap-2">
-        <div id="scrollSpinner" class="hidden flex items-center gap-2 text-teal-600 font-bold text-sm">
+        <div id="scrollSpinner" class="flex items-center gap-2 text-teal-600 font-bold text-sm">
             <i class="fa-solid fa-circle-notch fa-spin text-lg"></i>
-            <span>Loading more stories...</span>
+            <span>Loading stories...</span>
         </div>
         <div id="noMoreData" class="hidden text-xs text-gray-400 font-medium py-4">
             🎉 You've finished the story!

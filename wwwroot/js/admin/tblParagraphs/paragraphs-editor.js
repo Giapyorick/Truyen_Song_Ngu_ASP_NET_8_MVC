@@ -102,31 +102,164 @@ function openChapterEditor(id) {
     });
 }
 
-async function closeChapterEditor() {
-    if (modifiedParagraphsMap && modifiedParagraphsMap.size > 0) {
-        const count = modifiedParagraphsMap.size;
-        const msg = `You have <strong>${count}</strong> modified paragraph(s) that are <strong>not saved yet</strong>.<br><br><span class="text-rose-500 font-semibold">If you close now, all unsaved changes will be permanently lost!</span><br>Are you sure you want to exit?`;
+// ==========================================================================
+// HỘP THOẠI CẢNH BÁO 3 LỰA CHỌN: Stay | Discard & Exit | Save & Exit
+// ==========================================================================
+function unsavedChangesConfirm(count) {
+    return new Promise((resolve) => {
+        $('#unsavedModalOverlay').remove();
 
-        const confirmed = typeof safeConfirm === 'function'
-            ? await safeConfirm(msg, "Unsaved Changes Warning")
-            : confirm(`You have ${count} unsaved paragraph(s). Closing the editor will discard all unsaved changes. Continue?`);
+        const modalHtml = `
+            <div id="unsavedModalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 text-center space-y-5 transform scale-100">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 text-2xl shadow-inner">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
 
-        if (!confirmed) return;
+                    <div>
+                        <h4 class="text-xl font-black text-cus tracking-tight">Unsaved Changes</h4>
+                        <p class="text-xs text-gray-500 mt-2 leading-relaxed font-medium">
+                            You have <strong class="text-gray-800 font-bold">${count}</strong> modified paragraph(s) that are <strong>not saved yet</strong>.<br>
+                            What would you like to do before leaving?
+                        </p>
+                    </div>
+
+                    <div class="pt-2 flex flex-col gap-3 w-full">
+                        <!-- Nút 1: Lưu và Thoát -->
+                        <button id="btnSaveAndExit" type="button"
+                                class="w-full !m-0 !py-3.5 btn-grad text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg hover:shadow-teal-500/25 active:scale-95 transition-all">
+                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save & Exit
+                        </button>
+
+                        <!-- Nút 2: Bỏ thay đổi & Thoát -->
+                        <button id="btnDiscardAndExit" type="button"
+                                class="w-full !m-0 !py-3.5 btn-grad-cancel_modal text-white font-extrabold text-xs uppercase tracking-wider rounded-xl active:scale-95 transition-all">
+                            <i class="fa-solid fa-trash-can mr-1.5"></i> Discard & Exit
+                        </button>
+
+                        <!-- Nút 3: Ở lại tiếp tục chỉnh sửa -->
+                        <button id="btnStayHere" type="button"
+                                class="w-full !m-0 !py-3.5 btn-grad-stay text-white font-extrabold text-xs uppercase tracking-wider rounded-xl active:scale-95 transition-all">
+                            Stay on this page
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+
+        $('body').append(modalHtml);
+
+        function cleanup(choice) {
+            $('#unsavedModalOverlay').fadeOut(200, function () {
+                $(this).remove();
+            });
+            resolve(choice);
+        }
+
+        $('#btnSaveAndExit').on('click', () => cleanup('save'));
+        $('#btnDiscardAndExit').on('click', () => cleanup('discard'));
+        $('#btnStayHere').on('click', () => cleanup('stay'));
+    });
+}
+
+// ==========================================================================
+// HÀM LƯU TẤT CẢ DỮ LIỆU ĐANG SỬA (Tách riêng để tái sử dụng với async/await)
+// ==========================================================================
+async function saveChapterParagraphsEditor() {
+    if (modifiedParagraphsMap.size === 0) return true;
+
+    // Kiểm tra chặn nếu là tài khoản Viewer
+    if (window.IS_VIEWER_MODE) {
+        showToast("You have VIEWER (read-only) access. You are not permitted to save changes!", "error");
+        return false;
     }
 
+    const modifiedList = Array.from(modifiedParagraphsMap.values()).map(p => ({
+        ParagraphId: p.paragraphId,
+        ParagraphOrder: p.paragraphOrder,
+        ChapterId: chapterEditorData.chapterId,
+        English: p.english,
+        Vietnamese: p.vietnamese,
+        Chinese: p.chinese,
+        Japanese: p.japanese,
+        French: p.french,
+        BlockType: p.blockType
+    }));
+
+    const $btn =$('#chapterEditorSaveButton').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
+
+    try {
+        const res = await $.ajax({
+            url: '/Admin/tblParagraphs/UpdateMultipleFromEditor',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(modifiedList)
+        });
+
+        if (res.success) {
+            showToast('All changes saved successfully!', 'success');
+            modifiedParagraphsMap.clear();
+            $('#chapterModifiedInfo').addClass('hidden');
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+            if (typeof loadParagraphList === 'function') loadParagraphList(currentPage);
+            return true;
+        } else {
+            showToast(res.message || 'Error occurred while saving!', 'error');
+            $btn.prop('disabled', false).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+            return false;
+        }
+    } catch (err) {
+        showToast('Cannot connect to the server!', 'error');
+        $btn.prop('disabled', false).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
+        return false;
+    }
+}
+
+// Sự kiện click nút Save ở thanh tiêu đề editor
+$(document).on('click', '#chapterEditorSaveButton', function () {
+    saveChapterParagraphsEditor();
+});
+
+// ==========================================================================
+// HÀM ĐÓNG CHAPTER EDITOR (Đã tích hợp 3 lựa chọn)
+// ==========================================================================
+async function closeChapterEditor() {
+    // 1. Kiểm tra nếu có dữ liệu bị chỉnh sửa chưa lưu
+    if (modifiedParagraphsMap && modifiedParagraphsMap.size > 0) {
+        const count = modifiedParagraphsMap.size;
+        const action = await unsavedChangesConfirm(count);
+
+        if (action === 'stay') {
+            // Lựa chọn "Stay on this page": giữ nguyên, không đóng editor
+            return;
+        }
+
+        if (action === 'save') {
+            // Lựa chọn "Save & Exit": gọi API lưu dữ liệu trước
+            const saveSuccess = await saveChapterParagraphsEditor();
+            // Nếu lưu thất bại do lỗi kết nối hoặc bị phân quyền chặn thì dừng lại
+            if (!saveSuccess) return;
+        }
+
+        // Lựa chọn "Discard & Exit": bỏ qua lưu và chạy tiếp xuống dọn dẹp
+    }
+
+    // 2. Hủy observer scroll theo dõi câu
     if (chapterEditorObserver) {
         chapterEditorObserver.disconnect();
         chapterEditorObserver = null;
     }
+
+    // 3. Đóng Side Panel & ẩn Modal Editor
     closeChapterSidePanel();
     $('#chapterEditorModal').addClass('hidden');
 
+    // 4. Giải phóng bộ nhớ đệm
     chapterEditorData = null;
     chapterEditorParagraphs = [];
     currentEditorParagraphIndex = 0;
     modifiedParagraphsMap.clear();
     $('#chapterModifiedInfo').addClass('hidden');
-    $('#chapterEditorSaveButton').prop('disabled', true);
+    $('#chapterEditorSaveButton').prop('disabled', true).html('<i class="fa-solid fa-save"></i> <span>Save Changes</span>');
 }
 
 function hasLanguageContent(language) {

@@ -94,6 +94,43 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <!-- Modular Script Files -->
+    <script>
+        $(document).ready(function () {
+            // Xử lý sự kiện nhấp chọn các ngôn ngữ tùy chọn (ZH, JA, FR)
+            $(document).on('change', '.lang-checkbox', function () {
+                const $label = $(this).closest('.lang-chip');
+                if (this.checked) {
+                    $label.addClass('active');
+                } else {
+                    $label.removeClass('active');
+                }
+            });
+        });
+
+        // Hàm lấy chuỗi danh sách ngôn ngữ để submit Form
+        function getSelectedLanguagesString() {
+            let selected = ['Tiếng Anh', 'Tiếng Việt']; // Mặc định luôn có
+            $('.lang-checkbox:checked').each(function () {
+                selected.push($(this).val());
+            });
+            return selected.join(','); // Ví dụ: "Tiếng Anh,Tiếng Việt,Tiếng Nhật"
+        }
+
+        // Hàm gán lại dữ liệu khi mở Modal Edit Story
+        function setSelectedLanguages(langString) {
+            // Reset các ngôn ngữ tùy chọn
+            $('.lang-checkbox').prop('checked', false).closest('.lang-chip').removeClass('active');
+
+            if (!langString) return;
+            const list = langString.split(',').map(s => s.trim());
+
+            $('.lang-checkbox').each(function () {
+                if (list.includes($(this).val())) {
+                    $(this).prop('checked', true).closest('.lang-chip').addClass('active');
+                }
+            });
+        }
+    </script>
     <script src="~/js/admin/tblStories/stories-ui.js" asp-append-version="true"></script>
     <script src="~/js/admin/tblStories/stories-crud.js" asp-append-version="true"></script>
 }

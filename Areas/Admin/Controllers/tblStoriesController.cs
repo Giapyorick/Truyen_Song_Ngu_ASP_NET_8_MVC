@@ -18,6 +18,7 @@ using WebTruyenTranh.ViewModels;
 namespace WebTruyenTranh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AdminAuthorize]
     public class tblStoriesController : Controller
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -159,6 +160,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Add(StoriesViewModel story)
         {
             if (!ModelState.IsValid)
@@ -217,6 +219,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Update(StoriesViewModel model)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -302,6 +305,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Delete(int id)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -349,6 +353,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> DeleteMultiple(List<int> ids)
         {
             if (ids == null || !ids.Any()) return BadRequest("No stories selected.");
@@ -519,6 +524,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> ImportFromExcel(IFormFile file)
         {
             if (file == null || file.Length == 0)

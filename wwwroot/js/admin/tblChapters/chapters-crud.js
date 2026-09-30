@@ -1,6 +1,7 @@
 ﻿/* chapters-crud.js - Xử lý API, Bảng dữ liệu, Lọc, CRUD form, Xóa nhiều & Import/Export Excel */
 
-let currentPage = 1;
+let savedChapterPage = localStorage.getItem('chapterPage');
+let currentPage = savedChapterPage ? parseInt(savedChapterPage) : 1;
 const pageSize = 5;
 
 // Mở modal Thêm hoặc Sửa chapter
@@ -19,15 +20,6 @@ function openModal(mode, id = null) {
     } else {
         $('#modalTitle').text('Update chapter');
 
-        modal.removeClass('hidden').addClass('flex');
-        $('.select2-custom').each(function () {
-            if (!$(this).hasClass('select2-hidden-accessible')) {
-                $(this).select2({
-                    dropdownParent: modal
-                });
-            }
-        });
-
         $.get('/Admin/tblChapters/GetById/' + id, function (data) {
             console.log("data received:", data);
             $('#chapterId').val(data.chapterId);
@@ -40,7 +32,8 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-    $('.select2-custom').trigger('change');
+
+    // ĐÃ BỎ: $('.select2-custom').trigger('change'); (Tránh kích hoạt nhầm bộ lọc #filterStory)
 
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }
@@ -59,7 +52,7 @@ function closeModal() {
 // Xóa 1 chapter đơn lẻ
 async function deleteChapter(id) {
     const confirmed = await customConfirm(
-        `Are you sure to remove this chapter ?<br><small class="text-red-400">This action cannot be undone.</small>`,
+        `Are you sure to remove this chapter?<br><small class="text-red-400">This action cannot be undone.</small>`,
         "Delete Chapter"
     );
     if (confirmed) {
@@ -72,10 +65,15 @@ async function deleteChapter(id) {
             data: { id: id },
             success: function (response) {
                 if (response.success) {
-                    $row.fadeOut(400, function () {
-                        $(this).remove();
-                        showToast(response.message, 'success');
-                    });
+                    showToast(response.message, 'success');
+
+                    // Nếu là dòng duy nhất còn lại trên trang và đang ở trang > 1 thì lùi trang
+                    const remainingRows = $('#user-list-body tr').length - 1;
+                    if (remainingRows <= 0 && currentPage > 1) {
+                        currentPage--;
+                    }
+
+                    loadChapterList(currentPage);
                 } else {
                     showToast("Error: " + response.message, 'error');
                     $row.removeClass('opacity-50 pointer-events-none');
@@ -100,13 +98,16 @@ function exportExcel() {
 // Submit form Thêm / Cập nhật chapter
 $('#chapterForm').on('submit', function (e) {
     e.preventDefault();
+
+    // Lưu lại trang hiện tại vào Storage
     localStorage.setItem('chapterPage', currentPage);
 
     const submitBtn = $(this).find('button[type="submit"]');
     const formData = new FormData(this);
 
     const chapterId = $('#chapterId').val();
-    const url = (chapterId == "0" || chapterId == "") ? '/Admin/tblChapters/Add' : '/Admin/tblChapters/Update';
+    const isAdding = (chapterId == "0" || chapterId == "" || !chapterId);
+    const url = isAdding ? '/Admin/tblChapters/Add' : '/Admin/tblChapters/Update';
 
     submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
 
@@ -120,9 +121,16 @@ $('#chapterForm').on('submit', function (e) {
             if (response.success) {
                 showToast(response.message, 'success');
                 closeModal();
-                const savedPage = localStorage.getItem('chapterPage');
-                currentPage = savedPage ? parseInt(savedPage) : 1;
-                loadChapterList();
+
+                // NẾU LÀ THÊM MỚI -> VỀ TRANG 1
+                // NẾU LÀ CẬP NHẬT -> GIỮ NGUYÊN TRANG HIỆN TẠI
+                if (isAdding) {
+                    loadChapterList(1);
+                } else {
+                    const savedPage = localStorage.getItem('chapterPage');
+                    const targetPage = savedPage ? parseInt(savedPage) : currentPage;
+                    loadChapterList(targetPage);
+                }
             } else {
                 showToast("Error: " + response.message, 'error');
             }
@@ -137,8 +145,13 @@ $('#chapterForm').on('submit', function (e) {
 });
 
 // Tải danh sách chapter qua AJAX
-function loadChapterList(page = 1) {
-    currentPage = page;
+function loadChapterList(page = null) {
+    if (page !== null && page !== undefined) {
+        currentPage = parseInt(page);
+    }
+
+    localStorage.setItem('chapterPage', currentPage);
+
     const $body = $('#user-list-body');
     const storyVal = $('#filterStory').val();
     const filters = {
@@ -156,6 +169,10 @@ function loadChapterList(page = 1) {
             let html = '';
             console.log("Data received from the Server:", data);
             if (!data.chapters || data.chapters.length === 0) {
+                if (currentPage > 1) {
+                    loadChapterList(currentPage - 1);
+                    return;
+                }
                 $body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
                 $('#pagination-container').html('');
                 return;
@@ -205,14 +222,13 @@ function loadChapterList(page = 1) {
                                     transition-all duration-200">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
-
                         </div>
                     </td>
                 </tr>`;
             });
 
             $body.html(html);
-            renderPagination(data.currentPage, data.totalPages);
+            renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
         },
         error: function (xhr) {
@@ -402,7 +418,7 @@ $(document).ready(function () {
         }
 
         const confirmed = await customConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> chapters ?<br>` +
+            `Are you sure you want to delete <strong>${ids.length}</strong> chapters?<br>` +
             `<small class="text-red-400">This action cannot be undone.</small>`,
             "Delete Multiple"
         );
@@ -423,11 +439,16 @@ $(document).ready(function () {
                     );
                 }
                 if (res.deleted && res.deleted.length > 0) {
-                    showToast(`Deleted ${res.deleted.length} chapter.`, 'success');
+                    showToast(`Deleted ${res.deleted.length} chapter(s) successfully.`, 'success');
                 }
-                const savedPage = localStorage.getItem('chapterPage');
-                currentPage = savedPage ? parseInt(savedPage) : 1;
-                loadChapterList();
+
+                // Nếu xóa hết các dòng đang hiển thị trên trang hiện tại và đang ở trang > 1
+                const totalOnPage = $('.user-checkbox').length;
+                if (ids.length >= totalOnPage && currentPage > 1) {
+                    currentPage--;
+                }
+
+                loadChapterList(currentPage);
                 $('#selectAll').prop('checked', false);
             }
         });

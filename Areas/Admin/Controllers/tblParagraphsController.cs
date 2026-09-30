@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.Services;
 using WebTruyenTranh.ViewModels;
@@ -16,6 +17,7 @@ using WebTruyenTranh.ViewModels;
 namespace WebTruyenTranh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AdminAuthorize]
     public class tblParagraphsController : Controller
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -60,7 +62,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             if (chapter == null)
             {
-                return NotFound(new { success = false, message = "Chapter không tồn tại." });
+                return NotFound(new { success = false, message = "Chapter do not exist." });
             }
 
             var paragraphs = await _context.TblParagraphs
@@ -303,11 +305,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> InsertAfter([FromBody] InsertParagraphViewModel model)
         {
             if (model == null || model.ChapterId <= 0)
             {
-                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+                return Json(new { success = false, message = "Data is invalid." });
             }
 
             string Clean(string? text) => NormalizeQuillHtml(text) ?? "";
@@ -316,7 +319,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             if (string.IsNullOrWhiteSpace(enText) || string.IsNullOrWhiteSpace(vnText))
             {
-                return Json(new { success = false, message = "Tiếng Anh và Tiếng Việt không được để trống!" });
+                return Json(new { success = false, message = "English and Vietnamese cannot be empty!" });
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -346,18 +349,19 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = $"Đã chèn đoạn mới vào vị trí #{newParagraph.ParagraphOrder} thành công!"
+                    message = $"Inserted new paragraph at position #{newParagraph.ParagraphOrder} successfully!"
                 });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return Json(new { success = false, message = $"Lỗi CSDL: {msg}" });
+                return Json(new { success = false, message = $"Error Database: {msg}" });
             }
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Update(ParagraphsViewModel model)
         {
             if (!ModelState.IsValid)
@@ -379,10 +383,11 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> UpdateMultipleFromEditor([FromBody] List<ParagraphsViewModel> models)
         {
             if (models == null || !models.Any())
-                return Json(new { success = false, message = "Không có dữ liệu thay đổi." });
+                return Json(new { success = false, message = "No data to update." });
 
             var ids = models.Select(m => m.ParagraphId).ToList();
             var paragraphs = await _context.TblParagraphs.Where(p => ids.Contains(p.ParagraphId)).ToListAsync();
@@ -402,10 +407,11 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Đã cập nhật toàn bộ thay đổi thành công!" });
+            return Json(new { success = true, message = "Updated all changes successfully!" });
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Delete(int id)
         {
             var paragraph = await _context.TblParagraphs.FindAsync(id);
@@ -435,6 +441,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> DeleteMultiple(List<int> ids)
         {
             if (ids == null || !ids.Any())
@@ -462,7 +469,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 }
 
                 await transaction.CommitAsync();
-                return Json(new { success = true, message = $"Đã xóa thành công {paragraphs.Count} đoạn!", deleted = paragraphs.Select(x => x.ParagraphId) });
+                return Json(new { success = true, message = $"Successfully deleted {paragraphs.Count} paragraphs!", deleted = paragraphs.Select(x => x.ParagraphId) });
             }
             catch (Exception ex)
             {
@@ -538,11 +545,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
         [HttpPost]
         [IgnoreAntiforgeryToken]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> UploadIllustration(IFormFile file, [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
         {
             if (file == null || file.Length == 0)
             {
-                return Json(new { success = false, message = "Vui lòng chọn một file ảnh hợp lệ!" });
+                return Json(new { success = false, message = "Please select a valid image file!" });
             }
 
             // 1. Kiểm tra đuôi file
@@ -550,7 +558,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(ext))
             {
-                return Json(new { success = false, message = "Chỉ chấp nhận file ảnh định dạng jpg, jpeg, png, webp, gif!" });
+                return Json(new { success = false, message = "Only jpg, jpeg, png, webp, gif image files are allowed!" });
             }
 
             try
@@ -578,12 +586,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 {
                     success = true,
                     url = relativeUrl,
-                    message = "Tải ảnh lên thành công!"
+                    message = "Uploaded image successfully!"
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Lỗi upload: " + ex.Message });
+                return StatusCode(500, new { success = false, message = "Upload error: " + ex.Message });
             }
         }
         [HttpGet]
@@ -611,11 +619,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> EnqueueImportAi(int chapterId, IFormFile fileEnglish, string targetLanguages = "Vietnamese")
         {
             if (fileEnglish == null || fileEnglish.Length == 0 || chapterId <= 0)
             {
-                return Json(new { success = false, message = "Vui lòng chọn Chapter và file Tiếng Anh hợp lệ!" });
+                return Json(new { success = false, message = "Please select a valid Chapter and English file!" });
             }
 
             var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads");
@@ -635,7 +644,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             {
                 success = true,
                 jobId,
-                message = "Đã gửi vào hàng đợi xử lý ngầm Hangfire! Hệ thống đang tự động đánh BlockType và dịch thuật."
+                message = "Sent to Hangfire background queue! System is automatically marking BlockType and translating."
             });
         }
 
@@ -656,97 +665,97 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
         public class MergeParagraphRequest
 {
-    public int TargetParagraphId { get; set; }
-    // "prev" = gộp với đoạn trước, "next" = gộp với đoạn sau
-    public string Direction { get; set; } = "prev"; 
-    public bool RemoveImages { get; set; } = true;
+        public int TargetParagraphId { get; set; }
+        public string Direction { get; set; } = "prev"; 
+        public bool RemoveImages { get; set; } = true;
 }
 
-[HttpPost]
-public async Task<IActionResult> MergeParagraphs([FromBody] MergeParagraphRequest request)
-{
-    if (request == null || request.TargetParagraphId <= 0)
-        return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-    var target = await _context.TblParagraphs.FirstOrDefaultAsync(p => p.ParagraphId == request.TargetParagraphId);
-    if (target == null)
-        return Json(new { success = false, message = "Không tìm thấy đoạn văn chỉ định." });
-
-    int chapterId = target.ChapterId;
-
-    // Tìm đoạn liền trước hoặc liền sau dựa vào ParagraphOrder
-    TblParagraph? other = null;
-    if (request.Direction.ToLower() == "prev")
-    {
-        other = await _context.TblParagraphs
-            .Where(p => p.ChapterId == chapterId && p.ParagraphOrder < target.ParagraphOrder)
-            .OrderByDescending(p => p.ParagraphOrder)
-            .FirstOrDefaultAsync();
-    }
-    else
-    {
-        other = await _context.TblParagraphs
-            .Where(p => p.ChapterId == chapterId && p.ParagraphOrder > target.ParagraphOrder)
-            .OrderBy(p => p.ParagraphOrder)
-            .FirstOrDefaultAsync();
-    }
-
-    if (other == null)
-    {
-        string dirText = request.Direction.ToLower() == "prev" ? "phía trước" : "phía sau";
-        return Json(new { success = false, message = $"Không có đoạn văn {dirText} để gộp!" });
-    }
-
-    // Xác định thứ tự ghép: đoạn có Order nhỏ hơn sẽ đứng trước
-    TblParagraph first = target.ParagraphOrder < other.ParagraphOrder ? target : other;
-    TblParagraph second = target.ParagraphOrder < other.ParagraphOrder ? other : target;
-
-    // Hàm phụ trợ nối chuỗi và dọn dẹp thẻ ảnh nếu được yêu cầu
-    string CombineText(string? text1, string? text2)
-    {
-        string t1 = text1 ?? "";
-        string t2 = text2 ?? "";
-
-        if (request.RemoveImages)
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public async Task<IActionResult> MergeParagraphs([FromBody] MergeParagraphRequest request)
         {
-            t1 = Regex.Replace(t1, @"\[img[\s\S]*?\]", "", RegexOptions.IgnoreCase).Trim();
-            t2 = Regex.Replace(t2, @"\[img[\s\S]*?\]", "", RegexOptions.IgnoreCase).Trim();
+            if (request == null || request.TargetParagraphId <= 0)
+                return Json(new { success = false, message = "Invalid data." });
+
+            var target = await _context.TblParagraphs.FirstOrDefaultAsync(p => p.ParagraphId == request.TargetParagraphId);
+            if (target == null)
+                return Json(new { success = false, message = "Specified paragraph not found." });
+
+            int chapterId = target.ChapterId;
+
+            // Tìm đoạn liền trước hoặc liền sau dựa vào ParagraphOrder
+            TblParagraph? other = null;
+            if (request.Direction.ToLower() == "prev")
+            {
+                other = await _context.TblParagraphs
+                    .Where(p => p.ChapterId == chapterId && p.ParagraphOrder < target.ParagraphOrder)
+                    .OrderByDescending(p => p.ParagraphOrder)
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                other = await _context.TblParagraphs
+                    .Where(p => p.ChapterId == chapterId && p.ParagraphOrder > target.ParagraphOrder)
+                    .OrderBy(p => p.ParagraphOrder)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (other == null)
+            {
+                string dirText = request.Direction.ToLower() == "prev" ? "phía trước" : "phía sau";
+                return Json(new { success = false, message = $"Không có đoạn văn {dirText} để gộp!" });
+            }
+
+            // Xác định thứ tự ghép: đoạn có Order nhỏ hơn sẽ đứng trước
+            TblParagraph first = target.ParagraphOrder < other.ParagraphOrder ? target : other;
+            TblParagraph second = target.ParagraphOrder < other.ParagraphOrder ? other : target;
+
+            // Hàm phụ trợ nối chuỗi và dọn dẹp thẻ ảnh nếu được yêu cầu
+            string CombineText(string? text1, string? text2)
+            {
+                string t1 = text1 ?? "";
+                string t2 = text2 ?? "";
+
+                if (request.RemoveImages)
+                {
+                    t1 = Regex.Replace(t1, @"\[img[\s\S]*?\]", "", RegexOptions.IgnoreCase).Trim();
+                    t2 = Regex.Replace(t2, @"\[img[\s\S]*?\]", "", RegexOptions.IgnoreCase).Trim();
+                }
+
+                if (string.IsNullOrWhiteSpace(t1)) return t2.Trim();
+                if (string.IsNullOrWhiteSpace(t2)) return t1.Trim();
+                return $"{t1.Trim()} {t2.Trim()}";
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Gộp nội dung từ đoạn thứ 2 dồn vào đoạn thứ nhất
+                first.English = CombineText(first.English, second.English);
+                first.Vietnamese = CombineText(first.Vietnamese, second.Vietnamese);
+                first.Chinese = CombineText(first.Chinese, second.Chinese);
+                first.Japanese = CombineText(first.Japanese, second.Japanese);
+                first.French = CombineText(first.French, second.French);
+
+                // Xóa đoạn thứ 2
+                _context.TblParagraphs.Remove(second);
+                await _context.SaveChangesAsync();
+
+                // GỌI THỦ TỤC sp_ReindexParagraphOrder ĐỂ ĐÁNH LẠI STT KHÔNG BỊ KHUYẾT
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC [dbo].[sp_ReindexParagraphOrder] @ChapID = {chapterId}");
+
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Successfully merged paragraphs and reindexed order!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = $"Error merging paragraphs: {msg}" });
+            }
         }
-
-        if (string.IsNullOrWhiteSpace(t1)) return t2.Trim();
-        if (string.IsNullOrWhiteSpace(t2)) return t1.Trim();
-        return $"{t1.Trim()} {t2.Trim()}";
-    }
-
-    await using var transaction = await _context.Database.BeginTransactionAsync();
-    try
-    {
-        // Gộp nội dung từ đoạn thứ 2 dồn vào đoạn thứ nhất
-        first.English = CombineText(first.English, second.English);
-        first.Vietnamese = CombineText(first.Vietnamese, second.Vietnamese);
-        first.Chinese = CombineText(first.Chinese, second.Chinese);
-        first.Japanese = CombineText(first.Japanese, second.Japanese);
-        first.French = CombineText(first.French, second.French);
-
-        // Xóa đoạn thứ 2
-        _context.TblParagraphs.Remove(second);
-        await _context.SaveChangesAsync();
-
-        // GỌI THỦ TỤC sp_ReindexParagraphOrder ĐỂ ĐÁNH LẠI STT KHÔNG BỊ KHUYẾT
-        await _context.Database.ExecuteSqlInterpolatedAsync(
-            $"EXEC [dbo].[sp_ReindexParagraphOrder] @ChapID = {chapterId}");
-
-        await transaction.CommitAsync();
-
-        return Json(new { success = true, message = "Đã gộp đoạn văn và chuẩn hóa lại số thứ tự thành công!" });
-    }
-    catch (Exception ex)
-    {
-        await transaction.RollbackAsync();
-        var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-        return Json(new { success = false, message = $"Lỗi khi gộp đoạn: {msg}" });
-    }
-}
     }
 
 }

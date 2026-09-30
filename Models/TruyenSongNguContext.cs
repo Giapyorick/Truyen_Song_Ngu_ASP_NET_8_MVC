@@ -55,27 +55,39 @@ public partial class TruyenSongNguContext : DbContext
     {
         modelBuilder.Entity<TblAdmin>(entity =>
         {
-            entity.HasKey(e => e.AdminId).HasName("PK__tblAdmin__719FE4E843CF3D0E");
+            entity.HasKey(e => e.AdminId);
 
+            // Lưu ý: Đổi tên bảng thành "tblAdmin" nếu bảng trong SQL tên là tblAdmin
             entity.ToTable("tblAdmin");
 
-            entity.HasIndex(e => e.Username, "UQ__tblAdmin__536C85E44AFAD200").IsUnique();
+            entity.HasIndex(e => e.Username).IsUnique();
 
-            entity.Property(e => e.AdminId).HasColumnName("AdminID");
+            entity.Property(e => e.AdminId).HasColumnName("AdminId");
+
+            entity.Property(e => e.Username)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.PasswordHash)
+                .HasColumnName("PasswordHash")
+                .HasMaxLength(255);
+
+            entity.Property(e => e.FullName)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .HasDefaultValue("Viewer");
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("IsActive")
+                .HasDefaultValue(true);
+
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.FullName).HasMaxLength(100);
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Status).HasDefaultValue(true);
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+
+            entity.Property(e => e.LastLogin)
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<TblAuthor>(entity =>

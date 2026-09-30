@@ -15,6 +15,7 @@ builder.Services.AddDbContext<TruyenSongNguContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
 builder.Services.AddTransient<WebTruyenTranh.Helpers.IEmailSenderService, WebTruyenTranh.Helpers.EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
@@ -32,6 +33,13 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+});
+builder.Services.AddControllersWithViews();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 // 2. Truyền đúng biến connectionString vào Hangfire

@@ -17,6 +17,7 @@ using System.Drawing;
 namespace WebTruyenTranh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AdminAuthorize]
     public class tblAuthorsController : Controller
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -104,6 +105,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
         }
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Add(AuthorsViewModel author) 
         {
             if (!ModelState.IsValid) return Json(new { success = false, message = "Data errors" });
@@ -158,6 +160,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
         }
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Update(AuthorsViewModel model)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -241,6 +244,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Delete(int id)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -321,6 +325,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> DeleteMultiple(List<int> ids)
         {
             if (ids == null || !ids.Any())
@@ -454,6 +459,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [AdminRoleAuthorize]
         public async Task<IActionResult> ImportExcel(IFormFile file)
         {
             if (file == null || file.Length <= 0) 

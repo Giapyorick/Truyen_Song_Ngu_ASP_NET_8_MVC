@@ -1,147 +1,159 @@
 ﻿/**
- * Module xử lý Infinite Scroll có Delay 2s và Fade-In mượt mà
+ * Module xử lý Infinite Scroll đồng bộ từ Page 1
  */
-class InfiniteScroller {
-    constructor(config) {
-        this.grid = $(config.gridSelector || '#mainStoryGrid');
-        this.trigger = document.querySelector(config.triggerSelector || '#infiniteScrollTrigger');
-        this.spinner = $(config.spinnerSelector || '#scrollSpinner');
-        this.noMore = $(config.noMoreSelector || '#noMoreData');
-        
-        this.endpoint = config.endpoint || '/Stories/GetStoriesInfinite';
-        this.pageSize = config.pageSize || 8;
-        this.params = config.params || {};
-        
-        this.currentPage = 1;
-        this.isLoading = false;
-        this.hasMore = true;
+if (typeof window.InfiniteScroller === 'undefined') {
+    window.InfiniteScroller = class InfiniteScroller {
+        constructor(config) {
+            this.grid = $(config.gridSelector || '#mainStoryGrid');
+            this.trigger = document.querySelector(config.triggerSelector || '#infiniteScrollTrigger');
+            this.spinner = $(config.spinnerSelector || '#scrollSpinner');
+            this.noMore = $(config.noMoreSelector || '#noMoreData');
 
-        this.initObserver();
-    }
+            this.endpoint = config.endpoint || '/Stories/GetStoriesInfinite';
+            this.pageSize = config.pageSize || 8;
+            this.params = config.params || {};
 
-    initObserver() {
-        if (!this.trigger) return;
+            // Bắt đầu từ 0 để lượt load đầu tiên tải đúng Page = 1
+            this.currentPage = 0;
+            this.isLoading = false;
+            this.hasMore = true;
 
-        this.observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !this.isLoading && this.hasMore) {
-                this.loadNext();
-            }
-        }, {
-            // Giảm margin xuống 50px hoặc 0px để người dùng thấy rõ phần spinner loading dưới đáy
-            rootMargin: '50px'
-        });
+            this.loadedStoryIds = new Set();
 
-        this.observer.observe(this.trigger);
-    }
+            this.initObserver();
 
-    loadNext() {
-        this.isLoading = true;
-        this.currentPage++;
-        
-        // Hiện spinner quay quay
-        this.spinner.removeClass('hidden');
+            // Tải trang 1 ngay khi vừa vào trang
+            this.loadNext();
+        }
 
-        const queryData = Object.assign({}, this.params, {
-            page: this.currentPage,
-            pageSize: this.pageSize
-        });
+        initObserver() {
+            if (!this.trigger) return;
 
-        $.ajax({
-            url: this.endpoint,
-            type: 'GET',
-            data: queryData,
-            success: (html) => {
-                // ĐỢI ĐÚNG 2 GIÂY (2000ms) để người dùng thấy rõ hiệu ứng đang tải
-                setTimeout(() => {
-                    if (!html || html.trim() === '') {
-                        this.hasMore = false;
-                        if (this.trigger) this.observer.unobserve(this.trigger);
-                        this.spinner.addClass('hidden');
-                        this.noMore.removeClass('hidden');
-                        this.isLoading = false;
-                        return;
-                    }
+            this.observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !this.isLoading && this.hasMore && this.currentPage > 0) {
+                    this.loadNext();
+                }
+            }, {
+                rootMargin: '150px'
+            });
 
-                    // Bọc các thẻ truyện mới vào một wrapper tạm để làm hiệu ứng fade-in từ từ
-                    const $newCards =$(html).css({ opacity: 0, transform: 'translateY(20px)' });
-                    
-                    // Nối vào danh sách
-                    this.grid.append($newCards);
-
-                    // Hiệu ứng hiện từ từ (Fade In + trượt nhẹ lên)
-                    $newCards.animate(
-                        { opacity: 1 }, 
-                        {
-                            duration: 500,
-                            step: function (now, fx) {
-                                if (fx.prop === "opacity") {
-                                    const translateY = (1 - now) * 20;
-                                    $(this).css('transform', `translateY(${translateY}px)`);
-                                }
-                            }
-                        }
-                    );
-
-                    this.spinner.addClass('hidden');
-                    this.isLoading = false;
-                }, 2000);
-            },
-            error: (xhr) => {
-                console.error("Error loading infinite scroll:", xhr.status);
-                this.spinner.addClass('hidden');
-                this.isLoading = false;
-            }
-        });
-    }
-
-    reset(newParams) {
-        this.params = Object.assign(this.params, newParams);
-        this.currentPage = 1;
-        this.hasMore = true;
-        this.isLoading = true;
-
-        this.noMore.addClass('hidden');
-        this.spinner.removeClass('hidden');
-        this.grid.empty();
-
-        if (this.trigger) {
-            this.observer.disconnect();
             this.observer.observe(this.trigger);
         }
 
-        const queryData = Object.assign({}, this.params, {
-            page: 1,
-            pageSize: this.pageSize
-        });
+        loadNext() {
+            if (this.isLoading || !this.hasMore) return;
 
-        $.ajax({
-            url: this.endpoint,
-            type: 'GET',
-            data: queryData,
-            success: (html) => {
-                if (html && html.trim() !== '') {
-                    const $cards =$(html).css({ opacity: 0 });
-                    this.grid.html($cards);$cards.animate({ opacity: 1 }, 400);
-                } else {
-                    this.grid.html(`
-                        <div class="col-span-full bg-white rounded-3xl p-16 text-center border border-gray-100 space-y-3">
-                            <div class="w-16 h-16 mx-auto rounded-full bg-teal-50 text-teal-400 flex items-center justify-center text-2xl">
-                                <i class="fas fa-folder-open"></i>
-                            </div>
-                            <h3 class="font-bold text-gray-700 text-lg">No stories found</h3>
-                            <p class="text-xs text-gray-400 max-w-sm mx-auto">
-                                This category currently has no stories available. Please select another category!
-                            </p>
-                        </div>
-                    `);
-                    this.hasMore = false;
-                    if (this.trigger) this.observer.unobserve(this.trigger);
+            this.isLoading = true;
+            this.currentPage++;
+
+            this.spinner.removeClass('hidden');
+
+            const queryData = Object.assign({}, this.params, {
+                page: this.currentPage,
+                pageSize: this.pageSize
+            });
+
+            console.group(`%c[AJAX REQUEST] Đang tải Page = ${this.currentPage}`, 'color: #8b5cf6; font-weight: bold;');
+
+            $.ajax({
+                url: this.endpoint,
+                type: 'GET',
+                data: queryData,
+                success: (html) => {
+                    setTimeout(() => {
+                        if (!html || !html.trim()) {
+                            this.hasMore = false;
+                            if (this.trigger) this.observer.unobserve(this.trigger);
+                            this.spinner.addClass('hidden');
+                            this.noMore.removeClass('hidden');
+                            this.isLoading = false;
+                            console.groupEnd();
+                            return;
+                        }
+
+                        const $dom = $('<div>').html(html);
+                        const $incomingCards = $dom.find('.story-card');
+
+                        if ($incomingCards.length === 0) {
+                            this.hasMore = false;
+                            if (this.trigger) this.observer.unobserve(this.trigger);
+                            this.spinner.addClass('hidden');
+                            this.noMore.removeClass('hidden');
+                            this.isLoading = false;
+                            console.groupEnd();
+                            return;
+                        }
+
+                        const elementsToAdd = [];
+                        $incomingCards.each((_, el) => {
+                            const storyId = $(el).attr('data-story-id');
+                            if (storyId) {
+                                if (!this.loadedStoryIds.has(String(storyId))) {
+                                    this.loadedStoryIds.add(String(storyId));
+                                    elementsToAdd.push(el);
+                                }
+                            } else {
+                                elementsToAdd.push(el);
+                            }
+                        });
+
+                        if (elementsToAdd.length > 0) {
+                            const $newCards = $(elementsToAdd).css({ opacity: 0, transform: 'translateY(15px)' });
+                            this.grid.append($newCards);
+
+                            $newCards.animate(
+                                { opacity: 1 },
+                                {
+                                    duration: 300,
+                                    step: function (now, fx) {
+                                        if (fx.prop === "opacity") {
+                                            const translateY = (1 - now) * 15;
+                                            $(this).css('transform', `translateY(${translateY}px)`);
+                                        }
+                                    }
+                                }
+                            );
+                        }
+
+                        // Nếu số lượng card nhận về ít hơn pageSize -> Đây là trang cuối cùng
+                        if ($incomingCards.length < this.pageSize) {
+                            this.hasMore = false;
+                            if (this.trigger) this.observer.unobserve(this.trigger);
+                            this.noMore.removeClass('hidden');
+                        }
+
+                        this.spinner.addClass('hidden');
+                        this.isLoading = false;
+                        console.log(`%c[TỔNG SỐ HIỆN TẠI] Đang hiển thị: ${this.loadedStoryIds.size} truyện`, 'color: #059669; font-weight: bold;');
+                        console.groupEnd();
+                    }, 250);
+                },
+                error: (xhr) => {
+                    console.error('[AJAX ERROR]', xhr.status);
+                    this.spinner.addClass('hidden');
+                    this.isLoading = false;
+                    console.groupEnd();
                 }
-            },
-            complete: () => {
-                this.isLoading = false;
-                this.spinner.addClass('hidden');
+            });
+        }
+
+        reset(newParams) {
+            this.params = Object.assign(this.params, newParams);
+            this.currentPage = 0;
+            this.hasMore = true;
+            this.isLoading = false;
+            this.loadedStoryIds.clear();
+
+            this.noMore.addClass('hidden');
+            this.spinner.removeClass('hidden');
+            this.grid.empty();
+
+            if (this.trigger) {
+                this.observer.disconnect();
+                this.observer.observe(this.trigger);
             }
-        });
-    }
+
+            this.loadNext();
+        }
+    };
 }

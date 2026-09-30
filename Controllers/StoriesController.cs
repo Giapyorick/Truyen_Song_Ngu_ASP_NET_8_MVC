@@ -1,13 +1,13 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient; 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.ViewModels;
 
@@ -24,53 +24,41 @@ namespace WebTruyenTranh.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index() 
+        public IActionResult Index()
         {
-            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
-
-            var stories = await _context.TblStories
-                .Select(s => new StoryListViewModel
-                {
-                    StoryID = s.StoryId,
-                    Title = s.Title ?? "Undefined",
-                    Img = s.Img,
-                    HasProgress = userId > 0 && _context.TblUserReadingProgresses
-                        .Any(p => p.UserId == userId && p.StoryId == s.StoryId),
-
-                    LastChapterId = userId > 0 ? _context.TblUserReadingProgresses
-                        .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
-                        .Select(p => (int?)p.LastChapterId)
-                        .FirstOrDefault() : null,
-
-                    Categories = s.TblCategoryOfStories
-                        .Select(c => c.Category.Name ?? "Undefined")
-                        .ToList()
-                })
-                .ToListAsync();
-
-            return View(stories);
+            return View();
         }
+
         [HttpGet]
         public async Task<IActionResult> GetStoriesInfinite(string type = "likes", int? categoryId = null, int page = 1, int pageSize = 8)
         {
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
+            // BỎ HOÀN TOÀN WHERE THEO STATUS
             var query = _context.TblStories.AsNoTracking();
 
             if (categoryId.HasValue && categoryId.Value > 0)
             {
-                query = from s in query
-                        join cs in _context.TblCategoryOfStories on s.StoryId equals cs.StoryId
-                        where cs.CategoryId == categoryId.Value
-                        select s;
+                query = query.Where(s => s.TblCategoryOfStories.Any(cs => cs.CategoryId == categoryId.Value));
             }
 
-            query = type.ToLower() switch
+            query = (type?.ToLower()) switch
             {
-                "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate),
-                "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes),
-                "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate),
-                _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower)
+                "rate" => query.OrderByDescending(s => s.Rate)
+                               .ThenByDescending(s => s.CountRate)
+                               .ThenByDescending(s => s.StoryId),
+
+                "follower" => query.OrderByDescending(s => s.CountFolower)
+                                   .ThenByDescending(s => s.Likes)
+                                   .ThenByDescending(s => s.StoryId),
+
+                "most_rated" => query.OrderByDescending(s => s.CountRate)
+                                     .ThenByDescending(s => s.Rate)
+                                     .ThenByDescending(s => s.StoryId),
+
+                _ => query.OrderByDescending(s => s.Likes)
+                          .ThenByDescending(s => s.CountFolower)
+                          .ThenByDescending(s => s.StoryId)
             };
 
             var stories = await query
@@ -90,6 +78,7 @@ namespace WebTruyenTranh.Controllers
                                 .FirstOrDefault()
                         })
                         .FirstOrDefault(),
+
                     LatestChapters = _context.TblChapters
                         .Where(ch => ch.StoryId == s.StoryId)
                         .OrderByDescending(ch => ch.ChapterNumber)
@@ -104,7 +93,7 @@ namespace WebTruyenTranh.Controllers
                 .Select(x => new StoryListViewModel
                 {
                     StoryID = x.Story.StoryId,
-                    Title = x.Story.Title,
+                    Title = x.Story.Title ?? "Undefined",
                     Img = x.Story.Img,
                     Lang = x.Story.Lang,
                     Rate = x.Story.Rate,
@@ -120,6 +109,7 @@ namespace WebTruyenTranh.Controllers
 
             return PartialView("_StoryCardsPartial", stories);
         }
+
         public async Task<IActionResult> Detail(int id)
         {
             var story = await _context.TblStories
@@ -134,7 +124,6 @@ namespace WebTruyenTranh.Controllers
                 return NotFound();
             }
 
-            // 1. Lấy UserId từ Session
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             bool isLiked = false;
@@ -143,43 +132,32 @@ namespace WebTruyenTranh.Controllers
 
             if (userId > 0)
             {
-                // Kiểm tra like
                 isLiked = await _context.TblUserLikings
                     .AnyAsync(l => l.UserId == userId && l.StoryId == id && l.Liking > 0);
 
-                // Kiểm tra follow
                 isFollowed = await _context.TblUserFollowStories
                     .AnyAsync(f => f.UserId == userId && f.StoryId == id);
 
-        // Lấy số sao đã đánh giá
-        userRating = await _context.TblUserRatings
-            .Where(r => r.UserId == userId && r.StoryId == id)
-            .Select(r => r.Rating)
-            .FirstOrDefaultAsync();
-    }
+                userRating = await _context.TblUserRatings
+                    .Where(r => r.UserId == userId && r.StoryId == id)
+                    .Select(r => r.Rating)
+                    .FirstOrDefaultAsync();
+            }
 
-            // 2. Truyền các trạng thái qua ViewBag
             ViewBag.IsLiked = isLiked;
             ViewBag.IsFollowed = isFollowed;
             ViewBag.UserRating = userRating;
 
-            // 3. QUAN TRỌNG: Trả về chính đối tượng 'story' (kiểu TblStory) để khớp với @model TblStory của View
             return View(story);
         }
 
         public async Task<IActionResult> Read(int id)
         {
-            // 1. Lấy UserId từ Session
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
-
-            // 2. IN LOG TRỰC TIẾP RA CONSOLE / OUTPUT (Không lo bị chặn)
-            System.Diagnostics.Debug.WriteLine($"===================> CHECK SESSION: UserId = {userId}, ChapterId = {id}");
-            Console.WriteLine($"===================> CHECK SESSION: UserId = {userId}, ChapterId = {id}");
 
             var chapter = await _context.TblChapters.FirstOrDefaultAsync(c => c.ChapterId == id);
             if (chapter == null)
             {
-                Console.WriteLine($"===================> KHÔNG TÌM THẤY CHAPTER: {id}");
                 return NotFound();
             }
 
@@ -187,34 +165,24 @@ namespace WebTruyenTranh.Controllers
             {
                 try
                 {
-                    Console.WriteLine("===================> CHUẨN BỊ GỌI STORED PROCEDURE...");
-
                     var pUserId = new SqlParameter("@UserID", userId);
                     var pStoryId = new SqlParameter("@StoryID", chapter.StoryId);
                     var pChapterId = new SqlParameter("@ChapterID", id);
 
-                    int rows = await _context.Database.ExecuteSqlRawAsync(
+                    await _context.Database.ExecuteSqlRawAsync(
                         "EXEC [dbo].[sp_SaveUserReadingProgress] @UserID, @StoryID, @ChapterID",
                         pUserId, pStoryId, pChapterId
                     );
-
-                    Console.WriteLine($"===================> THỰC THI SP THÀNH CÔNG! Số dòng ảnh hưởng: {rows}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"===================> LỖI SP: {ex.Message}");
+                    _logger.LogError(ex, "Error executing sp_SaveUserReadingProgress");
                 }
-            }
-            else
-            {
-                Console.WriteLine("===================> KẾT QUẢ: UserId = 0 NÊN KHÔNG GỌI STORED PROCEDURE!");
             }
 
             return View(chapter);
         }
-        // ==========================================
-        // 1. CHỨC NĂNG LIKE / UNLIKE
-        // ==========================================
+
         [HttpPost]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> ToggleLike(int storyId)
@@ -278,12 +246,6 @@ namespace WebTruyenTranh.Controllers
                     likesCount = story.Likes ?? 0
                 });
             }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMsg = dbEx.InnerException?.Message ?? dbEx.Message;
-                _logger.LogError(dbEx, "Database Error in ToggleLike: {Message}", innerMsg);
-                return StatusCode(500, new { success = false, message = "Database Error: " + innerMsg });
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in ToggleLike: {Message}", ex.Message);
@@ -291,9 +253,6 @@ namespace WebTruyenTranh.Controllers
             }
         }
 
-        // ==========================================
-        // 2. CHỨC NĂNG ĐÁNH GIÁ (RATING)
-        // ==========================================
         [HttpPost]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> RateStory(int storyId, int rating)
@@ -340,7 +299,6 @@ namespace WebTruyenTranh.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // 3. Tính lại điểm trung bình cộng chính xác từ Database
                 var allRatings = await _context.TblUserRatings
                     .Where(r => r.StoryId == storyId)
                     .Select(r => r.Rating)
@@ -363,18 +321,13 @@ namespace WebTruyenTranh.Controllers
                     countRate = countRate
                 });
             }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMsg = dbEx.InnerException?.Message ?? dbEx.Message;
-                _logger.LogError(dbEx, "Database Error in RateStory: {Message}", innerMsg);
-                return StatusCode(500, new { success = false, message = "Database Error: " + innerMsg });
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in RateStory: {Message}", ex.Message);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> ToggleFollow(int storyId)
         {
@@ -386,13 +339,12 @@ namespace WebTruyenTranh.Controllers
             if (story == null) return Json(new { success = false, message = "Story not found!" });
 
             var followRecord = await _context.TblUserFollowStories
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.StoryId == storyId); //[cite: 5]
+                .FirstOrDefaultAsync(f => f.UserId == userId && f.StoryId == storyId);
 
             bool isFollowed = false;
             if (followRecord == null)
             {
-                // Chưa theo dõi -> Bấm để theo dõi
-                _context.TblUserFollowStories.Add(new TblUserFollowStory //[cite: 5]
+                _context.TblUserFollowStories.Add(new TblUserFollowStory
                 {
                     UserId = userId,
                     StoryId = storyId
@@ -402,7 +354,6 @@ namespace WebTruyenTranh.Controllers
             }
             else
             {
-                // Đang theo dõi -> Hủy theo dõi
                 _context.TblUserFollowStories.Remove(followRecord);
                 story.CountFolower = Math.Max(0, (story.CountFolower ?? 0) - 1);
                 isFollowed = false;

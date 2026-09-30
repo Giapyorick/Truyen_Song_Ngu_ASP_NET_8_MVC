@@ -152,3 +152,57 @@
         color: #ffffff !important;
         background: transparent !important;
     }
+/* Style cho Chip ngôn ngữ */
+.lang-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569 !important;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.25s ease;
+    -webkit-text-fill-color: #475569 !important; /* Ngăn bị trong suốt */
+}
+
+    .lang-chip .flag {
+        font-size: 13px;
+        line-height: 1;
+    }
+
+    .lang-chip .code {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+
+    /* Hover */
+    .lang-chip:not(.cursor-not-allowed):hover {
+        border-color: #96DEDA;
+        transform: translateY(-1px);
+    }
+
+    /* ĐỔI TÊN THÀNH .lang-selected ĐỂ TRÁNH TRÙNG .active */
+    .lang-chip.lang-selected {
+        background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%) !important;
+        background-size: 200% auto !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important; /* Ép chữ hiển thị màu trắng rõ nét */
+        -webkit-background-clip: border-box !important; /* Hủy clip text */
+        border-color: transparent !important;
+        box-shadow: 0 4px 14px rgba(80, 201, 195, 0.35) !important;
+    }
+
+        .lang-chip.lang-selected .code {
+            background: rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }

@@ -1,0 +1,141 @@
+﻿@model WebTruyenTranh.ViewModels.AdminLoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Sign In</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Chữ phủ Gradient tone ngọc sáng */
+        .text-cus {
+            background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 6px rgba(15, 3, 28, 0.05);
+        }
+
+        /* Nút bấm Gradient chủ đạo của hệ thống */
+        .btn-grad {
+            background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+            background-size: 200% auto;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .btn-grad:hover {
+            background-position: right center;
+            box-shadow: 0 10px 25px rgba(80, 201, 195, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-grad:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Vệt sáng xanh ngọc trang trí nền (Ambient Light Circles) -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-teal-400/25 rounded-full blur-[110px] pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-400/25 rounded-full blur-[110px] pointer-events-none"></div>
+
+    <!-- Khung đăng nhập màu trắng đổ bóng nổi -->
+    <div class="w-full max-w-md bg-white/90 backdrop-blur-xl border border-gray-100 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative z-10">
+        
+        <!-- Header: Logo & Tiêu đề -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-500 text-white text-2xl mb-4 shadow-lg shadow-teal-500/25">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">Admin Portal</h1>
+            <p class="text-xs sm:text-sm text-gray-400 mt-2 font-medium">Sign in to manage system contents and permissions</p>
+        </div>
+
+        <!-- Khung hiển thị thông báo lỗi (Nếu có) -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-500 text-xs font-semibold flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-base mt-0.5"></i>
+                <div asp-validation-summary="All" class="leading-relaxed list-none [&>ul]:list-none [&>ul]:p-0 [&>ul]:m-0"></div>
+            </div>
+        }
+
+        <!-- Biểu mẫu đăng nhập -->
+        <form asp-action="Login" asp-controller="Auth" asp-area="Admin" method="post" class="space-y-5">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <!-- Trường Username -->
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Username</label>
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-user absolute left-4 text-gray-400 text-sm"></i>
+                    <input asp-for="Username" type="text" placeholder="Enter your username" required autocomplete="username"
+                           class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 text-xs sm:text-sm placeholder-gray-400 outline-none focus:bg-white focus:border-teal-400 focus:ring-4 focus:ring-teal-400/10 transition-all" />
+                </div>
+            </div>
+
+            <!-- Trường Password -->
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Password</label>
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-lock absolute left-4 text-gray-400 text-sm"></i>
+                    <input asp-for="Password" type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password"
+                           class="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 text-xs sm:text-sm placeholder-gray-400 outline-none focus:bg-white focus:border-teal-400 focus:ring-4 focus:ring-teal-400/10 transition-all" />
+                    <!-- Nút bật/tắt hiển thị mật khẩu -->
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i id="togglePasswordIcon" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nút gửi Submit -->
+            <button type="submit" 
+                    class="w-full py-4 mt-2 rounded-2xl btn-grad text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-teal-500/20 cursor-pointer">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Thông báo quên mật khẩu -->
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-400 leading-relaxed">
+                Forgot your password? Please contact the 
+                <span class="font-bold text-gray-600">System Administrator</span> to reset your account credentials.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Script ẩn/hiện mật khẩu -->
+    <script>
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('loginPassword');
+            const pwdIcon = document.getElementById('togglePasswordIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                pwdIcon.classList.remove('fa-eye');
+                pwdIcon.classList.add('fa-eye-slash');
+            } else {
+                pwdInput.type = 'password';
+                pwdIcon.classList.remove('fa-eye-slash');
+                pwdIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>

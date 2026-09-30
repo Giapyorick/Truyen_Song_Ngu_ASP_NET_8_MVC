@@ -1,0 +1,11 @@
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_19d84fa9-1b8e-4f3e-8e1e-75f119d3dc14.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_348f597a-1430-4688-a7a7-27f7bb778bb5.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_634149e1-01bd-45f0-8def-53d0a1c70e14.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_66a434b7-0cb5-4050-9f2b-7e9a63247e44.jpg
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_95c0791c-58c6-42b1-a8f3-e81ebe68cdb1.jpeg
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_95ee4873-66b1-449f-8c05-8caa966e4aaf.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_a5f93e47-1950-4861-8df1-cda436dd4719.jpg
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_d32b871b-22a4-441e-ac78-99171c2266fe.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_d33020ee-63d5-4627-b745-bbc30811a285.png
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_ee80103e-c853-4581-866b-aa47b49cda9d.jpg
+D:\ASP.NET\WebTruyenTranh\wwwroot\assets\image\stories\Story_fa0790e0-e8b2-4206-b113-7ed6afbb567c.jpeg
