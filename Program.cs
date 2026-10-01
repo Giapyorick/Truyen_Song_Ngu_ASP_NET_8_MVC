@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using WebTruyenTranh.Helpers;
@@ -8,50 +9,53 @@ using WebTruyenTranh.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Connection string
+// 1. Connection string & Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        // Khắc phục lỗi rớt kết nối mạng / transient failures khi chạy hosting
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+    }));
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
+// Bộ đệm bộ nhớ (RAM) cần thiết cho RateLimitAttribute
+builder.Services.AddMemoryCache();
+
 // 2. Các Service ngoài
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
-builder.Services.AddTransient<WebTruyenTranh.Helpers.IEmailSenderService, WebTruyenTranh.Helpers.EmailSenderService>();
+builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
-// 3. Distributed Cache (Lưu session vào Database SQL Server)
-builder.Services.AddDistributedSqlServerCache(options =>
-{
-    options.ConnectionString = connectionString;
-    options.SchemaName = "dbo";
-    options.TableName = "TblSessionCache";
-});
+// 3. Quản lý Session & Cookie Policy
+// Dùng RAM thay vì SQL Server để loại bỏ nghẽn I/O và tiết kiệm CPU database
+builder.Services.AddDistributedMemoryCache();
 
-// 4. BỔ SUNG: Cấu hình Cookie Policy (Bắt buộc để lưu session ngay lần đầu)
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    // Bỏ qua kiểm tra chấp thuận cookie -> Cho phép tạo cookie session ngay lập tức
     options.CheckConsentNeeded = context => false;
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
     options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 
-// 5. BỔ SUNG & HỢP NHẤT: Cấu hình Session (Chỉ khai báo 1 lần duy nhất)
 builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".WebTruyenTranh.Session";
-    options.IdleTimeout = TimeSpan.FromHours(4); // Thời gian sống của session
-    options.Cookie.HttpOnly = true;               // Chống tấn công XSS
-    options.Cookie.IsEssential = true;           // Đánh dấu là cookie thiết yếu (không bị chặn)
-    options.Cookie.SameSite = SameSiteMode.Lax;  // Cho phép chuyển hướng vẫn giữ session
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Tương thích cả HTTP lẫn HTTPS
+    options.IdleTimeout = TimeSpan.FromHours(4);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-// 6. Cấu hình Hangfire
+// 4. Cấu hình Hangfire an toàn (Tránh cạn kiệt Connection Pool và giảm tải CPU)
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -60,17 +64,23 @@ builder.Services.AddHangfire(configuration => configuration
     {
         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.Zero,
+        QueuePollInterval = TimeSpan.FromSeconds(30), // Không để TimeSpan.Zero để tránh spam query
         UseRecommendedIsolationLevel = true,
         DisableGlobalLocks = true
     }));
 
 builder.Services.AddHangfireServer(options =>
 {
-    options.WorkerCount = 2;
+    options.WorkerCount = 1; // 1 luồng ngầm cho hosting để giải phóng tài nguyên
 });
 
 var app = builder.Build();
+
+// Hỗ trợ nhận diện đúng IP thật khi chạy sau IIS Reverse Proxy / Cloudflare
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 if (!app.Environment.IsDevelopment())
 {
@@ -83,9 +93,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// THỨ TỰ MIDDLEWARE BẮT BUỘC:
-app.UseCookiePolicy(); // BẮT BUỘC: Phải gọi trước UseSession
-app.UseSession();      // BẮT BUỘC: Phải gọi trước UseAuthorization
+// Thứ tự Middleware chuẩn
+app.UseCookiePolicy();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

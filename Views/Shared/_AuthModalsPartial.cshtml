@@ -274,18 +274,3 @@
         </form>
     </div>
 </div>
-<!-- BẢO MẬT CAPTCHA LOGIN -->
-<div class="space-y-1">
-    <label class="text-[11px] font-bold text-cus uppercase ml-1">Security Question</label>
-    <div class="flex items-center gap-2">
-        <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
-            <i class="fa-solid fa-calculator text-xs"></i>
-            <span id="loginCaptchaQuestion">Loading...</span>
-        </div>
-        <input type="text" name="captchaAnswer" id="loginCaptchaInput" required placeholder="Answer"
-               class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
-        <button type="button" onclick="refreshLoginCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
-            <i class="fa-solid fa-arrows-rotate text-xs"></i>
-        </button>
-    </div>
-</div>
