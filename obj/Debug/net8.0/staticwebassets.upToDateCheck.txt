@@ -190,6 +190,7 @@ wwwroot\js\admin\tblUsers\users-crud.js
 wwwroot\js\admin\tblUsers\users-ui.js
 wwwroot\js\ai-chatbox.js
 wwwroot\js\auth\auth-modal.js
+wwwroot\js\infinite_scroll.js
 wwwroot\js\reading-component.js
 wwwroot\js\site.js
 wwwroot\js\stories\stories-interaction.js
@@ -250,4 +251,3 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\js\infinite_scroll.js

@@ -8,10 +8,9 @@ namespace WebTruyenTranh.Helpers
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var adminId = context.HttpContext.Session.GetInt32("AdminId");
-            if (!adminId.HasValue || adminId.Value <= 0)
+            if (adminId == null || adminId <= 0)
             {
-                var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
-                context.Result = new RedirectToActionResult("Login", "Auth", new { area = "Admin", returnUrl });
+                context.Result = new RedirectToActionResult("Login", "Auth", new { area = "Admin" });
             }
             base.OnActionExecuting(context);
         }

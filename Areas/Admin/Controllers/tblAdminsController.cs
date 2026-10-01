@@ -69,7 +69,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     role = x.Role,
                     isActive = x.IsActive,
                     createdAt = x.CreatedAt.HasValue ? x.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "",
-                    lastLogin = x.LastLogin.HasValue ? x.LastLogin.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa đăng nhập"
+                    lastLogin = x.LastLogin.HasValue ? x.LastLogin.Value.ToString("dd/MM/yyyy HH:mm") : "Not logged in"
                 })
                 .ToListAsync();
 
@@ -86,7 +86,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var admin = await _context.TblAdmins.FindAsync(id);
-            if (admin == null) return NotFound(new { success = false, message = "Không tìm thấy tài khoản!" });
+            if (admin == null) return NotFound(new { success = false, message = "Account not found!" });
 
             return Json(new
             {
@@ -109,13 +109,13 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         {
             if (string.IsNullOrWhiteSpace(model.Password))
             {
-                return Json(new { success = false, message = "Mật khẩu không được để trống khi tạo mới!" });
+                return Json(new { success = false, message = "Password cannot be empty when creating a new account!" });
             }
 
             var exists = await _context.TblAdmins.AnyAsync(x => x.Username.ToLower() == model.Username.Trim().ToLower());
             if (exists)
             {
-                return Json(new { success = false, message = "Tên đăng nhập này đã được sử dụng!" });
+                return Json(new { success = false, message = "Username is already taken!" });
             }
 
             var entity = new TblAdmin
@@ -131,7 +131,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             _context.TblAdmins.Add(entity);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "Thêm quản trị viên thành công!" });
+            return Json(new { success = true, message = "Account created successfully!" });
         }
 
         // POST: /Admin/tblAdmins/Update
@@ -140,12 +140,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         public async Task<IActionResult> Update([FromBody] AdminUserViewModel model)
         {
             var entity = await _context.TblAdmins.FindAsync(model.AdminId);
-            if (entity == null) return Json(new { success = false, message = "Tài khoản không tồn tại!" });
+            if (entity == null) return Json(new { success = false, message = "Account not found!" });
 
             var exists = await _context.TblAdmins.AnyAsync(x => x.AdminId != model.AdminId && x.Username.ToLower() == model.Username.Trim().ToLower());
             if (exists)
             {
-                return Json(new { success = false, message = "Tên đăng nhập này đã bị trùng lặp!" });
+                return Json(new { success = false, message = "Username already exists!" });
             }
 
             entity.Username = model.Username.Trim();
@@ -160,7 +160,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Cập nhật tài khoản thành công!" });
+            return Json(new { success = true, message = "Update account successfully!" });
         }
 
         // POST: /Admin/tblAdmins/Delete
@@ -171,16 +171,16 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             var currentUserId = HttpContext.Session.GetInt32("AdminId");
             if (currentUserId == id)
             {
-                return Json(new { success = false, message = "Bạn không thể tự xóa tài khoản đang đăng nhập!" });
+                return Json(new { success = false, message = "You cannot delete your own account!" });
             }
 
             var entity = await _context.TblAdmins.FindAsync(id);
-            if (entity == null) return Json(new { success = false, message = "Không tìm thấy tài khoản cần xóa!" });
+            if (entity == null) return Json(new { success = false, message = "Account not found!" });
 
             _context.TblAdmins.Remove(entity);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "Xóa tài khoản quản trị thành công!" });
+            return Json(new { success = true, message = "Account deleted successfully!" });
         }
 
         // POST: /Admin/tblAdmins/DeleteMultiple
@@ -188,7 +188,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         [AdminRoleAuthorize] // ❌ Chặn Viewer
         public async Task<IActionResult> DeleteMultiple(List<int> ids)
         {
-            if (ids == null || !ids.Any()) return Json(new { success = false, message = "Vui lòng chọn tài khoản cần xóa!" });
+            if (ids == null || !ids.Any()) return Json(new { success = false, message = "Please select accounts to delete!" });
 
             var currentUserId = HttpContext.Session.GetInt32("AdminId") ?? 0;
             var toDelete = await _context.TblAdmins
@@ -197,7 +197,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             if (!toDelete.Any())
             {
-                return Json(new { success = false, message = "Không có tài khoản hợp lệ để xóa (Không thể xóa chính mình)!" });
+                return Json(new { success = false, message = "No valid accounts to delete (Cannot delete your own account)!" });
             }
 
             _context.TblAdmins.RemoveRange(toDelete);
@@ -206,7 +206,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             return Json(new
             {
                 success = true,
-                message = $"Đã xóa thành công {toDelete.Count} tài khoản!",
+                message = $"Successfully deleted {toDelete.Count} accounts!",
                 deletedCount = toDelete.Count
             });
         }

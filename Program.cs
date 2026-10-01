@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
-using WebTruyenTranh.Services; 
+using WebTruyenTranh.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Khai báo biến connectionString lấy từ appsettings.json
+// 1. Connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
@@ -16,10 +16,14 @@ builder.Services.AddDbContext<TruyenSongNguContext>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+
+// 2. Các Service ngoài
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
 builder.Services.AddTransient<WebTruyenTranh.Helpers.IEmailSenderService, WebTruyenTranh.Helpers.EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
+builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
+// 3. Distributed Cache (Lưu session vào Database SQL Server)
 builder.Services.AddDistributedSqlServerCache(options =>
 {
     options.ConnectionString = connectionString;
@@ -27,22 +31,27 @@ builder.Services.AddDistributedSqlServerCache(options =>
     options.TableName = "TblSessionCache";
 });
 
-builder.Services.AddSession(options =>
+// 4. BỔ SUNG: Cấu hình Cookie Policy (Bắt buộc để lưu session ngay lần đầu)
+builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(60);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SameSite = SameSiteMode.Lax;
-});
-builder.Services.AddControllersWithViews();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromHours(2);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    // Bỏ qua kiểm tra chấp thuận cookie -> Cho phép tạo cookie session ngay lập tức
+    options.CheckConsentNeeded = context => false;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 
-// 2. Truyền đúng biến connectionString vào Hangfire
+// 5. BỔ SUNG & HỢP NHẤT: Cấu hình Session (Chỉ khai báo 1 lần duy nhất)
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".WebTruyenTranh.Session";
+    options.IdleTimeout = TimeSpan.FromHours(4); // Thời gian sống của session
+    options.Cookie.HttpOnly = true;               // Chống tấn công XSS
+    options.Cookie.IsEssential = true;           // Đánh dấu là cookie thiết yếu (không bị chặn)
+    options.Cookie.SameSite = SameSiteMode.Lax;  // Cho phép chuyển hướng vẫn giữ session
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Tương thích cả HTTP lẫn HTTPS
+});
+
+// 6. Cấu hình Hangfire
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -58,11 +67,8 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer(options =>
 {
-    options.WorkerCount = 2; // Số luồng chạy ngầm đồng thời
+    options.WorkerCount = 2;
 });
-
-// 3. Đăng ký Service xử lý ngầm
-builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
 var app = builder.Build();
 
@@ -74,14 +80,19 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
-app.UseSession();
+
+// THỨ TỰ MIDDLEWARE BẮT BUỘC:
+app.UseCookiePolicy(); // BẮT BUỘC: Phải gọi trước UseSession
+app.UseSession();      // BẮT BUỘC: Phải gọi trước UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Bật Hangfire Dashboard (Truy cập tại: https://localhost:port/hangfire)
+// Bật Hangfire Dashboard
 app.UseHangfireDashboard("/hangfire");
 
-// Register area routes first
+// Area routes
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");

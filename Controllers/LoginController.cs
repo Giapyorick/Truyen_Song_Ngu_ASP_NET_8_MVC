@@ -31,78 +31,66 @@ namespace WebTruyenTranh.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CheckLogin(string email, string password)
+        [RateLimit("UserLogin", maxRequests: 5, timeWindowInSeconds: 60)]
+        public async Task<IActionResult> CheckLogin(string email, string password, string captchaAnswer)
         {
-            // Nhận diện linh hoạt cả 'password' lẫn 'Passwork' từ FormData
-            if (string.IsNullOrWhiteSpace(password))
+            // 1. Kiểm tra Captcha
+            if (!CaptchaHelper.ValidateCaptcha(HttpContext.Session, "LoginCaptchaResult", captchaAnswer))
             {
-                password = Request.Form["Passwork"].ToString();
+                return Json(new { success = false, message = "Incorrect security captcha answer!", needNewCaptcha = true });
             }
 
+            if (string.IsNullOrWhiteSpace(password)) password = Request.Form["Passwork"].ToString();
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 return Json(new { success = false, message = "Please enter both email and password!" });
             }
 
             string cleanEmail = email.Trim().ToLower();
-            string rawPassword = password.Trim();
+            var user = await _context.TblUsers.FirstOrDefaultAsync(x => x.Email != null && x.Email.Trim().ToLower() == cleanEmail);
 
-            // Tìm tài khoản theo Email
-            var user = await _context.TblUsers
-                .FirstOrDefaultAsync(x => x.Email != null && x.Email.Trim().ToLower() == cleanEmail);
-
-            if (user == null)
+            if (user == null || !PasswordHasher.Verify(user.Passwork ?? "", password.Trim()))
             {
-                return Json(new { success = false, message = "Invalid email or password!" });
+                return Json(new { success = false, message = "Invalid email or password!", needNewCaptcha = true });
             }
 
-            // Kiểm tra trạng thái tài khoản
             if (!string.Equals(user.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
             {
-                return Json(new { success = false, message = "Your account has been deactivated. Please contact support!" });
+                return Json(new { success = false, message = "Your account has been deactivated!" });
             }
-
-            string dbPassword = (user.Passwork ?? "").Trim();
-            bool isPasswordCorrect = false;
-
-            try
-            {
-                // Gọi chính xác theo cấu trúc gốc của hệ thống: Verify(dbHashedPass, rawPassword)
-                isPasswordCorrect = PasswordHasher.Verify(dbPassword, rawPassword);
-            }
-            catch
-            {
-                // Fallback nếu tài khoản cũ dùng Hash trực tiếp hoặc mật khẩu thuần
-                isPasswordCorrect = (dbPassword == PasswordHasher.Hash(rawPassword)) || (dbPassword == rawPassword);
-            }
-
-            if (!isPasswordCorrect)
-            {
-                return Json(new { success = false, message = "Invalid email or password!" });
-            }
-
-            // Lưu thông tin người dùng vào Session
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            HttpContext.Session.SetString("UserName", user.Name ?? user.Email ?? "Reader");
-            HttpContext.Session.SetString("UserEmail", user.Email ?? "");
-            HttpContext.Session.SetString("UserAvatar", user.Img ?? "");
 
             int tempUserId = HttpContext.Session.GetInt32("TempPassword_UserId") ?? 0;
             bool mustChangePassword = (tempUserId == user.UserId);
+
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("UserName", user.Name ?? user.Email ?? "Reader");
+            await HttpContext.Session.CommitAsync();
 
             return Json(new
             {
                 success = true,
                 message = "Signed in successfully!",
-                userId = user.UserId,
-                userName = user.Name,
-                requireChangePassword = mustChangePassword // <-- Cờ báo Client mở modal đổi mật khẩu
+                requireChangePassword = mustChangePassword
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(UsersViewModel model)
+        [RateLimit("UserRegister", maxRequests: 3, timeWindowInSeconds: 120)]
+        public async Task<IActionResult> Register(UsersViewModel model, string captchaAnswer)
         {
+            // 1. LỚP BẪY BOT (Honeypot Trap)
+            string trap = Request.Form["SystemSecurity_FakeTrap"].ToString();
+            if (!string.IsNullOrEmpty(trap))
+            {
+                return Json(new { success = true, message = "Account created successfully!" });
+            }
+
+            // 2. LỚP CAPTCHA
+            if (!CaptchaHelper.ValidateCaptcha(HttpContext.Session, "RegisterCaptchaResult", captchaAnswer))
+            {
+                return Json(new { success = false, message = "Incorrect security captcha answer!", needNewCaptcha = true });
+            }
+
             if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Passwork))
             {
                 return Json(new { success = false, message = "Email and password are required!" });
@@ -114,17 +102,13 @@ namespace WebTruyenTranh.Controllers
             }
 
             string cleanEmail = model.Email.Trim().ToLower();
-
-            // Kiểm tra trùng lặp email
-            bool emailExists = await _context.TblUsers
-                .AnyAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
+            bool emailExists = await _context.TblUsers.AnyAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
 
             if (emailExists)
             {
                 return Json(new { success = false, message = "This email is already registered. Please sign in!" });
             }
 
-            // Xử lý upload ảnh đại diện nếu có
             string avatarPath = "";
             if (model.formFile != null && model.formFile.Length > 0)
             {
@@ -152,7 +136,7 @@ namespace WebTruyenTranh.Controllers
                     DoB = model.DoB,
                     Gender = string.IsNullOrWhiteSpace(model.Gender) ? "Male" : model.Gender,
                     Img = avatarPath,
-                    Passwork = PasswordHasher.Hash(model.Passwork.Trim()), // Băm mật khẩu theo chuẩn hệ thống
+                    Passwork = PasswordHasher.Hash(model.Passwork.Trim()),
                     Status = "Active",
                     CreateAd = DateTime.Now
                 };
@@ -193,52 +177,41 @@ namespace WebTruyenTranh.Controllers
 
                 string cleanEmail = email.Trim().ToLower();
 
-                // 1. Kiểm tra Email có tồn tại trong CSDL hay không
                 var user = await _context.TblUsers
                     .FirstOrDefaultAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
 
                 if (user == null)
                 {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "This email address is not registered in our system!"
-                    });
+                    return Json(new { success = false, message = "This email address is not registered in our system!" });
                 }
 
-                // 2. Kiểm tra tài khoản có bị khóa không
                 if (!string.Equals(user.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Your account has been deactivated. Please contact support!"
-                    });
+                    return Json(new { success = false, message = "Your account has been deactivated. Please contact support!" });
                 }
 
-                // 3. Tạo mật khẩu tạm ngẫu nhiên
+                // Tạo mật khẩu tạm
                 string tempPassword = Guid.NewGuid().ToString("N").Substring(0, 8);
                 user.Passwork = PasswordHasher.Hash(tempPassword);
                 await _context.SaveChangesAsync();
-                HttpContext.Session.SetInt32("TempPassword_UserId", user.UserId);
 
-                // 4. Gửi email
+                // LƯU CỜ TẠM VÀO SESSION VÀ COMMIT NGAY LẬP TỨC
+                HttpContext.Session.SetInt32("TempPassword_UserId", user.UserId);
+                await HttpContext.Session.CommitAsync();
+
                 string emailSubject = "Bilingual Manga - Temporary Password Recovery";
                 string emailBody = $@"
-            <div style='font-family: Arial, sans-serif; padding: 24px; line-height: 1.6; color: #334155; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;'>
-                <h2 style='color: #0d9488; margin-top: 0;'>Password Recovery Request</h2>
-                <p>Hello <b>{user.Name ?? "Reader"}</b>,</p>
-                <p>We received a request to reset your account password. Here is your temporary password to sign in:</p>
-                <div style='margin: 16px 0; padding: 14px 24px; background-color: #f0fdfa; border: 1.5px dashed #0d9488; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #0f766e; display: inline-block; border-radius: 8px;'>
-                    {tempPassword}
-                </div>
-                <p style='color: #e11d48; font-size: 13px; font-weight: 600;'>* Please sign in with this temporary password and update it immediately in Edit Profile.</p>
-                <hr style='border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;'>
-                <p style='font-size: 12px; color: #94a3b8; margin-bottom: 0;'>Best regards,<br><b>Bilingual Manga Support Team</b></p>
-            </div>";
+        <div style='font-family: Arial, sans-serif; padding: 24px; line-height: 1.6; color: #334155; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;'>
+            <h2 style='color: #0d9488; margin-top: 0;'>Password Recovery Request</h2>
+            <p>Hello <b>{user.Name ?? "Reader"}</b>,</p>
+            <p>We received a request to reset your account password. Here is your temporary password to sign in:</p>
+            <div style='margin: 16px 0; padding: 14px 24px; background-color: #f0fdfa; border: 1.5px dashed #0d9488; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #0f766e; display: inline-block; border-radius: 8px;'>
+                {tempPassword}
+            </div>
+            <p style='color: #e11d48; font-size: 13px; font-weight: 600;'>* Please sign in with this temporary password and update it immediately.</p>
+        </div>";
 
                 await emailSender.SendEmailAsync(cleanEmail, emailSubject, emailBody);
-
 
                 return Json(new
                 {
@@ -248,12 +221,7 @@ namespace WebTruyenTranh.Controllers
             }
             catch (Exception ex)
             {
-                // Trả lỗi chi tiết về client thay vì làm sập HTTP 500
-                return Json(new
-                {
-                    success = false,
-                    message = "Mail error: " + ex.Message
-                });
+                return Json(new { success = false, message = "Mail error: " + ex.Message });
             }
         }
         [HttpPost]
@@ -308,7 +276,20 @@ namespace WebTruyenTranh.Controllers
             }
 
             // Nếu người dùng truy cập trực tiếp bằng URL thì về trang chủ kèm cờ mở modal
-            return RedirectToAction("Index", "Home", new { openLogin = true });
+            return RedirectToAction("Index", "Home");
+        }
+        [HttpGet]
+        public IActionResult GetRegisterCaptcha()
+        {
+            string question = CaptchaHelper.GenerateMathCaptcha(HttpContext.Session, "RegisterCaptchaResult");
+            return Json(new { question });
+        }
+
+        [HttpGet]
+        public IActionResult GetLoginCaptcha()
+        {
+            string question = CaptchaHelper.GenerateMathCaptcha(HttpContext.Session, "LoginCaptchaResult");
+            return Json(new { question });
         }
     }
 }

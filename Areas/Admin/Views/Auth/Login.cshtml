@@ -55,7 +55,7 @@
     <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-400/25 rounded-full blur-[110px] pointer-events-none"></div>
 
     <!-- Khung đăng nhập màu trắng đổ bóng nổi -->
-    <div class="w-full max-w-md bg-white/90 backdrop-blur-xl border border-gray-100 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative z-10">
+    <div class="w-full max-w-xl bg-white/90 backdrop-blur-xl border border-gray-100 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative z-10">
         
         <!-- Header: Logo & Tiêu đề -->
         <div class="text-center mb-8">
@@ -103,7 +103,20 @@
                     </button>
                 </div>
             </div>
-
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Security Question</label>
+                <div class="flex items-center gap-2">
+                    <div class="px-4 py-3 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 font-bold text-sm select-none flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-xs"></i>
+                        <span id="adminCaptchaQuestion">Loading...</span>
+                    </div>
+                    <input type="text" name="captchaAnswer" id="adminCaptchaInput" required placeholder="Answer" autocomplete="off"
+                           class="flex-1 px-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 text-xs sm:text-sm placeholder-gray-400 outline-none focus:bg-white focus:border-teal-400 transition-all" />
+                    <button type="button" onclick="refreshAdminCaptcha()" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition">
+                        <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                    </button>
+                </div>
+            </div>
             <!-- Nút gửi Submit -->
             <button type="submit" 
                     class="w-full py-4 mt-2 rounded-2xl btn-grad text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-teal-500/20 cursor-pointer">
@@ -122,7 +135,8 @@
     </div>
 
     <!-- Script ẩn/hiện mật khẩu -->
-    <script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+   <script>
         function togglePasswordVisibility() {
             const pwdInput = document.getElementById('loginPassword');
             const pwdIcon = document.getElementById('togglePasswordIcon');
@@ -136,6 +150,32 @@
                 pwdIcon.classList.add('fa-eye');
             }
         }
+
+        // 2. Hàm tải và làm mới Captcha Admin
+        function refreshAdminCaptcha() {
+            $('#adminCaptchaQuestion').text('Loading...');
+            $.ajax({
+                url: '/Admin/Auth/GetAdminCaptcha',
+                type: 'GET',
+                cache: false,
+                success: function (res) {
+                    if (res && res.question) {
+                        $('#adminCaptchaQuestion').text(res.question);
+                        $('#adminCaptchaInput').val('');
+                    }
+                },
+                error: function (xhr) {
+                    console.error("Lỗi tải Captcha Admin:", xhr);
+                    $('#adminCaptchaQuestion').text('Error! Click ↻');
+                }
+            });
+        }
+
+        // Tự động gọi khi tải xong trang
+        $(document).ready(function () {
+            refreshAdminCaptcha();
+        });
     </script>
+
 </body>
 </html>

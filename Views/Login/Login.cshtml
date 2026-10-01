@@ -180,44 +180,51 @@ $(document).ready(function () {
     $('#loginForm').on('submit', function (e) {
         e.preventDefault();
 
-        const $btn = $('#btnLoginSubmit, .btn-login');
+        const $btn = $(this).find('button[type="submit"]');
         $btn.prop('disabled', true);
+
+        const emailVal = $('#loginEmail').length ? $('#loginEmail').val() : $('#Email').val();
+        const passVal = $('#loginPassword').length ? $('#loginPassword').val() : $('#Passwork').val();
 
         $.ajax({
             url: '/Login/CheckLogin',
             type: 'POST',
+            xhrFields: { withCredentials: true },
             data: {
-                email: $('#loginEmail, #Email').val(),
-                password: $('#loginPassword, #Passwork').val()
+                email: emailVal,
+                password: passVal
             },
             success: function (res) {
                 if (res.success) {
-                    // NẾU TÀI KHOẢN ĐANG DÙNG MẬT KHẨU TẠM -> BẬT MODAL ĐỔI MẬT KHẨU
                     if (res.requireChangePassword) {
                         if (typeof closeLoginModal === 'function') closeLoginModal();
                         openForceChangePasswordModal();
                     } else {
-                        if (typeof showToast === 'function') showToast(res.message, 'success');
+                        showToast(res.message || 'Logged in successfully!', 'success');
                         setTimeout(() => {
-                            window.location.reload();
+                            if (res.redirectUrl) {
+                                window.location.href = res.redirectUrl;
+                            } else {
+                                window.location.reload();
+                            }
                         }, 500);
                     }
                 } else {
-                    if (typeof showToast === 'function') {
-                        showToast(res.message, 'error');
-                    } else {
+                    if ($('#loginError').length) {
                         $('#loginError').text(res.message).show();
                     }
+                    showToast(res.message || 'Invalid email or password!', 'error');
                 }
             },
             error: function () {
-                alert('Cannot connect to authentication server!');
+                showToast('Cannot connect to authentication server!', 'error');
             },
             complete: function () {
                 $btn.prop('disabled', false);
             }
         });
     });
+
     $('#userForm').on('submit', function (e) {
         e.preventDefault();
 
@@ -234,14 +241,14 @@ $(document).ready(function () {
             processData: false,
             success: function (res) {
                 if (res.success) {
-                    alert('Registration successful! Please login.');
+                    showToast('Registration successful! Please login.', 'success');
                     closeModal();
                 } else {
-                    alert(res.message || 'Error');
+                    showToast(res.message || 'Registration failed!', 'error');
                 }
             },
             error: function () {
-                alert('Connection error');
+                showToast('Connection error, please try again!', 'error');
             },
             complete: function () {
                 $btn.prop('disabled', false).text('Create Account');
@@ -249,11 +256,14 @@ $(document).ready(function () {
         });
     });
 });
+
 function openForceChangePasswordModal() {
     const $overlay = $('#forceChangePasswordModalOverlay');
     const $content = $('#forceChangePasswordModalContent');
 
-    $('#forceChangePasswordForm')[0].reset();
+    if ($('#forceChangePasswordForm').length) {
+        $('#forceChangePasswordForm')[0].reset();
+    }
     $('#forceChangePasswordError').addClass('hidden').text('');
 
     $overlay.removeClass('hidden').addClass('flex');
@@ -262,8 +272,8 @@ function openForceChangePasswordModal() {
     }, 10);
 }
 
-// 3. Xử lý gửi Form Đổi mật khẩu mới
-$('#forceChangePasswordForm').on('submit', function (e) {
+// Xử lý gửi Form Đổi mật khẩu
+$(document).on('submit', '#forceChangePasswordForm', function (e) {
     e.preventDefault();
 
     const newPass = $('#forceNewPassword').val().trim();
@@ -273,11 +283,13 @@ $('#forceChangePasswordForm').on('submit', function (e) {
 
     if (newPass.length < 6) {
         $err.removeClass('hidden').text('Password must be at least 6 characters!');
+        showToast('Password must be at least 6 characters!', 'error');
         return;
     }
 
     if (newPass !== confirmPass) {
         $err.removeClass('hidden').text('Confirm password does not match!');
+        showToast('Confirm password does not match!', 'error');
         return;
     }
 
@@ -286,21 +298,26 @@ $('#forceChangePasswordForm').on('submit', function (e) {
     $.ajax({
         url: '/Login/ChangePassword',
         type: 'POST',
+        xhrFields: { withCredentials: true },
         data: {
             newPassword: newPass,
             confirmPassword: confirmPass
         },
         success: function (res) {
             if (res.success) {
-                alert('Password updated successfully! Welcome back.');
-                window.location.reload(); // Tải lại trang với mật khẩu đã an toàn
+                showToast('Password updated successfully! Welcome back.', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
             } else {
                 $err.removeClass('hidden').text(res.message);
+                showToast(res.message || 'Update password failed!', 'error');
                 $btn.prop('disabled', false).text('Update Password & Proceed');
             }
         },
         error: function () {
             $err.removeClass('hidden').text('System error occurred. Please try again!');
+            showToast('System error occurred. Please try again!', 'error');
             $btn.prop('disabled', false).text('Update Password & Proceed');
         }
     });
@@ -340,7 +357,6 @@ function closeModal() {
         $overlay.removeClass('flex').addClass('hidden');
     }, 300);
 }
-
 
 function previewImage(input) {
     if (!input.files || !input.files[0]) return;

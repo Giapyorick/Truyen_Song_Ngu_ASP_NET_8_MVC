@@ -11,7 +11,7 @@
             </button>
         </div>
 
-        <form id="loginForm" class="p-6 space-y-4">
+        <form id="loginForm" action="javascript:void(0);" onsubmit="return false;" class="p-6 space-y-4">
             <div class="space-y-1">
                 <label class="text-[11px] font-bold text-cus uppercase ml-1">Email</label>
                 <input type="email" name="Email" id="loginEmail" required
@@ -25,10 +25,27 @@
                        class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 rounded-xl outline-none text-sm transition-all"
                        placeholder="••••••••">
             </div>
+
             <div class="flex justify-end">
                 <button type="button" onclick="switchToForgotModal()" class="text-xs text-teal-600 hover:underline font-semibold">
                     Forgot password?
                 </button>
+            </div>
+
+            <!-- BẢO MẬT CAPTCHA LOGIN: ĐẶT NẰM TRONG FORM, TRÊN NÚT SIGN IN -->
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">Security Question</label>
+                <div class="flex items-center gap-2">
+                    <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
+                        <i class="fa-solid fa-calculator text-xs"></i>
+                        <span id="loginCaptchaQuestion">Loading...</span>
+                    </div>
+                    <input type="text" name="captchaAnswer" id="loginCaptchaInput" required placeholder="Answer"
+                           class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
+                    <button type="button" onclick="refreshLoginCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="pt-2">
@@ -149,6 +166,20 @@
                     Register Account
                 </button>
             </div>
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">Security Question *</label>
+                <div class="flex items-center gap-2">
+                    <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
+                        <i class="fa-solid fa-calculator text-xs"></i>
+                        <span id="registerCaptchaQuestion">Loading...</span>
+                    </div>
+                    <input type="text" name="captchaAnswer" id="registerCaptchaInput" required placeholder="Answer"
+                           class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
+                    <button type="button" onclick="refreshRegisterCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    </button>
+                </div>
+            </div>
 
             <div class="text-center text-xs text-gray-500 pt-1">
                 Already have an account?
@@ -156,6 +187,13 @@
                     Sign In
                 </button>
             </div>
+            <!-- Ô BẪY BOT (HONEYPOT) - Người dùng bình thường không nhìn thấy ô này -->
+            <div style="opacity: 0; position: absolute; top: 0; left: 0; height: 0; width: 0; z-index: -1;">
+                <input type="text" name="SystemSecurity_FakeTrap" id="SystemSecurity_FakeTrap" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <!-- BẢO MẬT CAPTCHA REGISTER -->
+      
         </form>
     </div>
 </div>
@@ -194,10 +232,10 @@
         </form>
     </div>
 </div>
-@* 4. MODAL BẮT BUỘC ĐỔI MẬT KHẨU TẠM THỜI *@
+<!-- MODAL BẮT BUỘC ĐỔI MẬT KHẨU TẠM -->
 <div id="forceChangePasswordModalOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-[9999] transition-all duration-300">
     <div id="forceChangePasswordModalContent" class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300 ease-out p-8 text-center space-y-5">
-
+        
         <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 text-2xl shadow-inner">
             <i class="fa-solid fa-key"></i>
         </div>
@@ -205,12 +243,12 @@
         <div>
             <h3 class="text-xl font-black text-cus tracking-tight">Set New Password</h3>
             <p class="text-xs text-gray-500 mt-2 leading-relaxed">
-                You have signed in using a <strong>temporary password</strong>.<br>
-                For security reasons, please create a new password to continue.
+                You signed in with a <strong>temporary password</strong>.<br>
+                Please create a new password to continue.
             </p>
         </div>
 
-        <form id="forceChangePasswordForm" class="space-y-4 text-left">
+        <form id="forceChangePasswordForm" action="javascript:void(0);" onsubmit="return false;" class="space-y-4 text-left">
             <div class="space-y-1">
                 <label class="text-[11px] font-bold text-cus uppercase ml-1">New Password *</label>
                 <input type="password" id="forceNewPassword" required minlength="6"
@@ -234,5 +272,20 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+<!-- BẢO MẬT CAPTCHA LOGIN -->
+<div class="space-y-1">
+    <label class="text-[11px] font-bold text-cus uppercase ml-1">Security Question</label>
+    <div class="flex items-center gap-2">
+        <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
+            <i class="fa-solid fa-calculator text-xs"></i>
+            <span id="loginCaptchaQuestion">Loading...</span>
+        </div>
+        <input type="text" name="captchaAnswer" id="loginCaptchaInput" required placeholder="Answer"
+               class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
+        <button type="button" onclick="refreshLoginCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
+            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+        </button>
     </div>
 </div>

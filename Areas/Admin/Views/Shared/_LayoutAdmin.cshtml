@@ -44,7 +44,7 @@
                 <i class="fas fa-user-shield mr-3"></i> Admins
             </a>
 
-            <form asp-area="Admin" asp-controller="Auth" asp-action="Logout" method="post" class="inline w-full">
+            <form asp-area="Admin" asp-controller="Auth" asp-action="Logout" method="post" class="inline m-2 w-full">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="nav-link flex items-center w-full p-3 rounded-lg text-left border-none bg-transparent hover:text-red-500 transition-colors">
                     <i class="fas fa-sign-out-alt mr-3"></i> Logout

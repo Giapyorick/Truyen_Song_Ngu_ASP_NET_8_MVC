@@ -1071,7 +1071,7 @@ async function submitAttachImage() {
 
         // Xóa sạch toàn bộ tag ảnh cũ nếu có trong chuỗi hiện tại
         let currentText = currentPara[currentSideTabLang] || '';
-        currentText = currentText.replace(/\[(img\vert{}strip\vert{}multistrip)[\s\S]*?\]/gi, '').trim();
+        currentText = currentText.replace(/\[(img | strip | multistrip)[\s\S]*?\]/gi, '').trim();
         currentPara[currentSideTabLang] = (currentText ? currentText + ' ' : '') + generatedTag;
 
         // Cập nhật Quill nếu đang mở đúng tab ngôn ngữ
@@ -1124,7 +1124,7 @@ async function handleMergeParagraph(direction) {
 
     function checkHasImg(p) {
         const textGroup = [p.english, p.vietnamese, p.chinese, p.japanese, p.french].join(' ');
-        return /\[(img\vert{}strip)[\s\S]*?\]/i.test(textGroup);
+        return /\[(img | strip)[\s\S]*?\]/i.test(textGroup);
     }
 
     const hasImg = checkHasImg(currentPara) || checkHasImg(otherPara);

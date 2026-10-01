@@ -38,7 +38,7 @@ function handleLike(storyId) {
         success: function (res) {
             if (res.requireLogin) {
                 if (typeof openLoginModal === 'function') openLoginModal();
-                else alert(res.message);
+                else showToast(res.message, 'error');
                 return;
             }
 
@@ -74,7 +74,7 @@ function handleRate(storyId, rating) {
         success: function (res) {
             if (res.requireLogin) {
                 if (typeof openLoginModal === 'function') openLoginModal();
-                else alert(res.message);
+                else showToast(res.message,'error');
                 return;
             }
 
@@ -107,7 +107,7 @@ function handleFollow(storyId) {
         success: function (res) {
             if (res.requireLogin) {
                 if (typeof openLoginModal === 'function') openLoginModal();
-                else alert(res.message);
+                else showToast(res.message, 'error');
                 return;
             }
 

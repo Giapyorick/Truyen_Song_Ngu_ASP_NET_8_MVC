@@ -257,7 +257,9 @@ class ReadingViewer {
                 blockType = 0;
             }
 
-            const order = p.paragraphOrder || p.ParagraphOrder || (index + 1);
+            const order = (p.paragraphOrder !== undefined && p.paragraphOrder !== null) 
+                ? p.paragraphOrder 
+                : ((p.ParagraphOrder !== undefined && p.ParagraphOrder !== null) ? p.ParagraphOrder : index);
 
             // Bóc tách Media từ ngôn ngữ nguồn hoặc fallback
             let srcMedia = this.extractMediaInfo(rawSrc);
@@ -351,9 +353,13 @@ class ReadingViewer {
                 }
             }
 
-            // DỌN SẠCH TẤT CẢ CÁC THẺ ẢNH BẰNG REGEX CHUẨN (ĐÃ XÓA \vert{})
-            rawSrc = rawSrc.replace(/\[(img\vert{}strip\vert{}multistrip)[\s\S]*?\]/gi, '').replace(/<[^>]*>\[(img\vert{}strip\vert{}multistrip)[\s\S]*?\]<\/[^>]*>/gi, '').trim();
-            rawTarget = rawTarget.replace(/\[(img\vert{}strip\vert{}multistrip)[\s\S]*?\]/gi, '').replace(/<[^>]*>\[(img\vert{}strip\vert{}multistrip)[\s\S]*?\]<\/[^>]*>/gi, '').trim();
+            rawSrc = rawSrc.replace(/\[(img|strip|multistrip)[\s\S]*?\]/gi, '')
+               .replace(/<[^>]*>\[(img|strip|multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
+               .trim();
+
+            rawTarget = rawTarget.replace(/\[(img|strip|multistrip)[\s\S]*?\]/gi, '')
+                                 .replace(/<[^>]*>\[(img|strip|multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
+                                 .trim();
 
             let cleanSrc = this.stripBlockTags(rawSrc);
             let cleanTarget = this.stripBlockTags(rawTarget);
@@ -440,28 +446,31 @@ class ReadingViewer {
     }
 
     // Chuyển đổi ngôn ngữ của một câu khi nhấp đúp
-    toggleLanguage($el, targetLang = null) {
-        const currentLang = $el.data('lang');
+       toggleLanguage($el, targetLang = null) {
+        const currentLang = $el.attr('data-lang');
         const nextLang = targetLang || (currentLang === this.currentSrcLang ? this.currentTargetLang : this.currentSrcLang);
         if (currentLang === nextLang) return;
 
-        let newContent = nextLang === this.currentTargetLang ? $el.attr('data-target') : $el.attr('data-src');
+        let newContent = (nextLang === this.currentTargetLang) 
+            ? $el.attr('data-target') 
+            : $el.attr('data-src');
 
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = newContent || '';
-
-        $el.html(tempDiv.innerHTML); $el.data('lang', nextLang);
+        if (newContent !== undefined && newContent !== null) {
+            $el.html(newContent);$el.attr('data-lang', nextLang);
+            $el.data('lang', nextLang);$el.toggleClass('text-teal-700 font-medium', nextLang === this.currentTargetLang);
+        }
 
         const order = $el.attr('data-order');
-        const $caption = $(`#caption-${order}`);
+        const $caption =$(`#caption-${order}`);
         if ($caption.length > 0) {
-            const nextCaption = nextLang === this.currentTargetLang ? $el.attr('data-target-caption') : $el.attr('data-src-caption');
+            const nextCaption = (nextLang === this.currentTargetLang) 
+                ? $el.attr('data-target-caption') 
+                : $el.attr('data-src-caption');
             if (nextCaption) {
-                $caption.find('span').text(nextCaption); $caption.removeClass('hidden');
+                $caption.find('span').text(nextCaption);$caption.removeClass('hidden');
             }
         }
     }
-
     // Đăng ký các sự kiện tương tác
     bindEvents() {
         const self = this;
@@ -479,7 +488,7 @@ class ReadingViewer {
             const newTarget = $('#targetLangSelect').val();
 
             if (newSrc === newTarget) {
-                alert("Translation language must be different from the source language!");
+                showToast("Translation language must be different from the source language!", error);
                 $('#srcLangSelect').val(self.currentSrcLang);
                 $('#targetLangSelect').val(self.currentTargetLang);
                 return;
@@ -499,19 +508,17 @@ class ReadingViewer {
         });
 
         $(document).off('dblclick', '.text-segment').on('dblclick', '.text-segment', function () {
-            const $el = $(this);
-            const order = $el.attr('data-order');
-
-            const $original = $(`#paragraphList .text-segment[data-order="${order}"]`);
-            self.toggleLanguage($original);
-
+            const $el =$(this);
+    
+            // Nếu đang ở Focus Mode, đồng bộ với thẻ gốc ngoài trang chính
             if (self.isFocusMode) {
-                const $focus = $(`#focusContentContainer .text-segment[data-order="${order}"]`);
-                if ($focus.length > 0) {
-                    $focus.html($original.html());
-                    $focus.data('lang', $original.data('lang'));
-                    $focus.toggleClass('is-translated', $original.hasClass('is-translated'));
-                }
+                const order = $el.attr('data-order');
+                const $original =$(`#paragraphList .text-segment[data-order="${order}"]`);
+                self.toggleLanguage($el);
+                self.toggleLanguage($original);
+            } else {
+                // Ở chế độ đọc bình thường: Chỉ toggle đúng thẻ đang click
+                self.toggleLanguage($el);
             }
         });
 
