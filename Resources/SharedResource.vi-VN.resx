@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Trang chủ</value>
+  </data>
+  <data name="Nav_Stories" xml:space="preserve">
+    <value>Danh sách truyện</value>
+  </data>
+  <data name="Nav_Genres" xml:space="preserve">
+    <value>Thể loại</value>
+  </data>
+  <data name="Nav_Follow" xml:space="preserve">
+    <value>Theo dõi</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>Lịch sử</value>
+  </data>
+  <data name="Nav_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm kiếm truyện, tác giả...</value>
+  </data>
+  <data name="Nav_SignIn" xml:space="preserve">
+    <value>Đăng nhập</value>
+  </data>
+  <data name="Nav_SignUp" xml:space="preserve">
+    <value>Đăng ký</value>
+  </data>
+  <data name="Nav_SignOut" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="Nav_Profile" xml:space="preserve">
+    <value>Trang cá nhân</value>
+  </data>
+  <data name="Auth_Username" xml:space="preserve">
+    <value>Tên tài khoản</value>
+  </data>
+  <data name="Auth_Password" xml:space="preserve">
+    <value>Mật khẩu</value>
+  </data>
+  <data name="Auth_ConfirmPassword" xml:space="preserve">
+    <value>Xác nhận mật khẩu</value>
+  </data>
+  <data name="Auth_Email" xml:space="preserve">
+    <value>Địa chỉ Email</value>
+  </data>
+  <data name="Auth_RememberMe" xml:space="preserve">
+    <value>Ghi nhớ đăng nhập</value>
+  </data>
+  <data name="Auth_ForgotPassword" xml:space="preserve">
+    <value>Quên mật khẩu?</value>
+  </data>
+  <data name="Auth_DontHaveAccount" xml:space="preserve">
+    <value>Chưa có tài khoản?</value>
+  </data>
+  <data name="Auth_AlreadyHaveAccount" xml:space="preserve">
+    <value>Đã có tài khoản?</value>
+  </data>
+  <data name="Auth_SecurityQuestion" xml:space="preserve">
+    <value>Câu hỏi bảo mật</value>
+  </data>
+  <data name="Auth_CaptchaPlaceholder" xml:space="preserve">
+    <value>Nhập kết quả</value>
+  </data>
+  <data name="Story_NewUpdates" xml:space="preserve">
+    <value>Truyện mới cập nhật</value>
+  </data>
+  <data name="Story_TopViews" xml:space="preserve">
+    <value>Xem nhiều nhất</value>
+  </data>
+  <data name="Story_TopLikes" xml:space="preserve">
+    <value>Yêu thích nhất</value>
+  </data>
+  <data name="Story_Chapter" xml:space="preserve">
+    <value>Chương</value>
+  </data>
+  <data name="Story_Views" xml:space="preserve">
+    <value>Lượt xem</value>
+  </data>
+  <data name="Story_Followers" xml:space="preserve">
+    <value>Người theo dõi</value>
+  </data>
+  <data name="Story_Rating" xml:space="preserve">
+    <value>Đánh giá</value>
+  </data>
+  <data name="Story_ReadContinue" xml:space="preserve">
+    <value>Đọc tiếp</value>
+  </data>
+  <data name="Story_ReadFirst" xml:space="preserve">
+    <value>Đọc từ đầu</value>
+  </data>
+  <data name="Reader_PrevChapter" xml:space="preserve">
+    <value>Chương trước</value>
+  </data>
+  <data name="Reader_NextChapter" xml:space="preserve">
+    <value>Chương sau</value>
+  </data>
+  <data name="Reader_ChapterList" xml:space="preserve">
+    <value>Danh sách chương</value>
+  </data>
+  <data name="Reader_Comment" xml:space="preserve">
+    <value>Bình luận</value>
+  </data>
+  <data name="Reader_PostComment" xml:space="preserve">
+    <value>Gửi bình luận</value>
+  </data>
+  <data name="Reader_CommentPlaceholder" xml:space="preserve">
+    <value>Viết bình luận của bạn...</value>
+  </data>
+  <data name="Footer_AboutUs" xml:space="preserve">
+    <value>Về chúng tôi</value>
+  </data>
+  <data name="Footer_Terms" xml:space="preserve">
+    <value>Điều khoản dịch vụ</value>
+  </data>
+  <data name="Footer_Privacy" xml:space="preserve">
+    <value>Chính sách bảo mật</value>
+  </data>
+  <data name="Footer_Contact" xml:space="preserve">
+    <value>Liên hệ</value>
+  </data>
+  <data name="Footer_Copyright" xml:space="preserve">
+    <value>Bản quyền thuộc về WebTruyenTranh</value>
+  </data>
+</root>

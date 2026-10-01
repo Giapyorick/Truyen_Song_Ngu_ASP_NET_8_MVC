@@ -1,8 +1,9 @@
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml;
+using System.Globalization;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.Services;
@@ -15,27 +16,44 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions =>
     {
-        // Khắc phục lỗi rớt kết nối mạng / transient failures khi chạy hosting
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null);
+        sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
     }));
 
-builder.Services.AddControllersWithViews();
-builder.Services.AddHttpContextAccessor();
+// 2. CẤU HÌNH LOCALIZATION
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-// Bộ đệm bộ nhớ (RAM) cần thiết cho RateLimitAttribute
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 
-// 2. Các Service ngoài
+// 3. Khai báo danh sách ngôn ngữ hỗ trợ
+var supportedCultures = new[]
+{
+    new CultureInfo("vi-VN"),
+    new CultureInfo("en-US")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("vi-VN");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new CookieRequestCultureProvider()
+    };
+});
+
+// ... Các Services ngoài (giữ nguyên)
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
 builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
-// 3. Quản lý Session & Cookie Policy
-// Dùng RAM thay vì SQL Server để loại bỏ nghẽn I/O và tiết kiệm CPU database
+// Quản lý Session
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -55,7 +73,7 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-// 4. Cấu hình Hangfire an toàn (Tránh cạn kiệt Connection Pool và giảm tải CPU)
+// Cấu hình Hangfire (giữ nguyên)
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -64,23 +82,23 @@ builder.Services.AddHangfire(configuration => configuration
     {
         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.FromSeconds(30), // Không để TimeSpan.Zero để tránh spam query
+        QueuePollInterval = TimeSpan.FromSeconds(30),
         UseRecommendedIsolationLevel = true,
         DisableGlobalLocks = true
     }));
 
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = 1; // 1 luồng ngầm cho hosting để giải phóng tài nguyên
-});
+builder.Services.AddHangfireServer(options => { options.WorkerCount = 1; });
 
 var app = builder.Build();
 
-// Hỗ trợ nhận diện đúng IP thật khi chạy sau IIS Reverse Proxy / Cloudflare
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+// 4. BẬT MIDDLEWARE LOCALIZATION TRƯỚC USE ROUTING
+var locOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value;
+app.UseRequestLocalization(locOptions);
 
 if (!app.Environment.IsDevelopment())
 {
@@ -93,21 +111,17 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Thứ tự Middleware chuẩn
 app.UseCookiePolicy();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Bật Hangfire Dashboard
 app.UseHangfireDashboard("/hangfire");
 
-// Area routes
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
-// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

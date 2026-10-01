@@ -1,8 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Localization
 @using WebTruyenTranh.ViewModels
 @{
     int currentUserId = Context.Session.GetInt32("UserId") ?? 0;
     string currentUserName = Context.Session.GetString("UserName") ?? "";
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.Name ?? "vi-VN";
+    var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : $"{Context.Request.Path.Value}{Context.Request.QueryString}";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -133,6 +137,17 @@
                 </button>
             }
         </div>
+        <form asp-controller="Language" asp-action="SetLanguage" method="post" class="flex items-center bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <button type="submit" name="culture" value="vi-VN"
+                    class="px-2 py-1 text-xs font-semibold rounded-md transition-all @(currentCulture == "vi-VN" ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-800")">
+                VN
+            </button>
+            <button type="submit" name="culture" value="en-US"
+                    class="px-2 py-1 text-xs font-semibold rounded-md transition-all @(currentCulture == "en-US" ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-800")">
+                EN
+            </button>
+        </form>
     </header>
 
     <section class="hero-slideshow">

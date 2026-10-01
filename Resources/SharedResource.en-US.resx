@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Nav_Stories" xml:space="preserve">
+    <value>Comic List</value>
+  </data>
+  <data name="Nav_Genres" xml:space="preserve">
+    <value>Genres</value>
+  </data>
+  <data name="Nav_Follow" xml:space="preserve">
+    <value>Following</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>Reading History</value>
+  </data>
+  <data name="Nav_SearchPlaceholder" xml:space="preserve">
+    <value>Search comics, authors...</value>
+  </data>
+  <data name="Nav_SignIn" xml:space="preserve">
+    <value>Sign In</value>
+  </data>
+  <data name="Nav_SignUp" xml:space="preserve">
+    <value>Sign Up</value>
+  </data>
+  <data name="Nav_SignOut" xml:space="preserve">
+    <value>Sign Out</value>
+  </data>
+  <data name="Nav_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Auth_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Auth_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Auth_ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
+  <data name="Auth_Email" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+  <data name="Auth_RememberMe" xml:space="preserve">
+    <value>Remember Me</value>
+  </data>
+  <data name="Auth_ForgotPassword" xml:space="preserve">
+    <value>Forgot Password?</value>
+  </data>
+  <data name="Auth_DontHaveAccount" xml:space="preserve">
+    <value>Don't have an account?</value>
+  </data>
+  <data name="Auth_AlreadyHaveAccount" xml:space="preserve">
+    <value>Already have an account?</value>
+  </data>
+  <data name="Auth_SecurityQuestion" xml:space="preserve">
+    <value>Security Question</value>
+  </data>
+  <data name="Auth_CaptchaPlaceholder" xml:space="preserve">
+    <value>Enter answer</value>
+  </data>
+  <data name="Story_NewUpdates" xml:space="preserve">
+    <value>Latest Updates</value>
+  </data>
+  <data name="Story_TopViews" xml:space="preserve">
+    <value>Top Views</value>
+  </data>
+  <data name="Story_TopLikes" xml:space="preserve">
+    <value>Most Liked</value>
+  </data>
+  <data name="Story_Chapter" xml:space="preserve">
+    <value>Chapter</value>
+  </data>
+  <data name="Story_Views" xml:space="preserve">
+    <value>Views</value>
+  </data>
+  <data name="Story_Followers" xml:space="preserve">
+    <value>Followers</value>
+  </data>
+  <data name="Story_Rating" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="Story_ReadContinue" xml:space="preserve">
+    <value>Continue Reading</value>
+  </data>
+  <data name="Story_ReadFirst" xml:space="preserve">
+    <value>Read First Chapter</value>
+  </data>
+  <data name="Reader_PrevChapter" xml:space="preserve">
+    <value>Previous Chapter</value>
+  </data>
+  <data name="Reader_NextChapter" xml:space="preserve">
+    <value>Next Chapter</value>
+  </data>
+  <data name="Reader_ChapterList" xml:space="preserve">
+    <value>Chapter List</value>
+  </data>
+  <data name="Reader_Comment" xml:space="preserve">
+    <value>Comments</value>
+  </data>
+  <data name="Reader_PostComment" xml:space="preserve">
+    <value>Post Comment</value>
+  </data>
+  <data name="Reader_CommentPlaceholder" xml:space="preserve">
+    <value>Write your comment...</value>
+  </data>
+  <data name="Footer_AboutUs" xml:space="preserve">
+    <value>About Us</value>
+  </data>
+  <data name="Footer_Terms" xml:space="preserve">
+    <value>Terms of Service</value>
+  </data>
+  <data name="Footer_Privacy" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
+  <data name="Footer_Contact" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="Footer_Copyright" xml:space="preserve">
+    <value>Copyright © WebTruyenTranh</value>
+  </data>
+</root>
