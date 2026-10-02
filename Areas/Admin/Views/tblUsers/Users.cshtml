@@ -1,3 +1,7 @@
+@using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
 @{
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
@@ -11,7 +15,7 @@
     <div class="space-y-10 m-10">
         <div class="flex flex-col items-center gap-4">
             <h2 class="text-2xl font-bold text-cus tracking-tight">
-                Users Management
+                @SharedLocalizer["User_PageTitle"]
             </h2>
         </div>
 
@@ -20,37 +24,38 @@
             <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="relative w-40 sm:w-64">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="filterSearch" placeholder="Search by name, email..." class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
+                    <input type="text" id="filterSearch" placeholder="@SharedLocalizer["Author_SearchPlaceholder"]" 
+                           class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
                 </div>
 
                 <div class="w-40">
                     <select id="filterGender" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
-                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Gender</option>
-                        <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="Male">Male</option>
-                        <option data-color="linear-gradient(135deg, #ff758c, #ff7eb3)" value="Female">Female</option>
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">@SharedLocalizer["Author_FilterGender"]</option>
+                        <option data-color="linear-gradient(135deg, #4facfe, #00f2fe)" value="Male">@SharedLocalizer["AdminCommon_Male"]</option>
+                        <option data-color="linear-gradient(135deg, #ff758c, #ff7eb3)" value="Female">@SharedLocalizer["AdminCommon_Female"]</option>
                     </select>
                 </div>
 
                 <div class="w-40">
                     <select id="filterStatus" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
-                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Status</option>
-                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Active">Active</option>
-                        <option data-color="linear-gradient(135deg, #F45C43, #EB3349)" value="Inactive">Inactive</option>
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">@SharedLocalizer["Admin_FilterStatus"]</option>
+                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Active">@SharedLocalizer["Admin_StatusActive"]</option>
+                        <option data-color="linear-gradient(135deg, #F45C43, #EB3349)" value="Inactive">@SharedLocalizer["Admin_StatusInactive"]</option>
                     </select>
                 </div>
 
                 <div class="flex items-center gap-4">
                     <button onclick="exportExcel()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-file-export mr-2"></i>Export
+                        <i class="fas fa-file-export mr-2"></i>@SharedLocalizer["Btn_Export"]
                     </button>
                     <button onclick="openImportModal()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-file-import mr-2"></i>Import
+                        <i class="fas fa-file-import mr-2"></i>@SharedLocalizer["Btn_Import"]
                     </button>
-                    <button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-trash-alt mr-2"></i>Delete
+                    <button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300" disabled>
+                        <i class="fas fa-trash-alt mr-2"></i>@SharedLocalizer["Admin_BtnDeleteText"]
                     </button>
                     <button onclick="openModal('add')" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-plus-circle mr-2"></i> Add
+                        <i class="fas fa-plus-circle mr-2"></i> @SharedLocalizer["Admin_BtnAdd"]
                     </button>
                 </div>
             </div>
@@ -65,11 +70,11 @@
                                     <input type="checkbox" id="selectAll" class="w-5 h-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer transition-all">
                                 </div>
                             </th>
-                            <th class="px-4 py-4 text-gray font-bold">Information</th>
-                            <th class="px-6 py-4 text-gray font-bold">DoB (y-m-d)</th>
-                            <th class="px-6 py-4 text-gray font-bold text-center">Gender</th>
-                            <th class="px-6 py-4 text-gray font-bold text-center">Status</th>
-                            <th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
+                            <th class="px-4 py-4 text-gray font-bold">@SharedLocalizer["Author_ColInfo"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Author_ColDoB"]</th>
+                            <th class="px-6 py-4 text-gray font-bold text-center">@SharedLocalizer["User_Gender"]</th>
+                            <th class="px-6 py-4 text-gray font-bold text-center">@SharedLocalizer["Admin_ColStatus"]</th>
+                            <th class="px-8 py-4 text-gray font-bold text-right">@SharedLocalizer["Admin_ColActions"]</th>
                         </tr>
                     </thead>
                     <tbody id="user-list-body" class="divide-y divide-gray-50"></tbody>
@@ -90,6 +95,38 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Inject từ điển ngôn ngữ cho Module Users an toàn bằng Json.Serialize -->
+    <script>
+        window.ADMIN_LANG = window.ADMIN_LANG || {};
+        window.ADMIN_LANG.NotFoundUsers = @Json.Serialize(SharedLocalizer["User_NotFound"].Value);
+        window.ADMIN_LANG.ErrLoadUsers = @Json.Serialize(SharedLocalizer["User_ErrLoad"].Value);
+        window.ADMIN_LANG.TitleAddMember = @Json.Serialize(SharedLocalizer["User_TitleAddMember"].Value);
+        window.ADMIN_LANG.TitleEditMember = @Json.Serialize(SharedLocalizer["User_TitleEditMember"].Value);
+        window.ADMIN_LANG.PwdPlaceholderKeep = @Json.Serialize(SharedLocalizer["User_PwdPlaceholderKeep"].Value);
+        window.ADMIN_LANG.SelectAtLeastOneUser = @Json.Serialize(SharedLocalizer["User_SelectAtLeastOneUser"].Value);
+        window.ADMIN_LANG.ConfirmDeleteSingleUserTitle = @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleTitle"].Value);
+        window.ADMIN_LANG.ConfirmDeleteSingleUserMsg = @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleMsg"].Value);
+        window.ADMIN_LANG.ConfirmDeleteMultiUsersTitle = @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiTitle"].Value);
+        window.ADMIN_LANG.ConfirmDeleteMultiUsersMsg = @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiMsg"].Value);
+        window.ADMIN_LANG.BlockedDeleteUser = @Json.Serialize(SharedLocalizer["User_BlockedDelete"].Value);
+        window.ADMIN_LANG.DeletedUsersSuccess = @Json.Serialize(SharedLocalizer["User_DeletedSuccess"].Value);
+        window.ADMIN_LANG.ErrDeleteUsersServer = @Json.Serialize(SharedLocalizer["User_ErrDeleteUsersServer"].Value);
+        window.ADMIN_LANG.DragDropExcelUser = @Json.Serialize(SharedLocalizer["User_DragDropExcel"].Value);
+        window.ADMIN_LANG.ChooseExcelFile = @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value);
+        window.ADMIN_LANG.ConfirmImport = @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value);
+        window.ADMIN_LANG.ErrImport = @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value);
+        window.ADMIN_LANG.ActionCannotUndo = @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value);
+        window.ADMIN_LANG.Processing = @Json.Serialize(SharedLocalizer["Admin_Processing"].Value);
+        window.ADMIN_LANG.SaveChanges = @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value);
+        window.ADMIN_LANG.BtnDeleteText = @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value);
+        window.ADMIN_LANG.StatusActive = @Json.Serialize(SharedLocalizer["Admin_StatusActive"].Value);
+        window.ADMIN_LANG.StatusInactive = @Json.Serialize(SharedLocalizer["Admin_StatusInactive"].Value);
+        window.ADMIN_LANG.ErrConnectDelete = @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value);
+        window.ADMIN_LANG.ErrConnectServer = @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value);
+        window.ADMIN_LANG.TitleEditAccount = @Json.Serialize(SharedLocalizer["Admin_TitleEditAccount"].Value);
+        window.ADMIN_LANG.TitleDeleteAccount = @Json.Serialize(SharedLocalizer["Admin_TitleDeleteAccount"].Value);
+    </script>
 
     <!-- JS Module đã tách -->
     <script src="~/js/admin/tblUsers/users-ui.js" asp-append-version="true"></script>

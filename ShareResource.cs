@@ -1,6 +1,6 @@
 ﻿namespace WebTruyenTranh
 {
-    public class ShareResource
+    public class SharedResource
     {
     }
 }

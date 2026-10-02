@@ -1,5 +1,7 @@
 ﻿/* categories-crud.js */
 
+const L = window.ADMIN_LANG || {};
+
 // 1. Lấy trang đã lưu từ localStorage, nếu không có mới lấy 1
 let savedCategoryPage = localStorage.getItem('categoryPage');
 let currentPage = savedCategoryPage ? parseInt(savedCategoryPage) : 1;
@@ -37,7 +39,8 @@ function loadCategoryList(page = null) {
                     loadCategoryList(currentPage - 1);
                     return;
                 }
-                $body.html('<tr><td colspan="5" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundCategories || 'Not found any results.';
+                $body.html(`<tr><td colspan="5" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -45,6 +48,7 @@ function loadCategoryList(page = null) {
             data.categories.forEach(category => {
                 const statusActive = category.status === "Active";
                 const statusClass = statusActive ? 'active' : 'inactive';
+                const statusText = statusActive ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
 
                 html += `
                 <tr class="group hover:bg-indigo-50/30 transition-all">
@@ -63,18 +67,18 @@ function loadCategoryList(page = null) {
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${statusClass} rounded-xl text-[10px] uppercase tracking-wider">
-                            ${category.status}
+                            ${statusText}
                         </span>
                     </td>
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
                             <button onclick="openModal('edit', ${category.categoryId})"
-                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
                             <button onclick="deleteCategory(${category.categoryId})"
-                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -88,16 +92,18 @@ function loadCategoryList(page = null) {
             updateDeleteButton();
         },
         error: function (xhr) {
-            $body.html('<tr><td colspan="5" class="text-center py-10 text-red-500">Error loading data.</td></tr>');
+            const errLoad = L.ErrLoadCategories || 'Error loading data.';
+            $body.html(`<tr><td colspan="5" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
         }
     });
 }
 
 async function deleteCategory(id) {
-    const confirmed = await customConfirm(
-        `Are you sure to remove this category?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Category"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleCategoryMsg || 'Are you sure to remove this category?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleCategoryTitle || "Delete Category";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (confirmed) {
         const $row = $(`button[onclick="deleteCategory(${id})"]`).closest('tr');
         $row.addClass('opacity-50 pointer-events-none');
@@ -124,7 +130,7 @@ async function deleteCategory(id) {
                 }
             },
             error: function () {
-                showToast("Cannot connect to the server to delete.", 'error');
+                showToast(L.ErrConnectDelete || "Cannot connect to the server to delete.", 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         });
@@ -142,7 +148,7 @@ function exportExcel() {
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (fileInput.files.length === 0) {
-        showToast('Please choose an Excel file!', 'error');
+        showToast(L.ChooseExcelFile || 'Please choose an Excel file!', 'error');
         return;
     }
 
@@ -150,7 +156,7 @@ function executeImport() {
     formData.append('file', fileInput.files[0]);
 
     const $btn = $('#btnDoImport');
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: '/Admin/tblCategories/ImportExcel',
@@ -168,10 +174,10 @@ function executeImport() {
             }
         },
         error: function () {
-            showToast('Error during importing file!', 'error');
+            showToast(L.ErrImport || 'Error during importing file!', 'error');
         },
         complete: function () {
-            $btn.prop('disabled', false).text('Confirm Import');
+            $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import');
         }
     });
 }
@@ -186,7 +192,7 @@ $('#userForm').on('submit', function (e) {
     const isAdding = (categoryId == "0" || categoryId == "" || !categoryId);
     const url = isAdding ? '/Admin/tblCategories/Add' : '/Admin/tblCategories/Update';
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -212,13 +218,14 @@ $('#userForm').on('submit', function (e) {
             }
         },
         error: function () {
-            showToast("Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || "Cannot connect to the server.", 'error');
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
+
 // Render thanh phân trang
 function renderPagination(currentPage, totalPages) {
     const container = $('#pagination-container');
@@ -226,10 +233,9 @@ function renderPagination(currentPage, totalPages) {
 
     if (totalPages <= 1) return;
 
-    const maxVisible = 2; // Số trang hiển thị hai bên trang hiện tại
+    const maxVisible = 2;
     let html = `<div class="flex items-center gap-1">`;
 
-    // Nút về trang đầu tiên
     html += `
     <button onclick="loadCategoryList(1)"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -237,7 +243,6 @@ function renderPagination(currentPage, totalPages) {
         ⏮
     </button>`;
 
-    // Nút lùi về trang trước
     html += `
     <button onclick="loadCategoryList(${currentPage - 1})"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -245,26 +250,22 @@ function renderPagination(currentPage, totalPages) {
         ◀
     </button>`;
 
-    // Trang 1 và dấu ba chấm bên trái nếu ở xa
     if (currentPage > maxVisible + 1) {
         html += pageBtn(1, currentPage);
         html += `<span class="px-2">…</span>`;
     }
 
-    // Các trang xung quanh trang hiện tại
     for (let i = Math.max(1, currentPage - maxVisible);
         i <= Math.min(totalPages, currentPage + maxVisible);
         i++) {
         html += pageBtn(i, currentPage);
     }
 
-    // Dấu ba chấm và trang cuối cùng bên phải
     if (currentPage < totalPages - maxVisible) {
         html += `<span class="px-2">…</span>`;
         html += pageBtn(totalPages, currentPage);
     }
 
-    // Nút sang trang kế tiếp
     html += `
     <button onclick="loadCategoryList(${currentPage + 1})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -272,7 +273,6 @@ function renderPagination(currentPage, totalPages) {
         ▶
     </button>`;
 
-    // Nút đến trang cuối cùng
     html += `
     <button onclick="loadCategoryList(${totalPages})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -280,7 +280,6 @@ function renderPagination(currentPage, totalPages) {
         ⏭
     </button>`;
 
-    // Ô nhập số trang nhảy nhanh
     html += `
     <div class="flex items-center gap-1 ml-3">
         <span class="text-sm">Go:</span>
@@ -296,7 +295,6 @@ function renderPagination(currentPage, totalPages) {
     container.html(html);
 }
 
-// Tạo nút bấm cho từng trang
 function pageBtn(page, current) {
     const active = page === current;
     return `
@@ -307,7 +305,6 @@ function pageBtn(page, current) {
     </button>`;
 }
 
-// Nhảy đến trang được nhập
 function gotoPage(input, totalPages) {
     let page = parseInt(input.value);
     if (isNaN(page)) return;
@@ -322,17 +319,14 @@ function gotoPage(input, totalPages) {
 $(document).ready(function () {
     loadCategoryList();
 
-    // Tìm kiếm với sự kiện gõ phím
     $('#filterSearch').on('keyup', function () {
         loadCategoryList(1);
     });
 
-    // Lọc theo trạng thái
     $('#filterStatus').on('change', function () {
         loadCategoryList(1);
     });
 
-    // Chọn / Bỏ chọn toàn bộ Checkbox
     $('#selectAll').on('change', function () {
         const isChecked = this.checked;
 
@@ -344,15 +338,11 @@ $(document).ready(function () {
         });
     });
 
-    // Chọn Checkbox từng dòng
     $(document).on('change', '.user-checkbox', function () {
         const total = $('.user-checkbox').length;
         const checked = $('.user-checkbox:checked').length;
 
-        $(this).closest('tr')
-            .toggleClass('bg-indigo-50/50', this.checked);
-
-        $('#selectAll').prop('checked', total > 0 && total === checked);
+        $(this).closest('tr').toggleClass('bg-indigo-50/50', this.checked); $('#selectAll').prop('checked', total > 0 && total === checked);
         updateDeleteButton();
     });
 
@@ -365,16 +355,16 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            showToast('Please select at least one category!', 'error');
+            showToast(L.SelectAtLeastOneCategory || 'Please select at least one category!', 'error');
             return;
         }
 
-        const confirmed = await customConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> categories?<br>` +
-            `<small class="text-red-400">This action cannot be undone.</small>`,
-            "Delete Multiple"
-        );
+        const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+        const multiMsg = (L.ConfirmDeleteMultiCategoriesMsg || 'Are you sure you want to delete <strong>{0}</strong> categories?')
+            .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiCategoriesTitle || "Delete Multiple";
 
+        const confirmed = await customConfirm(multiMsg, multiTitle);
         if (!confirmed) return;
 
         $.ajax({
@@ -384,23 +374,19 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
                 if (res.blocked && res.blocked.length > 0) {
-                    showToast(
-                        `Cannot delete ID(s): <strong>${res.blocked.join(', ')}</strong>.<br>` +
-                        `Because they are currently linked to existing foreign keys.`,
-                        'error'
-                    );
+                    const blockedTemplate = L.BlockedDeleteCategory || 'Cannot delete ID(s): <strong>{0}</strong>.<br>Because they are currently linked to existing foreign keys.';
+                    showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
                 }
                 if (res.deleted && res.deleted.length > 0) {
-                    showToast(`Deleted ${res.deleted.length} category(ies) successfully.`, 'success');
+                    const deletedTemplate = L.DeletedCategoriesSuccess || 'Deleted {0} category(ies) successfully.';
+                    showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
                 }
 
-                // Nếu xóa hết các dòng đang hiển thị và đang ở trang > 1 thì lùi về 1 trang
                 const totalOnPage = $('.user-checkbox').length;
                 if (ids.length >= totalOnPage && currentPage > 1) {
                     currentPage--;
                 }
 
-                // Tải lại giữ nguyên phân trang
                 loadCategoryList(currentPage);
                 $('#selectAll').prop('checked', false);
             }

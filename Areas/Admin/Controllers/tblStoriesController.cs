@@ -265,7 +265,10 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 story.Description = model.Description;
                 story.Status = model.Status;
                 story.Img = uniqueImg;
-                story.Lang = string.IsNullOrWhiteSpace(model.Lang) ? "Tiếng Anh, Tiếng Việt" : model.Lang.Trim(); // Cập nhật Lang
+                if (!string.IsNullOrWhiteSpace(model.Lang))
+                {
+                    story.Lang = model.Lang.Trim();
+                }
 
                 _context.TblCategoryOfStories.RemoveRange(story.TblCategoryOfStories);
 

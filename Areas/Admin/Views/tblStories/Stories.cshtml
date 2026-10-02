@@ -1,3 +1,7 @@
+@using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
 @{
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
@@ -11,7 +15,7 @@
     <div class="space-y-10 m-10">
         <div class="flex flex-col items-center gap-4">
             <h2 class="text-2xl font-bold text-cus tracking-tight">
-                Stories Management
+                @SharedLocalizer["Story_PageTitle"]
             </h2>
         </div>
 
@@ -20,36 +24,37 @@
             <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="relative w-40 sm:w-64">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="filterSearch" placeholder="Search by title, author..." class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
+                    <input type="text" id="filterSearch" placeholder="@SharedLocalizer["Story_SearchPlaceholder"]" 
+                           class="w-full pl-11 pr-4 py-2.5 bg-gray-200 border border-transparent focus:border-purple-300 focus:bg-white rounded-xl outline-none transition-all text-sm">
                 </div>
 
                 <div class="w-60">
                     <select id="filterCategory" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
-                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Categories</option>
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">@SharedLocalizer["Story_FilterAllCategories"]</option>
                     </select>
                 </div>
 
                 <div class="w-40">
                     <select id="filterStatus" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
-                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Status</option>
-                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Completed">Completed</option>
-                        <option data-color="linear-gradient(135deg, #00c6fb, #005bea)" value="Posting">Posting</option>
-                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="Coming soon">Coming soon</option>
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">@SharedLocalizer["Admin_FilterStatus"]</option>
+                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="Completed">@SharedLocalizer["Story_StatusCompleted"]</option>
+                        <option data-color="linear-gradient(135deg, #00c6fb, #005bea)" value="Posting">@SharedLocalizer["Story_StatusPosting"]</option>
+                        <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="Coming soon">@SharedLocalizer["Story_StatusComingSoon"]</option>
                     </select>
                 </div>
 
                 <div class="flex items-center gap-4">
                     <button onclick="exportExcel()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-file-export mr-2"></i>Export
+                        <i class="fas fa-file-export mr-2"></i>@SharedLocalizer["Btn_Export"]
                     </button>
                     <button onclick="openImportModal()" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-file-import mr-2"></i>Import
+                        <i class="fas fa-file-import mr-2"></i>@SharedLocalizer["Btn_Import"]
                     </button>
                     <button id="btnDeleteSelected" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-trash-alt mr-2"></i>Delete
+                        <i class="fas fa-trash-alt mr-2"></i>@SharedLocalizer["Admin_BtnDeleteText"]
                     </button>
                     <button onclick="openModal('add')" class="flex text-xs items-center justify-center px-6 py-3 btn-grad text-white rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300">
-                        <i class="fas fa-plus-circle mr-2"></i> Add
+                        <i class="fas fa-plus-circle mr-2"></i> @SharedLocalizer["Admin_BtnAdd"]
                     </button>
                 </div>
             </div>
@@ -64,14 +69,14 @@
                                     <input type="checkbox" id="selectAll" class="w-5 h-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer transition-all">
                                 </div>
                             </th>
-                            <th class="px-4 py-4 text-gray font-bold">Information</th>
-                            <th class="px-6 py-4 text-gray font-bold">Languages</th>
-                            <th class="px-6 py-4 text-gray font-bold">PublicationDate (y-m-d)</th>
-                            <th class="px-6 py-4 text-gray font-bold">Description</th>
-                            <th class="px-6 py-4 text-gray font-bold">Engagement metrics</th>
-                            <th class="px-6 py-4 text-gray font-bold">Category</th>
-                            <th class="px-6 py-4 text-gray font-bold text-center">Status</th>
-                            <th class="px-8 py-4 text-gray font-bold text-right">Actions</th>
+                            <th class="px-4 py-4 text-gray font-bold">@SharedLocalizer["Story_ColInfo"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Story_ColLanguages"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Story_ColPublicationDate"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Story_ColDescription"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Story_ColMetrics"]</th>
+                            <th class="px-6 py-4 text-gray font-bold">@SharedLocalizer["Nav_Genres"]</th>
+                            <th class="px-6 py-4 text-gray font-bold text-center">@SharedLocalizer["Admin_ColStatus"]</th>
+                            <th class="px-8 py-4 text-gray font-bold text-right">@SharedLocalizer["Admin_ColActions"]</th>
                         </tr>
                     </thead>
                     <tbody id="user-list-body" class="divide-y divide-gray-50"></tbody>
@@ -93,10 +98,49 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+    <!-- Khởi tạo đối tượng window.ADMIN_LANG qua JSON trực tiếp để tránh lỗi parse cú pháp -->
+    <script>
+        window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
+            NotFoundStories: @Json.Serialize(SharedLocalizer["Story_NotFound"].Value),
+            ErrLoadStories: @Json.Serialize(SharedLocalizer["Story_ErrLoad"].Value),
+            TitleAddStory: @Json.Serialize(SharedLocalizer["Story_TitleAdd"].Value),
+            TitleEditStory: @Json.Serialize(SharedLocalizer["Story_TitleEdit"].Value),
+            NoCategoriesSelected: @Json.Serialize(SharedLocalizer["Story_NoCategoriesSelected"].Value),
+            LangDefaultNotice: @Json.Serialize(SharedLocalizer["Story_LangDefaultNotice"].Value),
+            LangLockedNotice: @Json.Serialize(SharedLocalizer["Story_LangLockedNotice"].Value),
+            ReqSelectLang: @Json.Serialize(SharedLocalizer["Story_ReqSelectLang"].Value),
+            ConfirmDeleteSingleStoryTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleStoryTitle"].Value),
+            ConfirmDeleteSingleStoryMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleStoryMsg"].Value),
+            ConfirmDeleteMultiStoriesTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesTitle"].Value),
+            ConfirmDeleteMultiStoriesMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesMsg"].Value),
+            SelectAtLeastOneStory: @Json.Serialize(SharedLocalizer["Story_SelectAtLeastOne"].Value),
+            BlockedDeleteStory: @Json.Serialize(SharedLocalizer["Story_BlockedDelete"].Value),
+            DeletedStoriesSuccess: @Json.Serialize(SharedLocalizer["Story_DeletedSuccess"].Value),
+            MetricLoves: @Json.Serialize(SharedLocalizer["Story_MetricLoves"].Value),
+            MetricRates: @Json.Serialize(SharedLocalizer["Story_MetricRates"].Value),
+            MetricRated: @Json.Serialize(SharedLocalizer["Story_MetricRated"].Value),
+            MetricFollowers: @Json.Serialize(SharedLocalizer["Story_MetricFollowers"].Value),
+            FilterAllCategories: @Json.Serialize(SharedLocalizer["Story_FilterAllCategories"].Value),
+            SelectAuthor: @Json.Serialize(SharedLocalizer["Story_SelectAuthor"].Value),
+            SelectLanguagesPlaceholder: @Json.Serialize(SharedLocalizer["Story_SelectLanguagesPlaceholder"].Value),
+            DragDropExcelStory: @Json.Serialize(SharedLocalizer["Story_DragDropExcel"].Value),
+            ChooseExcelFile: @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value),
+            ConfirmImport: @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value),
+            ErrImport: @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value),
+            ActionCannotUndo: @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value),
+            Processing: @Json.Serialize(SharedLocalizer["Admin_Processing"].Value),
+            SaveChanges: @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value),
+            BtnDeleteText: @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value),
+            ErrConnectDelete: @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value),
+            ErrConnectServer: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value),
+            TitleEditAccount: @Json.Serialize(SharedLocalizer["Admin_TitleEditAccount"].Value),
+            TitleDeleteAccount: @Json.Serialize(SharedLocalizer["Admin_TitleDeleteAccount"].Value)
+        });
+    </script>
+
     <!-- Modular Script Files -->
     <script>
         $(document).ready(function () {
-            // Xử lý sự kiện nhấp chọn các ngôn ngữ tùy chọn (ZH, JA, FR)
             $(document).on('change', '.lang-checkbox', function () {
                 const $label = $(this).closest('.lang-chip');
                 if (this.checked) {
@@ -107,18 +151,15 @@
             });
         });
 
-        // Hàm lấy chuỗi danh sách ngôn ngữ để submit Form
         function getSelectedLanguagesString() {
-            let selected = ['Tiếng Anh', 'Tiếng Việt']; // Mặc định luôn có
+            let selected = ['Tiếng Anh', 'Tiếng Việt'];
             $('.lang-checkbox:checked').each(function () {
                 selected.push($(this).val());
             });
-            return selected.join(','); // Ví dụ: "Tiếng Anh,Tiếng Việt,Tiếng Nhật"
+            return selected.join(',');
         }
 
-        // Hàm gán lại dữ liệu khi mở Modal Edit Story
         function setSelectedLanguages(langString) {
-            // Reset các ngôn ngữ tùy chọn
             $('.lang-checkbox').prop('checked', false).closest('.lang-chip').removeClass('active');
 
             if (!langString) return;

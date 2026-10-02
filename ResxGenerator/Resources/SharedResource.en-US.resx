@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Admin_NotFoundAccounts" xml:space="preserve">
+    <value>Not found any accounts.</value>
+  </data>
+  <data name="Admin_NoDisplayName" xml:space="preserve">
+    <value>No display name</value>
+  </data>
+  <data name="Admin_StatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Admin_StatusInactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="Admin_Never" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Admin_TitleEditAccount" xml:space="preserve">
+    <value>Edit account</value>
+  </data>
+  <data name="Admin_TitleDeleteAccount" xml:space="preserve">
+    <value>Delete account</value>
+  </data>
+  <data name="Admin_ErrLoadAccounts" xml:space="preserve">
+    <value>Error loading accounts data.</value>
+  </data>
+  <data name="Admin_ErrConnectServerLoad" xml:space="preserve">
+    <value>Cannot connect to server to load data.</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionDelete" xml:space="preserve">
+    <value>Viewer account has view-only permissions. Cannot delete data!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionSave" xml:space="preserve">
+    <value>Viewer account has view-only permissions. Cannot save changes!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionModal" xml:space="preserve">
+    <value>Viewer account has view-only permissions. Cannot add or edit accounts!</value>
+  </data>
+  <data name="Admin_SelectAtLeastOne" xml:space="preserve">
+    <value>Please select at least one account to delete!</value>
+  </data>
+  <data name="Admin_ErrConnectDelete" xml:space="preserve">
+    <value>Cannot connect to server to delete account.</value>
+  </data>
+  <data name="Admin_ErrConnectServer" xml:space="preserve">
+    <value>Cannot connect to the server.</value>
+  </data>
+  <data name="Admin_CannotFetchInfo" xml:space="preserve">
+    <value>Cannot fetch account information!</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Delete Account</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Are you sure to remove this account?</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Delete Accounts</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Are you sure you want to delete {0} account(s)?</value>
+  </data>
+  <data name="Admin_ActionCannotUndo" xml:space="preserve">
+    <value>This action cannot be undone.</value>
+  </data>
+  <data name="Admin_Processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="Admin_SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="Admin_BtnDeleteText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Admin_ModalTitleAdd" xml:space="preserve">
+    <value>Add Account</value>
+  </data>
+  <data name="Admin_ModalTitleEdit" xml:space="preserve">
+    <value>Update Account</value>
+  </data>
+  <data name="Admin_PwdNoticeAdd" xml:space="preserve">
+    <value>(required for new account)</value>
+  </data>
+  <data name="Author_NotFound" xml:space="preserve">
+    <value>Not found any results.</value>
+  </data>
+  <data name="Author_ErrLoad" xml:space="preserve">
+    <value>Error loading data.</value>
+  </data>
+  <data name="Author_TitleAdd" xml:space="preserve">
+    <value>Add author</value>
+  </data>
+  <data name="Author_TitleEdit" xml:space="preserve">
+    <value>Update author</value>
+  </data>
+  <data name="Author_SelectCountry" xml:space="preserve">
+    <value>Select country</value>
+  </data>
+  <data name="Author_DragDropExcel" xml:space="preserve">
+    <value>Drag and drop file here or click to choose</value>
+  </data>
+  <data name="Author_ChooseExcelFile" xml:space="preserve">
+    <value>Please choose an Excel file!</value>
+  </data>
+  <data name="Author_ConfirmImport" xml:space="preserve">
+    <value>Confirm Import</value>
+  </data>
+  <data name="Author_ErrImport" xml:space="preserve">
+    <value>Error during import!</value>
+  </data>
+  <data name="Author_SelectAtLeastOne" xml:space="preserve">
+    <value>Please select at least one author!</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Delete Author</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingle" xml:space="preserve">
+    <value>Are you sure to remove this author?</value>
+  </data>
+  <data name="Author_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Delete Multiple</value>
+  </data>
+  <data name="Author_ConfirmDeleteMulti" xml:space="preserve">
+    <value>Are you sure you want to delete {0} authors?</value>
+  </data>
+  <data name="Author_BlockedDelete" xml:space="preserve">
+    <value>Cannot delete ID(s): {0} (Linked to existing stories).</value>
+  </data>
+  <data name="Author_DeletedSuccess" xml:space="preserve">
+    <value>Deleted {0} author(s).</value>
+  </data>
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>Not found any results.</value>
+  </data>
+  <data name="Category_ErrLoad" xml:space="preserve">
+    <value>Error loading data.</value>
+  </data>
+  <data name="Category_TitleAdd" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="Category_TitleEdit" xml:space="preserve">
+    <value>Update category</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Delete Category</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Are you sure to remove this category?</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Delete Multiple</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Are you sure you want to delete {0} categories?</value>
+  </data>
+  <data name="Category_SelectAtLeastOne" xml:space="preserve">
+    <value>Please select at least one category!</value>
+  </data>
+  <data name="Category_BlockedDelete" xml:space="preserve">
+    <value>Cannot delete ID(s): {0}.</value>
+  </data>
+  <data name="Category_DeletedSuccess" xml:space="preserve">
+    <value>Deleted {0} category(ies) successfully.</value>
+  </data>
+  <data name="Category_DragDropExcel" xml:space="preserve">
+    <value>Drag and drop or click to import file</value>
+  </data>
+</root>

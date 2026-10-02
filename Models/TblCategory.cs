@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 
 namespace WebTruyenTranh.Models;
@@ -14,4 +15,6 @@ public partial class TblCategory
     public string? Status { get; set; }
 
     public virtual ICollection<TblCategoryOfStory> TblCategoryOfStories { get; set; } = new List<TblCategoryOfStory>();
+    public virtual DbSet<TblCategoryTranslation> TblCategoryTranslations { get; set; }
+
 }

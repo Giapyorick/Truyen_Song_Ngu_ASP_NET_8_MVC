@@ -64,14 +64,14 @@
                         {
                             <div class="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-teal-950/70 backdrop-blur-md border border-teal-400/40 text-teal-300 text-xs font-bold shadow-lg">
                                 <i class="fa-solid fa-book-open-reader text-teal-400 animate-pulse text-[11px]"></i>
-                                <span class="truncate">Chương @t.LastChapterNumber</span>
+                                <span class="truncate">@SharedLocalizer["Story_Chapter"] @t.LastChapterNumber</span>
                             </div>
                         }
                         else
                         {
                             <div class="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-slate-900/60 backdrop-blur-md border border-white/15 text-slate-300 text-xs font-semibold">
                                 <i class="fa-regular fa-compass text-[11px]"></i>
-                                <span>Not read yet</span>
+                                <span>@SharedLocalizer["Story_NotReadYet"]</span>
                             </div>
                         }
                     </div>
@@ -99,7 +99,7 @@
                             }
                             else
                             {
-                                <span class="text-[11px] text-slate-400 italic">Updating</span>
+                                <span class="text-[11px] text-slate-400 italic">@SharedLocalizer["Story_Updating"]</span>
                             }
                         </div>
 
@@ -111,9 +111,9 @@
                                 {
                                     <a href="/Paragraphs/Content?chapterId=@ch.ChapterId"
                                        class="group/ch flex items-center justify-between px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-teal-50 border border-slate-200/60 hover:border-teal-300 transition-all duration-200 text-[11px] h-[28px] shrink-0"
-                                       title="@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? $"Chương {ch.ChapterNumber}" : ch.ChapterTitle)">
+                                       title="@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? $"{SharedLocalizer["Story_Chapter"]} {ch.ChapterNumber}" : ch.ChapterTitle)">
                                         <span class="font-bold text-slate-700 group-hover/ch:text-teal-700 truncate">
-                                            Chương @ch.ChapterNumber@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? "" : $": {ch.ChapterTitle}")
+                                            @SharedLocalizer["Story_Chapter"] @ch.ChapterNumber@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? "" : $": {ch.ChapterTitle}")
                                         </span>
                                         <i class="fa-solid fa-angle-right text-[9px] text-slate-400 group-hover/ch:text-teal-600 transition-transform group-hover/ch:translate-x-0.5"></i>
                                     </a>
@@ -122,7 +122,7 @@
                             else
                             {
                                 <div class="flex items-center justify-center h-full text-[11px] text-slate-400 italic">
-                                    No chapters
+                                    @SharedLocalizer["Story_NoChapters"]
                                 </div>
                             }
                         </div>
@@ -133,7 +133,7 @@
                         <a href="/Stories/Detail?id=@t.StoryID"
                            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs text-white btn-grad-detail active:scale-95">
                             <i class="fa-solid fa-book-open text-[11px]"></i>
-                            <span>Chi tiết</span>
+                            <span>@SharedLocalizer["Story_Details"]</span>
                         </a>
 
                         @if (t.HasProgress)
@@ -141,7 +141,7 @@
                             <a href="/Paragraphs/Content?chapterId=@t.LastChapterId"
                                class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_auto] hover:bg-[position:right_center] shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.45)] hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
                                 <i class="fa-solid fa-bolt text-[11px]"></i>
-                                <span>Đọc tiếp</span>
+                                <span>@SharedLocalizer["Story_ReadContinue"]</span>
                             </a>
                         }
                     </div>
@@ -156,9 +156,9 @@ else
         <div class="w-16 h-16 mx-auto rounded-full bg-teal-50 text-teal-400 flex items-center justify-center text-2xl">
             <i class="fas fa-folder-open"></i>
         </div>
-        <h3 class="font-bold text-gray-700 text-lg">No stories found</h3>
+        <h3 class="font-bold text-gray-700 text-lg">@SharedLocalizer["Story_NoStoriesFound"]</h3>
         <p class="text-xs text-gray-400 max-w-sm mx-auto">
-            This category has not been updated with new stories yet. Please select another category!
+            @SharedLocalizer["Story_CategoryNoStories"]
         </p>
     </div>
 }

@@ -3,8 +3,8 @@
     <div id="modalContent" class="bg-white w-full max-w-2xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
         <div class="p-8 border-b border-gray-50 relative mx-5 mt-0 mb-0 bg-gradient-to-r from-gray-50 to-white">
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                <h3 id="modalTitle" class="text-xl font-extrabold text-cus">Add Account</h3>
-                <p class="text-xs text-gray-400 mt-1">Please fill in all account credentials</p>
+                <h3 id="modalTitle" class="text-xl font-extrabold text-cus">@SharedLocalizer["AdminAdmins_AddAccount"]</h3>
+                <p class="text-xs text-gray-400 mt-1">@SharedLocalizer["AdminCommon_FillAccountCredentials"]</p>
             </div>
 
             <button onclick="closeModal()"
@@ -17,44 +17,44 @@
             <input type="hidden" name="AdminId" id="adminId" value="0">
 
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-cus uppercase ml-1">Username *</label>
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminAdmins_Username"]</label>
                 <input type="text" name="Username" id="adminUsername"
                        class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
-                       placeholder="e.g. manager_sport" required autocomplete="off">
+                       placeholder="@SharedLocalizer["AdminAdmins_UsernamePlaceholder"]" required autocomplete="off">
             </div>
 
             <div class="space-y-1">
                 <label class="text-[11px] font-bold text-cus uppercase ml-1">
-                    Password <span id="pwdNotice" class="text-[10px] text-gray-400 lowercase font-normal">(required for new account)</span>
+                    @SharedLocalizer["AdminCommon_Password"] <span id="pwdNotice" class="text-[10px] text-gray-400 lowercase font-normal">@SharedLocalizer["AdminCommon_RequiredForNewAccount"]</span>
                 </label>
                 <input type="password" name="Password" id="adminPassword"
                        class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
-                       placeholder="Enter new password..." autocomplete="new-password">
+                       placeholder="@SharedLocalizer["AdminCommon_EnterNewPassword"]" autocomplete="new-password">
             </div>
 
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-cus uppercase ml-1">Full Name</label>
+                <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminCommon_FullName"]</label>
                 <input type="text" name="FullName" id="adminFullName"
                        class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
-                       placeholder="e.g. John Doe">
+                       placeholder="@SharedLocalizer["AdminAdmins_FullNamePlaceholder"]">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-cus uppercase ml-1">Role</label>
+                    <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminCommon_Role"]</label>
                     <select name="Role" id="adminRole"
                             class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
-                        <option data-color="linear-gradient(135deg, #0250c5 0%, #d43f8d 100%)" value="Admin">Admin</option>
-                        <option data-color="linear-gradient(135deg, #FF8008, #FFC837)" value="Viewer" selected>Viewer</option>
+                        <option data-color="linear-gradient(135deg, #0250c5 0%, #d43f8d 100%)" value="Admin">@SharedLocalizer["AdminCommon_AdminRole"]</option>
+                        <option data-color="linear-gradient(135deg, #FF8008, #FFC837)" value="Viewer" selected>@SharedLocalizer["AdminCommon_ViewerRole"]</option>
                     </select>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-cus uppercase ml-1">Status</label>
+                    <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminCommon_Status"]</label>
                     <select name="IsActive" id="adminStatus"
                             class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
-                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="true" selected>Active</option>
-                        <option data-color="linear-gradient(135deg, #F45C43, #EB3349)" value="false">Inactive</option>
+                        <option data-color="linear-gradient(135deg, #93F9B9, #1D976C)" value="true" selected>@SharedLocalizer["AdminCommon_Active"]</option>
+                        <option data-color="linear-gradient(135deg, #F45C43, #EB3349)" value="false">@SharedLocalizer["AdminCommon_Inactive"]</option>
                     </select>
                 </div>
             </div>
@@ -62,12 +62,12 @@
             <div class="pt-6 flex gap-4">
                 <button type="button" onclick="closeModal()"
                         class="flex-1 py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
-                    Cancel
+                    @SharedLocalizer["AdminCommon_Cancel"]
                 </button>
 
                 <button type="submit" id="btnSave"
                         class="flex-1 py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all duration-300">
-                    Save Changes
+                    @SharedLocalizer["AdminCommon_SaveChanges"]
                 </button>
             </div>
         </form>

@@ -14,11 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
-    options.UseSqlServer(connectionString, sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
-    }));
-
+    options.UseSqlServer(connectionString));
 // 2. CẤU HÌNH LOCALIZATION
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

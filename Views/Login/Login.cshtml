@@ -1,9 +1,4 @@
-@model WebTruyenTranh.ViewModels.UsersViewModel;
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-@model WebTruyenTranh.ViewModels.UsersViewModel;
-
+@model WebTruyenTranh.ViewModels.UsersViewModel
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -31,11 +26,11 @@
                 <div class="flex items-center gap-2">
                     <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
                         <i class="fa-solid fa-calculator text-xs"></i>
-                        <span id="loginCaptchaQuestion">Loading...</span>
+                        <span id="loginCaptchaQuestion">@SharedLocalizer["Auth_CaptchaAnswer"]</span>
                     </div>
                     <input type="text" name="captchaAnswer" id="loginCaptchaInput" required placeholder="@SharedLocalizer["Auth_CaptchaPlaceholder"]"
                            class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
-                    <button type="button" onclick="refreshLoginCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
+                    <button type="button" onclick="refreshLoginCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="@SharedLocalizer["Auth_CaptchaRefresh"]">
                         <i class="fa-solid fa-arrows-rotate text-xs"></i>
                     </button>
                 </div>
@@ -86,7 +81,7 @@
                                         class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm text-cus font-semibold hover:bg-gray-50 transition">
                                     @SharedLocalizer["Btn_ChooseImage"]
                                 </button>
-                                <p class="text-[10px] text-gray-400 mt-1">PNG, JPG up to 2MB</p>
+                                <p class="text-[10px] text-gray-400 mt-1">@SharedLocalizer["Btn_ImageSpecification"]</p>
                             </div>
                         </div>
                     </div>
@@ -98,7 +93,7 @@
                             <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["User_FullName"]</label>
                             <input type="text" name="Name" id="userName"
                                    class="w-full px-4 text-black py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
-                                   placeholder="Nguyễn Văn A" required>
+                                   placeholder="@SharedLocalizer["User_PlaceholderName"]" required>
                         </div>
 
                         <div class="space-y-1">
@@ -145,11 +140,11 @@
                         <div class="flex items-center gap-2">
                             <div class="px-3.5 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 font-extrabold text-sm rounded-xl select-none flex items-center gap-1.5 shadow-inner">
                                 <i class="fa-solid fa-calculator text-xs"></i>
-                                <span id="registerCaptchaQuestion">Loading...</span>
+                                <span id="registerCaptchaQuestion">@SharedLocalizer["Auth_CaptchaAnswer"]</span>
                             </div>
                             <input type="text" name="captchaAnswer" id="registerCaptchaInput" required placeholder="@SharedLocalizer["Auth_CaptchaPlaceholder"]"
                                    class="flex-1 px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-teal-400 focus:bg-white rounded-xl outline-none text-sm transition-all" autocomplete="off" />
-                            <button type="button" onclick="refreshRegisterCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="New question">
+                            <button type="button" onclick="refreshRegisterCaptcha()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition" title="@SharedLocalizer["Auth_CaptchaRefresh"]">
                                 <i class="fa-solid fa-arrows-rotate text-xs"></i>
                             </button>
                         </div>

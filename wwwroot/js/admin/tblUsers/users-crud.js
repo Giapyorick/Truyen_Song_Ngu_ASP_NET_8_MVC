@@ -1,5 +1,7 @@
 /* users-crud.js - Xử lý API, Lọc dữ liệu, Phân trang, CRUD người dùng, Xóa nhiều & Import/Export Excel */
 
+const L = window.ADMIN_LANG || {};
+
 let savedUserPage = localStorage.getItem('userPage');
 let currentPage = savedUserPage ? parseInt(savedUserPage) : 1;
 const pageSize = 5;
@@ -12,7 +14,7 @@ function loadUserList(page = null) {
 
     localStorage.setItem('userPage', currentPage);
 
-    const $body = $('#user-list-body');
+    const $body =$('#user-list-body');
     const genderVal = $('#filterGender').val();
     const statusVal = $('#filterStatus').val();
     const filters = {
@@ -29,14 +31,13 @@ function loadUserList(page = null) {
         data: filters,
         success: function (data) {
             let html = '';
-            console.log("Data received from the Server:", data);
             if (!data.users || data.users.length === 0) {
-                // Nếu trang hiện tại bị trống và đang ở trang > 1 thì lùi 1 trang
                 if (currentPage > 1) {
                     loadUserList(currentPage - 1);
                     return;
                 }
-                $body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundUsers || 'Not found any results.';
+                $body.html(`<tr><td colspan="6" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -50,8 +51,14 @@ function loadUserList(page = null) {
 
                 const statusActive = user.status === "Active";
                 const statusClass = statusActive ? 'active' : 'inactive';
-                const statusGender = user.gender === "Male";
-                const statusClassGender = statusGender ? 'male' : 'female';
+                const statusText = statusActive ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
+
+                // Đồng bộ đa ngôn ngữ cho Giới tính
+                const isMale = (user.gender || '').toLowerCase() === "male";
+                const statusClassGender = isMale ? 'male' : 'female';
+                const genderText = isMale 
+                    ? (L.GenderMale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderMale) || 'Male') 
+                    : (L.GenderFemale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderFemale) || 'Female');
 
                 html += `
                 <tr class="group hover:bg-indigo-50/30 transition-all">
@@ -75,12 +82,12 @@ function loadUserList(page = null) {
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${statusClassGender} rounded-xl text-[10px] uppercase tracking-wider">
-                            ${user.gender}
+                            ${genderText}
                         </span>
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${statusClass} rounded-xl text-[10px] uppercase tracking-wider">
-                            ${user.status}
+                            ${statusText}
                         </span>
                     </td>
                     <td class="px-8 py-5 text-right">
@@ -90,7 +97,7 @@ function loadUserList(page = null) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad bg-blue-50
                                     hover:bg-blue-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
@@ -99,7 +106,7 @@ function loadUserList(page = null) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad-cancel bg-red-50
                                     hover:bg-red-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -111,10 +118,11 @@ function loadUserList(page = null) {
             renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
         },
-        error: function (xhr) {
-            $body.html('<tr><td colspan="6" class="text-center py-10 text-red-500">Error loading data.</td></tr>');
+        error: function () {
+            const errLoad = L.ErrLoadUsers || 'Error loading data.';
+            $body.html(`<tr><td colspan="6" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
             if (typeof showToast === 'function') {
-                showToast('Error loading user data!', 'error');
+                showToast(L.ErrLoadUsers || 'Error loading user data!', 'error');
             }
         }
     });
@@ -122,10 +130,11 @@ function loadUserList(page = null) {
 
 // Xóa một người dùng đơn lẻ
 async function deleteUser(id) {
-    const confirmed = await customConfirm(
-        `Are you sure to remove this user?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete User"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleUserMsg || 'Are you sure to remove this user?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleUserTitle || "Delete User";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
 
     if (confirmed) {
         const $row = $(`button[onclick="deleteUser(${id})"]`).closest('tr');
@@ -141,7 +150,6 @@ async function deleteUser(id) {
                         showToast(response.message, 'success');
                     }
 
-                    // Nếu là dòng duy nhất còn lại trên trang và đang ở trang > 1 thì lùi 1 trang
                     const remainingRows = $('#user-list-body tr').length - 1;
                     if (remainingRows <= 0 && currentPage > 1) {
                         currentPage--;
@@ -157,7 +165,7 @@ async function deleteUser(id) {
             },
             error: function () {
                 if (typeof showToast === 'function') {
-                    showToast('Cannot connect to the server to delete.', 'error');
+                    showToast(L.ErrConnectDelete || 'Cannot connect to the server to delete.', 'error');
                 }
                 $row.removeClass('opacity-50 pointer-events-none');
             }
@@ -187,7 +195,7 @@ $('#userForm').on('submit', function (e) {
     const isAdding = (userId == "0" || userId == "" || !userId);
     const url = isAdding ? '/Admin/tblUsers/Add' : '/Admin/tblUsers/Update';
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -202,8 +210,6 @@ $('#userForm').on('submit', function (e) {
                 }
                 closeModal();
 
-                // THÊM MỚI: Về trang 1
-                // CẬP NHẬT: Ở nguyên currentPage hiện tại
                 if (isAdding) {
                     loadUserList(1);
                 } else {
@@ -219,11 +225,11 @@ $('#userForm').on('submit', function (e) {
         },
         error: function () {
             if (typeof showToast === 'function') {
-                showToast('Cannot connect to the server.', 'error');
+                showToast(L.ErrConnectServer || 'Cannot connect to the server.', 'error');
             }
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
@@ -233,7 +239,7 @@ function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (fileInput.files.length === 0) {
         if (typeof showToast === 'function') {
-            showToast('Please choose an Excel file!', 'error');
+            showToast(L.ChooseExcelFile || 'Please choose an Excel file!', 'error');
         }
         return;
     }
@@ -242,7 +248,7 @@ function executeImport() {
     formData.append('file', fileInput.files[0]);
 
     const $btn = $('#btnDoImport');
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
         url: '/Admin/tblUsers/ImportExcel',
@@ -264,16 +270,14 @@ function executeImport() {
             }
         },
         error: function (xhr) {
-            let errMsg = 'Error during importing file!';
+            let errMsg = L.ErrImport || 'Error during importing file!';
             try {
                 const res = JSON.parse(xhr.responseText);
                 if (res) {
                     if (res.message) errMsg = res.message;
                     if (res.detail) errMsg += ' - Details: ' + res.detail;
                 }
-            } catch (e) {
-                // Bỏ qua lỗi parse JSON
-            }
+            } catch (e) { }
 
             if (typeof showToast === 'function') {
                 showToast(errMsg, 'error');
@@ -281,7 +285,7 @@ function executeImport() {
             console.error('ImportExcel error', xhr);
         },
         complete: function () {
-            $btn.prop('disabled', false).text('Confirm Import');
+            $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import');
         }
     });
 }
@@ -293,10 +297,9 @@ function renderPagination(currentPage, totalPages) {
 
     if (totalPages <= 1) return;
 
-    const maxVisible = 2; // Số trang hiển thị hai bên trang hiện tại
+    const maxVisible = 2;
     let html = `<div class="flex items-center gap-1">`;
 
-    // Nút về trang đầu tiên
     html += `
     <button onclick="loadUserList(1)"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -304,7 +307,6 @@ function renderPagination(currentPage, totalPages) {
         ⏮
     </button>`;
 
-    // Nút về trang trước
     html += `
     <button onclick="loadUserList(${currentPage - 1})"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -312,26 +314,22 @@ function renderPagination(currentPage, totalPages) {
         ◀
     </button>`;
 
-    // Trang 1 và dấu ba chấm nếu ở xa
     if (currentPage > maxVisible + 1) {
         html += pageBtn(1, currentPage);
         html += `<span class="px-2">…</span>`;
     }
 
-    // Các trang xung quanh
     for (let i = Math.max(1, currentPage - maxVisible);
         i <= Math.min(totalPages, currentPage + maxVisible);
         i++) {
         html += pageBtn(i, currentPage);
     }
 
-    // Dấu ba chấm và trang cuối
     if (currentPage < totalPages - maxVisible) {
         html += `<span class="px-2">…</span>`;
         html += pageBtn(totalPages, currentPage);
     }
 
-    // Nút sang trang kế tiếp
     html += `
     <button onclick="loadUserList(${currentPage + 1})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -339,7 +337,6 @@ function renderPagination(currentPage, totalPages) {
         ▶
     </button>`;
 
-    // Nút về trang cuối
     html += `
     <button onclick="loadUserList(${totalPages})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -347,7 +344,6 @@ function renderPagination(currentPage, totalPages) {
         ⏭
     </button>`;
 
-    // Ô nhảy trang nhanh
     html += `
     <div class="flex items-center gap-1 ml-3">
         <span class="text-sm">Go:</span>
@@ -363,7 +359,6 @@ function renderPagination(currentPage, totalPages) {
     container.html(html);
 }
 
-// Tạo nút bấm cho từng trang
 function pageBtn(page, current) {
     const active = page === current;
     return `
@@ -374,7 +369,6 @@ function pageBtn(page, current) {
     </button>`;
 }
 
-// Nhảy đến số trang chỉ định
 function gotoPage(input, totalPages) {
     let page = parseInt(input.value);
     if (isNaN(page)) return;
@@ -399,7 +393,6 @@ $(document).ready(function () {
         loadUserList(1);
     });
 
-    // Checkbox chọn tất cả
     $('#selectAll').on('change', function () {
         const isChecked = this.checked;
 
@@ -411,7 +404,6 @@ $(document).ready(function () {
         });
     });
 
-    // Checkbox từng dòng
     $(document).on('change', '.user-checkbox', function () {
         const total = $('.user-checkbox').length;
         const checked = $('.user-checkbox:checked').length;
@@ -430,16 +422,17 @@ $(document).ready(function () {
 
         if (ids.length === 0) {
             if (typeof showToast === 'function') {
-                showToast('Please select at least one user!', 'error');
+                showToast(L.SelectAtLeastOneUser || 'Please select at least one user!', 'error');
             }
             return;
         }
 
-        const confirmed = await customConfirm(
-            `Are you sure to remove <b>${ids.length}</b> user(s)?<br><small class="text-red-400">This action cannot be undone.</small>`,
-            "Delete Users"
-        );
+        const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+        const multiMsg = (L.ConfirmDeleteMultiUsersMsg || 'Are you sure to remove <b>{0}</b> user(s)?')
+            .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiUsersTitle || "Delete Users";
 
+        const confirmed = await customConfirm(multiMsg, multiTitle);
         if (!confirmed) return;
 
         $.ajax({
@@ -450,16 +443,17 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.blocked && res.blocked.length > 0) {
                     if (typeof showToast === 'function') {
-                        showToast(`Cannot delete ID: ${res.blocked.join(', ')} due to foreign key constraints.`, 'error');
+                        const blockedTemplate = L.BlockedDeleteUser || 'Cannot delete ID: {0} due to foreign key constraints.';
+                        showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
                     }
                 }
                 if (res.deleted && res.deleted.length > 0) {
                     if (typeof showToast === 'function') {
-                        showToast(`Deleted ${res.deleted.length} user(s) successfully.`, 'success');
+                        const deletedTemplate = L.DeletedUsersSuccess || 'Deleted {0} user(s) successfully.';
+                        showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
                     }
                 }
 
-                // Nếu xóa sạch toàn bộ hàng đang có trên trang và đang ở trang > 1
                 const totalOnPage = $('.user-checkbox').length;
                 if (ids.length >= totalOnPage && currentPage > 1) {
                     currentPage--;
@@ -470,7 +464,7 @@ $(document).ready(function () {
             },
             error: function () {
                 if (typeof showToast === 'function') {
-                    showToast('Failed to delete selected users from server.', 'error');
+                    showToast(L.ErrDeleteUsersServer || 'Failed to delete selected users from server.', 'error');
                 }
             }
         });

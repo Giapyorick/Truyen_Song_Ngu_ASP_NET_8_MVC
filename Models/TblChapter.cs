@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 
 namespace WebTruyenTranh.Models;
@@ -20,4 +21,6 @@ public partial class TblChapter
     public virtual ICollection<TblChapterComment> TblChapterComments { get; set; } = new List<TblChapterComment>();
 
     public virtual ICollection<TblParagraph> TblParagraphs { get; set; } = new List<TblParagraph>();
+    public virtual DbSet<TblChapterTranslation> TblChapterTranslations { get; set; }
+
 }

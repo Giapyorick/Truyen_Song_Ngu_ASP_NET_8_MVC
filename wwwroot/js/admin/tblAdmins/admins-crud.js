@@ -1,5 +1,7 @@
 ﻿/* admins-crud.js - Xử lý API, Bộ lọc, Phân trang, Thêm, Sửa, Xóa đơn lẻ và Xóa nhiều cho Admins */
 
+const L = window.ADMIN_LANG || {};
+
 let savedAdminPage = localStorage.getItem('adminPage');
 let currentPage = savedAdminPage ? parseInt(savedAdminPage) : 1;
 const pageSize = 5;
@@ -12,7 +14,7 @@ function loadAdminList(page = null) {
 
     localStorage.setItem('adminPage', currentPage);
 
-    const $body = $('#user-list-body');
+    const $body =$('#user-list-body');
     const roleVal = $('#filterRole').val();
     const statusVal = $('#filterStatus').val();
 
@@ -31,12 +33,12 @@ function loadAdminList(page = null) {
         success: function (data) {
             let html = '';
             if (!data.admins || data.admins.length === 0) {
-                // Nếu trang hiện tại bị trống (do xóa hết bản ghi) và đang ở trang > 1 thì tự động lùi 1 trang
                 if (currentPage > 1) {
                     loadAdminList(currentPage - 1);
                     return;
                 }
-                $body.html('<tr><td colspan="7" class="text-center py-10 text-gray-500 font-semibold">Not found any accounts.</td></tr>');
+                const notFoundMsg = L.NotFoundAccounts || 'Not found any accounts.';
+                $body.html(`<tr><td colspan="7" class="text-center py-10 text-gray-500 font-semibold">${notFoundMsg}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -44,10 +46,17 @@ function loadAdminList(page = null) {
             data.admins.forEach(item => {
                 const isRoleAdmin = (item.role || '').toLowerCase() === 'admin';
                 const roleClass = isRoleAdmin ? 'text-field' : 'text-wait';
-                const statusClass = item.isActive ? 'active' : 'inactive';
-                const statusText = item.isActive ? 'Active' : 'Inactive';
+                
+                // Đồng bộ đa ngôn ngữ cho Role hiển thị
+                const roleText = isRoleAdmin 
+                    ? (L.RoleAdmin || (window.ADMIN_LANG && window.ADMIN_LANG.RoleAdmin) || 'Admin')
+                    : (L.RoleViewer || (window.ADMIN_LANG && window.ADMIN_LANG.RoleViewer) || 'Viewer');
 
-                // Tạo avatar viết tắt
+                const statusClass = item.isActive ? 'active' : 'inactive';
+                const statusText = item.isActive ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
+                const displayName = item.fullName || (L.NoDisplayName || 'No display name');
+                const lastLoginText = item.lastLogin || (L.Never || 'Never');
+
                 const avatarChar = item.username ? item.username.charAt(0).toUpperCase() : 'A';
 
                 html += `
@@ -62,13 +71,13 @@ function loadAdminList(page = null) {
                             </div>
                             <div>
                                 <div class="font-bold text-gray-700">${item.username}</div>
-                                <div class="text-xs text-gray-400">${item.fullName || 'No display name'}</div>
+                                <div class="text-xs text-gray-400">${displayName}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${roleClass} rounded-xl text-[10px] uppercase tracking-wider">
-                            ${item.role}
+                            ${roleText}
                         </span>
                     </td>
                     <td class="px-6 py-5 text-center">
@@ -77,7 +86,7 @@ function loadAdminList(page = null) {
                         </span>
                     </td>
                     <td class="px-6 py-5 text-xs text-gray-500 font-medium">
-                        ${item.lastLogin || 'Never'}
+                        ${lastLoginText}
                     </td>
                     <td class="px-6 py-5 text-xs text-gray-400">
                         ${item.createdAt || 'N/A'}
@@ -85,12 +94,12 @@ function loadAdminList(page = null) {
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
                             <button onclick="openModal('edit', ${item.adminId})"
-                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="Edit account">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAccount || 'Edit account'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
                             <button onclick="deleteAdmin(${item.adminId})"
-                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="Delete account">
+                                class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete account'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -103,8 +112,9 @@ function loadAdminList(page = null) {
             updateDeleteButton();
         },
         error: function () {
-            $body.html('<tr><td colspan="7" class="text-center py-10 text-red-500 font-semibold">Error loading accounts data.</td></tr>');
-            showToast('Cannot connect to server to load data.', 'error');
+            const errMsg = L.ErrLoadAccounts || 'Error loading accounts data.';
+            $body.html(`<tr><td colspan="7" class="text-center py-10 text-red-500 font-semibold">${errMsg}</td></tr>`);
+            showToast(L.ErrConnectServerLoad || 'Cannot connect to server to load data.', 'error');
         }
     });
 }
@@ -112,14 +122,15 @@ function loadAdminList(page = null) {
 // Xóa một Admin đơn lẻ
 async function deleteAdmin(id) {
     if (window.IS_VIEWER_MODE) {
-        showToast('Viewer account has view-only permissions. Cannot delete data!', 'error');
+        showToast(L.ViewerNoPermissionDelete || 'Viewer account has view-only permissions. Cannot delete data!', 'error');
         return;
     }
 
-    const confirmed = await customConfirm(
-        `Are you sure to remove this account?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Account"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleMsg || 'Are you sure to remove this account?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleTitle || 'Delete Account';
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
 
     if (confirmed) {
         const $row = $(`button[onclick="deleteAdmin(${id})"]`).closest('tr');
@@ -133,7 +144,6 @@ async function deleteAdmin(id) {
                 if (response.success) {
                     showToast(response.message, 'success');
 
-                    // Nếu là hàng duy nhất còn lại trên trang hiện tại và đang ở trang > 1 thì lùi trang
                     const remainingRows = $('#user-list-body tr').length - 1;
                     if (remainingRows <= 0 && currentPage > 1) {
                         currentPage--;
@@ -146,7 +156,7 @@ async function deleteAdmin(id) {
                 }
             },
             error: function () {
-                showToast("Cannot connect to server to delete account.", 'error');
+                showToast(L.ErrConnectDelete || 'Cannot connect to server to delete account.', 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         });
@@ -158,11 +168,10 @@ $('#userForm').on('submit', function (e) {
     e.preventDefault();
 
     if (window.IS_VIEWER_MODE) {
-        showToast('Viewer account has view-only permissions. Cannot save changes!', 'error');
+        showToast(L.ViewerNoPermissionSave || 'Viewer account has view-only permissions. Cannot save changes!', 'error');
         return;
     }
 
-    // Lưu lại trang hiện tại vào Storage
     localStorage.setItem('adminPage', currentPage);
 
     const submitBtn = $(this).find('button[type="submit"]');
@@ -179,7 +188,7 @@ $('#userForm').on('submit', function (e) {
         isActive: $('#adminStatus').val() === 'true'
     };
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -191,8 +200,6 @@ $('#userForm').on('submit', function (e) {
                 showToast(response.message, 'success');
                 closeModal();
 
-                // THÊM MỚI: Về trang 1
-                // CẬP NHẬT: Ở nguyên currentPage hiện tại
                 if (isAdding) {
                     loadAdminList(1);
                 } else {
@@ -205,10 +212,10 @@ $('#userForm').on('submit', function (e) {
             }
         },
         error: function () {
-            showToast("Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || 'Cannot connect to the server.', 'error');
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
@@ -223,14 +230,12 @@ function renderPagination(currentPage, totalPages) {
     const maxVisible = 2;
     let html = `<div class="flex items-center gap-1">`;
 
-    // First page
     html += `
     <button onclick="loadAdminList(1)"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40 pointer-events-none' : ''}">
         ⏮
     </button>`;
 
-    // Previous page
     html += `
     <button onclick="loadAdminList(${currentPage - 1})"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40 pointer-events-none' : ''}">
@@ -253,21 +258,18 @@ function renderPagination(currentPage, totalPages) {
         html += pageBtn(totalPages, currentPage);
     }
 
-    // Next page
     html += `
     <button onclick="loadAdminList(${currentPage + 1})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40 pointer-events-none' : ''}">
         ▶
     </button>`;
 
-    // Last page
     html += `
     <button onclick="loadAdminList(${totalPages})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40 pointer-events-none' : ''}">
         ⏭
     </button>`;
 
-    // Jump page input
     html += `
     <div class="flex items-center gap-1 ml-3">
         <span class="text-sm">Go:</span>
@@ -309,17 +311,14 @@ $(document).ready(function () {
     currentPage = savedPage ? parseInt(savedPage) : 1;
     loadAdminList(currentPage);
 
-    // Tìm kiếm với sự kiện gõ phím
     $('#filterSearch').on('keyup', function () {
         loadAdminList(1);
     });
 
-    // Lọc theo Role & Status
     $('#filterRole, #filterStatus').on('change', function () {
         loadAdminList(1);
     });
 
-    // Chọn / Bỏ chọn toàn bộ Checkbox
     $('#selectAll').on('change', function () {
         const isChecked = this.checked;
 
@@ -331,7 +330,6 @@ $(document).ready(function () {
         });
     });
 
-    // Chọn Checkbox từng dòng
     $(document).on('change', '.user-checkbox', function () {
         const total = $('.user-checkbox').length;
         const checked = $('.user-checkbox:checked').length;
@@ -343,7 +341,7 @@ $(document).ready(function () {
     // Xóa nhiều Admin đã chọn
     $(document).on('click', '#btnDeleteSelected', async function () {
         if (window.IS_VIEWER_MODE) {
-            showToast('Viewer account has view-only permissions. Cannot delete data!', 'error');
+            showToast(L.ViewerNoPermissionDelete || 'Viewer account has view-only permissions. Cannot delete data!', 'error');
             return;
         }
 
@@ -354,15 +352,16 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            showToast('Please select at least one account to delete!', 'error');
+            showToast(L.SelectAtLeastOne || 'Please select at least one account to delete!', 'error');
             return;
         }
 
-        const confirmed = await customConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> account(s)?<br>` +
-            `<small class="text-red-400">This action cannot be undone.</small>`,
-            "Delete Accounts"
-        );
+        const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+        const multiMsg = (L.ConfirmDeleteMultiMsg || 'Are you sure you want to delete {0} account(s)?')
+            .replace('{0}', `<strong>${ids.length}</strong>`) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiTitle || 'Delete Accounts';
+
+        const confirmed = await customConfirm(multiMsg, multiTitle);
 
         if (!confirmed) return;
 
@@ -378,7 +377,6 @@ $(document).ready(function () {
                     showToast(res.message || 'Error occurred while deleting accounts.', 'error');
                 }
 
-                // Nếu xóa hết các dòng đang hiển thị trên trang hiện tại và đang ở trang > 1
                 const totalOnPage = $('.user-checkbox').length;
                 if (ids.length >= totalOnPage && currentPage > 1) {
                     currentPage--;
@@ -388,7 +386,7 @@ $(document).ready(function () {
                 $('#selectAll').prop('checked', false);
             },
             error: function () {
-                showToast('Failed to connect to the server to delete accounts.', 'error');
+                showToast(L.ErrConnectDelete || 'Failed to connect to the server to delete accounts.', 'error');
             }
         });
     });

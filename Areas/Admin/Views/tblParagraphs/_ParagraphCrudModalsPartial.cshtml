@@ -3,8 +3,8 @@
     <div id="modalContent" class="bg-white w-full max-w-6xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-20 opacity-0 transition-all duration-500 ease-out">
         <div class="p-8 border-b border-gray-50 relative mx-5 mt-0 mb-0 bg-gradient-to-r from-gray-50 to-white">
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                <h3 id="modalTitle" class="text-xl font-extrabold text-cus">Edit Paragraph</h3>
-                <p class="text-xs text-gray-400 mt-1">Please fill in all information</p>
+                <h3 id="modalTitle" class="text-xl font-extrabold text-cus">@SharedLocalizer["AdminParagraphs_EditParagraph"]</h3>
+                <p class="text-xs text-gray-400 mt-1">@SharedLocalizer["AdminCommon_FillAllInfo"]</p>
             </div>
             <button type="button" onclick="closeModal()" class="absolute right-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all text-2xl">&times;</button>
         </div>
@@ -15,50 +15,50 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="md:col-span-2 space-y-6">
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-cus uppercase ml-1">Chapter</label>
+                        <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_Chapter"]</label>
                         <select name="ChapterId" id="paragraphChapterId" class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all" required></select>
                     </div>
 
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-cus uppercase ml-1">Paragraph Order</label>
+                        <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_Order"]</label>
                         <input type="number" name="ParagraphOrder" id="paragraphOrder" min="1" class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all" required>
                     </div>
 
                     <div class="space-y-4">
                         <div class="flex gap-2 border-b border-gray-200">
-                            <button type="button" id="tabEnglish" onclick="switchParagraphLanguage('English')" class="paragraph-language-tab px-4 py-2 text-sm font-bold border-b-2 border-purple-500 text-purple-600">🇺🇸 English</button>
-                            <button type="button" id="tabVietnamese" onclick="switchParagraphLanguage('Vietnamese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇻🇳 Vietnamese</button>
-                            <button type="button" id="tabChinese" onclick="switchParagraphLanguage('Chinese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇨🇳 Chinese</button>
-                            <button type="button" id="tabJapanese" onclick="switchParagraphLanguage('Japanese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇯🇵 Japanese</button>
-                            <button type="button" id="tabFrench" onclick="switchParagraphLanguage('French')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇫🇷 French</button>
+                            <button type="button" id="tabEnglish" onclick="switchParagraphLanguage('English')" class="paragraph-language-tab px-4 py-2 text-sm font-bold border-b-2 border-purple-500 text-purple-600">🇺🇸 @SharedLocalizer["AdminParagraphs_English"]</button>
+                            <button type="button" id="tabVietnamese" onclick="switchParagraphLanguage('Vietnamese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇻🇳 @SharedLocalizer["AdminParagraphs_Vietnamese"]</button>
+                            <button type="button" id="tabChinese" onclick="switchParagraphLanguage('Chinese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇨🇳 @SharedLocalizer["AdminParagraphs_Chinese"]</button>
+                            <button type="button" id="tabJapanese" onclick="switchParagraphLanguage('Japanese')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇯🇵 @SharedLocalizer["AdminParagraphs_Japanese"]</button>
+                            <button type="button" id="tabFrench" onclick="switchParagraphLanguage('French')" class="paragraph-language-tab px-4 py-2 text-sm font-bold text-gray-400">🇫🇷 @SharedLocalizer["AdminParagraphs_French"]</button>
                         </div>
 
                         <div id="paragraphLanguageEnglish" class="paragraph-language-content">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1">English</label>
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_English"]</label>
                             <div id="paragraphEnglish" class="paragraph-editor"></div>
                             <input type="hidden" name="English" id="paragraphEnglishValue">
                         </div>
 
                         <div id="paragraphLanguageVietnamese" class="paragraph-language-content hidden">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1">Vietnamese</label>
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_Vietnamese"]</label>
                             <div id="paragraphVietnamese" class="paragraph-editor"></div>
                             <input type="hidden" name="Vietnamese" id="paragraphVietnameseValue">
                         </div>
 
                         <div id="paragraphLanguageChinese" class="paragraph-language-content hidden">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1">Chinese</label>
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_Chinese"]</label>
                             <div id="paragraphChinese" class="paragraph-editor"></div>
                             <input type="hidden" name="Chinese" id="paragraphChineseValue">
                         </div>
 
                         <div id="paragraphLanguageJapanese" class="paragraph-language-content hidden">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1">Japanese</label>
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_Japanese"]</label>
                             <div id="paragraphJapanese" class="paragraph-editor"></div>
                             <input type="hidden" name="Japanese" id="paragraphJapaneseValue">
                         </div>
 
                         <div id="paragraphLanguageFrench" class="paragraph-language-content hidden">
-                            <label class="text-[11px] font-bold text-cus uppercase ml-1">French</label>
+                            <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_French"]</label>
                             <div id="paragraphFrench" class="paragraph-editor"></div>
                             <input type="hidden" name="French" id="paragraphFrenchValue">
                         </div>
@@ -67,35 +67,35 @@
 
                 <div class="space-y-4">
                     <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                        <div class="text-xs font-bold text-cus uppercase mb-3">Paragraph Info</div>
+                        <div class="text-xs font-bold text-cus uppercase mb-3">@SharedLocalizer["AdminParagraphs_Info"]</div>
                         <div class="space-y-3 text-sm text-gray-500">
-                            <div><span class="font-semibold">ID: </span><span id="displayParagraphId">New</span></div>
-                            <div><span class="font-semibold">Chapter: </span><span id="displayChapterName">-</span></div>
-                            <div><span class="font-semibold">Order: </span><span id="displayParagraphOrder">-</span></div>
+                            <div><span class="font-semibold">ID: </span><span id="displayParagraphId">@SharedLocalizer["AdminParagraphs_New"]</span></div>
+                            <div><span class="font-semibold">@SharedLocalizer["AdminParagraphs_Chapter"]: </span><span id="displayChapterName">-</span></div>
+                            <div><span class="font-semibold">@SharedLocalizer["AdminParagraphs_Order"]: </span><span id="displayParagraphOrder">-</span></div>
                             <div class="space-y-1">
-                                <label class="text-[11px] font-bold text-cus uppercase ml-1">Block Type</label>
+                                <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminParagraphs_BlockType"]</label>
                                 <select name="BlockType" id="paragraphBlockType" class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all text-sm font-semibold">
-                                    <option data-color="linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%)" value="0">0 - Chapter Opening</option>
-                                    <option data-color="linear-gradient(to right, #283048 0%, #859398 51%, #283048 100%)" value="1" selected>1 - Continuous sentence</option>
-                                    <option data-color="linear-gradient(to right, #4facfe, #00f2fe 100%)" value="2">2 - New Paragraph (Indent)</option>
-                                    <option data-color="linear-gradient(to right, #b224ef, #7579ff 100%)" value="4">4 - Dialogue (Dash prefix)</option>
+                                    <option data-color="linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%)" value="0">@SharedLocalizer["AdminParagraphs_BlockChapterOpening"]</option>
+                                    <option data-color="linear-gradient(to right, #283048 0%, #859398 51%, #283048 100%)" value="1" selected>@SharedLocalizer["AdminParagraphs_BlockContinuousSentence"]</option>
+                                    <option data-color="linear-gradient(to right, #4facfe, #00f2fe 100%)" value="2">@SharedLocalizer["AdminParagraphs_BlockNewParagraph"]</option>
+                                    <option data-color="linear-gradient(to right, #b224ef, #7579ff 100%)" value="4">@SharedLocalizer["AdminParagraphs_BlockDialogue"]</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="p-5 bg-purple-50 rounded-2xl border border-purple-100">
-                        <div class="text-xs font-bold text-purple-600 uppercase mb-2">Note</div>
+                        <div class="text-xs font-bold text-purple-600 uppercase mb-2">@SharedLocalizer["AdminParagraphs_Note"]</div>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Paragraph content can be edited in multiple languages. Plain structure and inline formatting will be preserved.
+                            @SharedLocalizer["AdminParagraphs_NoteDescription"]
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="pt-6 flex gap-4">
-                <button type="button" onclick="closeModal()" class="flex-[2] py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all">Cancel</button>
-                <button type="submit" id="btnSave" class="flex-[2] py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all">Save Changes</button>
+            <button type="button" onclick="closeModal()" class="flex-[2] py-3 btn-grad-cancel text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all">@SharedLocalizer["AdminCommon_Cancel"]</button>
+            <button type="submit" id="btnSave" class="flex-[2] py-3 btn-grad text-white rounded-xl font-bold shadow-lg hover:shadow-indigo-200/50 active:scale-95 transition-all">@SharedLocalizer["AdminCommon_SaveChanges"]</button>
             </div>
         </form>
     </div>

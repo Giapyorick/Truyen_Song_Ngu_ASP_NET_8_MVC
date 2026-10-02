@@ -536,3 +536,32 @@
     .strip-nav-btn.next {
         right: 10px;
     }
+.select2-container--default .select2-selection--single {
+    height: 44px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #99f6e4 !important; /* border-teal-200 */
+    border-radius: 0.75rem !important; /* rounded-xl */
+    display: flex !important;
+    align-items: center !important;
+}
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #1f2937 !important;
+        font-size: 0.875rem !important;
+        padding-left: 1rem !important;
+        font-weight: 500 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 42px !important;
+        right: 10px !important;
+    }
+
+/* Hộp dropdown danh sách thả xuống */
+.select2-dropdown {
+    border: 1px solid #99f6e4 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+}

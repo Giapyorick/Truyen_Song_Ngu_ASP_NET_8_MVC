@@ -1,36 +1,40 @@
 /* stories-crud.js - Xử lý API, Bảng dữ liệu, Lọc, CRUD form, Xóa nhiều & Import/Export Excel */
 
+const L = window.ADMIN_LANG || {};
+
 let currentPage = 1;
 const pageSize = 5;
 
 // Mở modal Thêm hoặc Sửa truyện
 function openModal(mode, id = null) {
     const modal = $('#modalOverlay');
-    const $form = $('#storyForm');
-    const $imgPreview = $('#imgPreview');
-    const $uploadIcon = $('#uploadIcon');
-    const $storyLang = $('#storyLang');
-    const $langNotice = $('#langNotice');
+    const $form =$('#storyForm');
+    const $imgPreview =$('#imgPreview');
+    const $uploadIcon =$('#uploadIcon');
+
+    const noCatText = L.NoCategoriesSelected || 'No categories selected';
 
     // Reset form
-    $form[0].reset(); $('#storyId').val('0');
+    $form[0].reset();$('#storyId').val('0');
     $('input[name="CategoryIds"]').val('');
-    $('#selectedCategories').html('<span class="text-gray-400">No categories selected</span>');
-    $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
+    $('#selectedCategories').html(`<span class="text-gray-400">${noCatText}</span>`);
+    $imgPreview.addClass('hidden').attr('src', '');$uploadIcon.removeClass('hidden');
 
     modal.removeClass('hidden').addClass('flex');
 
     if (mode === 'add') {
-        $('#modalTitle').text('Add Story');
+        $('#modalTitle').text(L.TitleAddStory || 'Add Story');
 
-        // MỞ KHÓA CHO PHÉP CHỌN NGÔN NGỮ KHI TẠO MỚI
-        $storyLang.prop('disabled', false).val(['Tiếng Anh', 'Tiếng Việt']).trigger('change');
-        $langNotice.text('* English & Vietnamese are default').removeClass('text-amber-600').addClass('text-teal-600');
+        // Mở khóa cho phép người dùng click chọn các ngôn ngữ tùy chọn (Trung, Nhật, Pháp)
+        $('.lang-checkbox').prop('disabled', false).prop('checked', false).closest('.lang-chip').removeClass('active');
+
+        // Reset về mặc định chỉ chọn EN và VN
+        setSelectedLanguages('Tiếng Anh, Tiếng Việt');
     } else {
-        $('#modalTitle').text('Update Story');
+        $('#modalTitle').text(L.TitleEditStory || 'Update Story');
 
-        // KHÓA LẠI KHÔNG CHO PHÉP SỬA NGÔN NGỮ KHI CẬP NHẬT
-        $storyLang.prop('disabled', true); $langNotice.text('🔒 Languages cannot be modified after creation').removeClass('text-teal-600').addClass('text-amber-600 font-bold');
+        // Khóa không cho phép sửa đổi ngôn ngữ khi cập nhật
+        $('.lang-checkbox').prop('disabled', true);
 
         $.get('/Admin/tblStories/GetById/' + id, function (data) {
             $('#storyId').val(data.storyId);
@@ -39,12 +43,11 @@ function openModal(mode, id = null) {
             $('#storyAuthorName').val(data.authorId).trigger('change');
             $('#storyDescription').val(data.description);
 
-            // Nạp giá trị ngôn ngữ hiện tại của truyện
+            // Nạp và kích hoạt đúng các chip ngôn ngữ (Trung, Nhật, Pháp...) dựa theo data.lang từ database
             if (data.lang && data.lang.trim() !== "") {
-                const selectedLangs = data.lang.split(',').map(s => s.trim());
-                $storyLang.val(selectedLangs).trigger('change');
+                setSelectedLanguages(data.lang);
             } else {
-                $storyLang.val(['Tiếng Anh', 'Tiếng Việt']).trigger('change');
+                setSelectedLanguages('Tiếng Anh, Tiếng Việt');
             }
 
             // Nạp danh mục
@@ -63,7 +66,7 @@ function openModal(mode, id = null) {
                     `;
                 });
             } else {
-                preview.innerHTML = `<span class="text-xs text-gray-400">No category selected</span>`;
+                preview.innerHTML = `<span class="text-xs text-gray-400">${noCatText}</span>`;
             }
             loadCategories();
 
@@ -71,9 +74,9 @@ function openModal(mode, id = null) {
 
             if (data.img && data.img.trim() !== "") {
                 const fullPath = data.img.startsWith('/') ? data.img : '/' + data.img;
-                $imgPreview.attr('src', fullPath).removeClass('hidden'); $uploadIcon.addClass('hidden');
+                $imgPreview.attr('src', fullPath).removeClass('hidden');$uploadIcon.addClass('hidden');
             } else {
-                $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
+                $imgPreview.addClass('hidden').attr('src', '');$uploadIcon.removeClass('hidden');
             }
         });
     }
@@ -96,10 +99,11 @@ function closeModal() {
 
 // Xóa 1 truyện đơn lẻ
 async function deleteStory(id) {
-    const confirmed = await customConfirm(
-        `Are you sure to remove this story ?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Story"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleStoryMsg || 'Are you sure to remove this story ?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleStoryTitle || "Delete Story";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (confirmed) {
         const $row = $(`button[onclick="deleteStory(${id})"]`).closest('tr');
         $row.addClass('opacity-50 pointer-events-none');
@@ -120,7 +124,7 @@ async function deleteStory(id) {
                 }
             },
             error: function () {
-                showToast("Cannot connect to the server to delete.", 'error');
+                showToast(L.ErrConnectDelete || "Cannot connect to the server to delete.", 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         });
@@ -146,19 +150,13 @@ $('#storyForm').on('submit', function (e) {
     const storyId = $('#storyId').val();
     const isAdd = (storyId === "0" || storyId === "");
 
-    // Khi Add mới lấy giá trị từ select, khi Edit thì backend tự giữ nguyên Lang cũ
-    if (isAdd) {
-        const selectedLangs = $('#storyLang').val();
-        if (!selectedLangs || selectedLangs.length === 0) {
-            showToast("Please select at least one language for this story!", "error");
-            return;
-        }
-        formData.set('Lang', selectedLangs.join(', '));
-    }
+    // Thu thập danh sách ngôn ngữ từ các chip đang được active/checked
+    const langString = getSelectedLanguagesString();
+    formData.set('Lang', langString);
 
     const url = isAdd ? '/Admin/tblStories/Add' : '/Admin/tblStories/Update';
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -178,10 +176,10 @@ $('#storyForm').on('submit', function (e) {
             }
         },
         error: function () {
-            showToast("Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || "Cannot connect to the server.", 'error');
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
@@ -207,7 +205,8 @@ function loadStoryList(page = 1) {
         success: function (data) {
             let html = '';
             if (!data.stories || data.stories.length === 0) {
-                $body.html('<tr><td colspan="9" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundStories || 'Not found any results.';
+                $body.html(`<tr><td colspan="9" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -226,11 +225,12 @@ function loadStoryList(page = 1) {
                     story.status === "Completed" ? "active" :
                         story.status === "Posting" ? "posting" : "comingsoon";
 
+                const noCatText = L.NoCategoriesSelected || 'No category';
                 const categoryHtml = story.categories && story.categories.length
                     ? story.categories.map(c =>
                         `<span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-md text-[13px] font-semibold">${c}</span>`
                     ).join(" ")
-                    : `<span class="text-sm text-gray-400">No category</span>`;
+                    : `<span class="text-sm text-gray-400">${noCatText}</span>`;
 
                 // Render Badge ngôn ngữ
                 const langArr = (story.lang || "Tiếng Anh, Tiếng Việt").split(',').map(l => l.trim());
@@ -263,7 +263,7 @@ function loadStoryList(page = 1) {
                             ${avatarHtml}
                             <div>
                                 <div class="font-bold text-gray-700">${story.title}</div>
-                                <div class="text-xs text-gray-400">${story.authorName}</div>
+                                <div class="text-xs text-gray-400">${story.authorName || ''}</div>
                             </div>
                         </div>
                     </td>
@@ -292,19 +292,19 @@ function loadStoryList(page = 1) {
                         <div class="text-sm text-gray-600 leading-6 grid grid-cols-2 gap-x-4 gap-y-2">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid text-deny fa-heart w-4 text-center"></i> 
-                                <span>${story.likes} loves</span>
+                                <span>${story.likes} ${L.MetricLoves || 'loves'}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid text-wait fa-star w-4 text-center"></i> 
-                                <span>${story.rate} rates</span>
+                                <span>${story.rate} ${L.MetricRates || 'rates'}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid text-cus fa-comment-dollar w-4 text-center"></i> 
-                                <span>${story.countRate} rated</span>
+                                <span>${story.countRate} ${L.MetricRated || 'rated'}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid text-accepted fa-users w-4 text-center"></i> 
-                                <span>${story.countFolower} followers</span>
+                                <span>${story.countFolower} ${L.MetricFollowers || 'followers'}</span>
                             </div>
                         </div>
                     </td>
@@ -324,7 +324,6 @@ function loadStoryList(page = 1) {
                     </td>
 
                     <!-- Actions -->
-                  
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
                             <button onclick="openModal('edit', ${story.storyId})"
@@ -332,7 +331,7 @@ function loadStoryList(page = 1) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad bg-blue-50
                                     hover:bg-blue-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
@@ -341,7 +340,7 @@ function loadStoryList(page = 1) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad-cancel bg-red-50
                                     hover:bg-red-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -354,15 +353,17 @@ function loadStoryList(page = 1) {
             updateDeleteButton();
         },
         error: function () {
-            $body.html('<tr><td colspan="9" class="text-center py-10 text-red-500">Error: Cannot load data.</td></tr>');
+            const errLoad = L.ErrLoadStories || 'Error: Cannot load data.';
+            $body.html(`<tr><td colspan="9" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
         }
     });
 }
+
 // Xử lý Import Excel
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (fileInput.files.length === 0) {
-        showToast('Please choose file Excel!', 'error');
+        showToast(L.ChooseExcelFile || 'Please choose file Excel!', 'error');
         return;
     }
 
@@ -370,7 +371,7 @@ function executeImport() {
     formData.append('file', fileInput.files[0]);
 
     const $btn = $('#btnDoImport');
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
         url: '/Admin/tblStories/ImportFromExcel',
@@ -395,7 +396,7 @@ function executeImport() {
             }
         },
         error: function (xhr) {
-            let errorMsg = 'Error during import file!';
+            let errorMsg = L.ErrImport || 'Error during import file!';
             if (xhr.responseJSON) {
                 const res = xhr.responseJSON;
                 errorMsg += `<br><small class="opacity-90">Error: ${res.error || res.message}</small>`;
@@ -416,7 +417,7 @@ function executeImport() {
             showToast(errorMsg, 'error');
         },
         complete: function () {
-            $btn.prop('disabled', false).text('Confirm Import');
+            $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import');
         }
     });
 }
@@ -559,16 +560,16 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            showToast('Please select at least one author!', 'error');
+            showToast(L.SelectAtLeastOneStory || 'Please select at least one story!', 'error');
             return;
         }
 
-        const confirmed = await customConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> stories ?<br>` +
-            `<small class="text-red-400">This action cannot be undone.</small>`,
-            "Delete Multiple"
-        );
+        const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+        const multiMsg = (L.ConfirmDeleteMultiStoriesMsg || 'Are you sure you want to delete <strong>{0}</strong> stories ?')
+            .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiStoriesTitle || "Delete Multiple";
 
+        const confirmed = await customConfirm(multiMsg, multiTitle);
         if (!confirmed) return;
 
         $.ajax({
@@ -578,15 +579,13 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
                 if (res.blocked && res.blocked.length > 0) {
-                    showToast(
-                        `Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-                        `Because it was used to link foreign keys.`,
-                        'error'
-                    );
+                    const blockedTemplate = L.BlockedDeleteStory || 'Cannot delete this ID: {0}\nBecause it was used to link foreign keys.';
+                    showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
                     updateDeleteButton();
                 }
                 if (res.deleted && res.deleted.length > 0) {
-                    showToast(`Deleted ${res.deleted.length} story.`, 'error');
+                    const deletedTemplate = L.DeletedStoriesSuccess || 'Deleted {0} story.';
+                    showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
                 }
                 const savedPage = localStorage.getItem('storyPage');
                 currentPage = savedPage ? parseInt(savedPage) : 1;

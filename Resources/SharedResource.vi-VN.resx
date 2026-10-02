@@ -132,4 +132,1708 @@
   <data name="Footer_Copyright" xml:space="preserve">
     <value>Bản quyền thuộc về WebTruyenTranh</value>
   </data>
+  <data name="Auth_SignIn" xml:space="preserve">
+    <value>Đăng nhập</value>
+  </data>
+  <data name="Auth_WelcomeBack" xml:space="preserve">
+    <value>Chào mừng trở lại! Vui lòng đăng nhập vào tài khoản của bạn</value>
+  </data>
+  <data name="Auth_JoinUs" xml:space="preserve">
+    <value>Hãy tham gia với chúng tôi</value>
+  </data>
+  <data name="Auth_CreateAccount" xml:space="preserve">
+    <value>Tạo tài khoản</value>
+  </data>
+  <data name="Auth_CaptchaAnswer" xml:space="preserve">
+    <value>Đang tải...</value>
+  </data>
+  <data name="Auth_CaptchaRefresh" xml:space="preserve">
+    <value>Câu hỏi mới</value>
+  </data>
+  <data name="Nav_SearchTooltip" xml:space="preserve">
+    <value>Tìm kiếm truyện</value>
+  </data>
+  <data name="Nav_Bilingual" xml:space="preserve">
+    <value>Song ngữ EN-VI</value>
+  </data>
+  <data name="Nav_BilingualBadge" xml:space="preserve">
+    <value>HOT</value>
+  </data>
+  <data name="Nav_Categories" xml:space="preserve">
+    <value>Thể loại</value>
+  </data>
+  <data name="Nav_Rankings" xml:space="preserve">
+    <value>Bảng xếp hạng</value>
+  </data>
+  <data name="Nav_Logout" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="User_FullName" xml:space="preserve">
+    <value>Họ và tên</value>
+  </data>
+  <data name="User_Phone" xml:space="preserve">
+    <value>Số điện thoại</value>
+  </data>
+  <data name="User_DateOfBirth" xml:space="preserve">
+    <value>Ngày sinh</value>
+  </data>
+  <data name="User_Gender" xml:space="preserve">
+    <value>Giới tính</value>
+  </data>
+  <data name="User_PlaceholderName" xml:space="preserve">
+    <value>Nguyễn Văn A</value>
+  </data>
+  <data name="Btn_ChooseImage" xml:space="preserve">
+    <value>Chọn ảnh</value>
+  </data>
+  <data name="Btn_ImageSpecification" xml:space="preserve">
+    <value>PNG, JPG tối đa 2MB</value>
+  </data>
+  <data name="Btn_Submit" xml:space="preserve">
+    <value>Gửi</value>
+  </data>
+  <data name="Btn_Cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="Btn_Save" xml:space="preserve">
+    <value>Lưu</value>
+  </data>
+  <data name="Btn_SaveChanges" xml:space="preserve">
+    <value>Lưu thay đổi</value>
+  </data>
+  <data name="Btn_Edit" xml:space="preserve">
+    <value>Chỉnh sửa</value>
+  </data>
+  <data name="Profile_Title" xml:space="preserve">
+    <value>Hồ sơ người dùng</value>
+  </data>
+  <data name="Profile_MemberSince" xml:space="preserve">
+    <value>Tham gia từ</value>
+  </data>
+  <data name="Profile_NameNotUpdated" xml:space="preserve">
+    <value>Tên chưa được cập nhật</value>
+  </data>
+  <data name="Profile_NoEmail" xml:space="preserve">
+    <value>Không có email</value>
+  </data>
+  <data name="Profile_NoPhone" xml:space="preserve">
+    <value>Không có số điện thoại</value>
+  </data>
+  <data name="Profile_Other" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="Profile_DateNotUpdated" xml:space="preserve">
+    <value>Ngày sinh chưa được cập nhật</value>
+  </data>
+  <data name="Profile_EditProfile" xml:space="preserve">
+    <value>Chỉnh sửa hồ sơ</value>
+  </data>
+  <data name="Profile_Following" xml:space="preserve">
+    <value>Đang theo dõi</value>
+  </data>
+  <data name="Profile_Liked" xml:space="preserve">
+    <value>Yêu thích</value>
+  </data>
+  <data name="Profile_Read" xml:space="preserve">
+    <value>Đã đọc</value>
+  </data>
+  <data name="Profile_FollowingStories" xml:space="preserve">
+    <value>Truyện đang theo dõi</value>
+  </data>
+  <data name="Profile_LikedStories" xml:space="preserve">
+    <value>Truyện yêu thích</value>
+  </data>
+  <data name="Profile_ReadStories" xml:space="preserve">
+    <value>Truyện đã đọc</value>
+  </data>
+  <data name="Profile_NoFollowedStories" xml:space="preserve">
+    <value>Bạn chưa theo dõi truyện nào</value>
+  </data>
+  <data name="Profile_NoFollowedStoriesHint" xml:space="preserve">
+    <value>Thêm truyện yêu thích của bạn vào thư viện để theo dõi chúng một cách dễ dàng!</value>
+  </data>
+  <data name="Profile_NoLikedStories" xml:space="preserve">
+    <value>Bạn chưa yêu thích truyện nào</value>
+  </data>
+  <data name="Profile_NoLikedStoriesHint" xml:space="preserve">
+    <value>Yêu thích truyện yêu thích của bạn để lưu chúng ở đây!</value>
+  </data>
+  <data name="Profile_NoReadStories" xml:space="preserve">
+    <value>Bạn chưa đọc truyện nào</value>
+  </data>
+  <data name="Profile_NoReadStoriesHint" xml:space="preserve">
+    <value>Bắt đầu đọc truyện để xem lịch sử đọc của bạn!</value>
+  </data>
+  <data name="Auth_LoginModalSubtitle" xml:space="preserve">
+    <value>Chào mừng bạn quay lại Bilingual Manga</value>
+  </data>
+  <data name="Auth_RegisterSubtitle" xml:space="preserve">
+    <value>Tham gia Bilingual Manga để mở khóa các tính năng đọc truyện</value>
+  </data>
+  <data name="Auth_Avatar" xml:space="preserve">
+    <value>Ảnh đại diện</value>
+  </data>
+  <data name="Auth_AvatarSpecification" xml:space="preserve">
+    <value>JPG, PNG hoặc WEBP (tối đa 2MB)</value>
+  </data>
+  <data name="Auth_PasswordMinLength" xml:space="preserve">
+    <value>Ít nhất 6 ký tự</value>
+  </data>
+  <data name="Auth_ReenterPassword" xml:space="preserve">
+    <value>Nhập lại mật khẩu</value>
+  </data>
+  <data name="Auth_RegisterAccount" xml:space="preserve">
+    <value>Đăng ký tài khoản</value>
+  </data>
+  <data name="Auth_ResetPassword" xml:space="preserve">
+    <value>Đặt lại mật khẩu</value>
+  </data>
+  <data name="Auth_ResetPasswordSubtitle" xml:space="preserve">
+    <value>Nhập email để nhận mật khẩu tạm thời</value>
+  </data>
+  <data name="Auth_RegisteredEmail" xml:space="preserve">
+    <value>Email đã đăng ký</value>
+  </data>
+  <data name="Auth_SendTemporaryPassword" xml:space="preserve">
+    <value>Gửi mật khẩu tạm thời</value>
+  </data>
+  <data name="Auth_RememberPassword" xml:space="preserve">
+    <value>Bạn nhớ mật khẩu của mình?</value>
+  </data>
+  <data name="Auth_BackToSignIn" xml:space="preserve">
+    <value>Quay lại đăng nhập</value>
+  </data>
+  <data name="Auth_SetNewPassword" xml:space="preserve">
+    <value>Đặt mật khẩu mới</value>
+  </data>
+  <data name="Auth_TemporaryPasswordNotice" xml:space="preserve">
+    <value>Bạn đã đăng nhập bằng mật khẩu tạm thời.</value>
+  </data>
+  <data name="Auth_ChangePasswordToContinue" xml:space="preserve">
+    <value>Vui lòng tạo mật khẩu mới để tiếp tục.</value>
+  </data>
+  <data name="Auth_NewPassword" xml:space="preserve">
+    <value>Mật khẩu mới</value>
+  </data>
+  <data name="Auth_ConfirmNewPassword" xml:space="preserve">
+    <value>Xác nhận mật khẩu mới</value>
+  </data>
+  <data name="Auth_ReenterNewPassword" xml:space="preserve">
+    <value>Nhập lại mật khẩu mới</value>
+  </data>
+  <data name="Auth_UpdatePasswordAndProceed" xml:space="preserve">
+    <value>Cập nhật mật khẩu và tiếp tục</value>
+  </data>
+  <data name="Gender_Male" xml:space="preserve">
+    <value>Nam</value>
+  </data>
+  <data name="Gender_Female" xml:space="preserve">
+    <value>Nữ</value>
+  </data>
+  <data name="User_DoB" xml:space="preserve">
+    <value>Ngày sinh</value>
+  </data>
+  <data name="Profile_UpdateAccountInformation" xml:space="preserve">
+    <value>Cập nhật thông tin tài khoản</value>
+  </data>
+  <data name="Profile_ChangeAvatar" xml:space="preserve">
+    <value>Đổi ảnh đại diện</value>
+  </data>
+  <data name="Profile_NewPasswordHint" xml:space="preserve">
+    <value>Mật khẩu mới (để trống nếu muốn giữ mật khẩu hiện tại)</value>
+  </data>
+  <data name="Profile_SaveChanges" xml:space="preserve">
+    <value>Lưu thay đổi</value>
+  </data>
+  <data name="Profile_JoinedDateUnknown" xml:space="preserve">
+    <value>Không có thông tin</value>
+  </data>
+  <data name="Footer_Description" xml:space="preserve">
+    <value>Nền tảng truyện tranh song ngữ hàng đầu, mang đến trải nghiệm thư giãn và giúp bạn mở rộng vốn từ vựng một cách tự nhiên, hiệu quả.</value>
+  </data>
+  <data name="Footer_SmartLearning" xml:space="preserve">
+    <value>Học ngôn ngữ thông minh</value>
+  </data>
+  <data name="Footer_Discover" xml:space="preserve">
+    <value>Khám phá</value>
+  </data>
+  <data name="Footer_Home" xml:space="preserve">
+    <value>Trang chủ</value>
+  </data>
+  <data name="Footer_MangaList" xml:space="preserve">
+    <value>Danh sách truyện</value>
+  </data>
+  <data name="Footer_Library" xml:space="preserve">
+    <value>Tủ truyện</value>
+  </data>
+  <data name="Footer_Rankings" xml:space="preserve">
+    <value>Bảng xếp hạng</value>
+  </data>
+  <data name="Footer_Policies" xml:space="preserve">
+    <value>Chính sách</value>
+  </data>
+  <data name="Footer_CopyrightNotices" xml:space="preserve">
+    <value>Thông báo bản quyền</value>
+  </data>
+  <data name="Footer_ReaderSupport" xml:space="preserve">
+    <value>Hỗ trợ độc giả</value>
+  </data>
+  <data name="Footer_Community" xml:space="preserve">
+    <value>Cộng đồng</value>
+  </data>
+  <data name="Footer_CommunityDescription" xml:space="preserve">
+    <value>Tham gia thảo luận và nhận thông báo về các chương truyện song ngữ mới nhất.</value>
+  </data>
+  <data name="Footer_AllRightsReserved" xml:space="preserve">
+    <value>Bảo lưu mọi quyền.</value>
+  </data>
+  <data name="Footer_MadeForLearners" xml:space="preserve">
+    <value>Được tạo với</value>
+  </data>
+  <data name="Footer_MangaLearners" xml:space="preserve">
+    <value>dành cho người đọc truyện.</value>
+  </data>
+  <data name="AdminCommon_TitlePlaceholder" xml:space="preserve">
+    <value>Tiêu đề</value>
+  </data>
+  <data name="AdminCommon_FillAllInfo" xml:space="preserve">
+    <value>Vui lòng điền đầy đủ thông tin</value>
+  </data>
+  <data name="AdminCommon_FillAccountCredentials" xml:space="preserve">
+    <value>Vui lòng điền đầy đủ thông tin tài khoản</value>
+  </data>
+  <data name="AdminCommon_FillChapterInfo" xml:space="preserve">
+    <value>Vui lòng điền đầy đủ thông tin chương</value>
+  </data>
+  <data name="AdminCommon_ChooseImage" xml:space="preserve">
+    <value>Chọn ảnh</value>
+  </data>
+  <data name="AdminCommon_ImageRequirements" xml:space="preserve">
+    <value>PNG, JPG tối đa 2MB</value>
+  </data>
+  <data name="AdminCommon_Cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="AdminCommon_SaveChanges" xml:space="preserve">
+    <value>Lưu thay đổi</value>
+  </data>
+  <data name="AdminCommon_ImportFromExcel" xml:space="preserve">
+    <value>Nhập từ Excel</value>
+  </data>
+  <data name="AdminCommon_DropOrClickImport" xml:space="preserve">
+    <value>Kéo thả hoặc nhấp để nhập tệp</value>
+  </data>
+  <data name="AdminCommon_DropOrClickSelect" xml:space="preserve">
+    <value>Kéo thả tệp vào đây hoặc nhấp để chọn.</value>
+  </data>
+  <data name="AdminCommon_SupportedFormats" xml:space="preserve">
+    <value>Định dạng hỗ trợ: .xlsx, .xls (tối đa 5MB)</value>
+  </data>
+  <data name="AdminCommon_SupportedFormatsLong" xml:space="preserve">
+    <value>Hỗ trợ: .xlsx, .xls, .txt (tối đa 5MB)</value>
+  </data>
+  <data name="AdminCommon_DownloadTemplate" xml:space="preserve">
+    <value>Tải tệp mẫu tại đây</value>
+  </data>
+  <data name="AdminCommon_DownloadTemplateHere" xml:space="preserve">
+    <value>Tải tệp mẫu tại đây</value>
+  </data>
+  <data name="AdminCommon_ConfirmImport" xml:space="preserve">
+    <value>Xác nhận nhập</value>
+  </data>
+  <data name="AdminCommon_Confirm" xml:space="preserve">
+    <value>Xác nhận</value>
+  </data>
+  <data name="AdminCommon_Active" xml:space="preserve">
+    <value>Đang hoạt động</value>
+  </data>
+  <data name="AdminCommon_Inactive" xml:space="preserve">
+    <value>Ngừng hoạt động</value>
+  </data>
+  <data name="AdminCommon_Status" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="AdminCommon_Gender" xml:space="preserve">
+    <value>Giới tính</value>
+  </data>
+  <data name="AdminCommon_Male" xml:space="preserve">
+    <value>Nam</value>
+  </data>
+  <data name="AdminCommon_Female" xml:space="preserve">
+    <value>Nữ</value>
+  </data>
+  <data name="AdminCommon_DateOfBirth" xml:space="preserve">
+    <value>Ngày sinh (năm-tháng-ngày)</value>
+  </data>
+  <data name="AdminCommon_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="AdminCommon_Phone" xml:space="preserve">
+    <value>Số điện thoại</value>
+  </data>
+  <data name="AdminCommon_Password" xml:space="preserve">
+    <value>Mật khẩu</value>
+  </data>
+  <data name="AdminCommon_FullName" xml:space="preserve">
+    <value>Họ và tên</value>
+  </data>
+  <data name="AdminCommon_RequiredForNewAccount" xml:space="preserve">
+    <value>(bắt buộc với tài khoản mới)</value>
+  </data>
+  <data name="AdminCommon_EnterNewPassword" xml:space="preserve">
+    <value>Nhập mật khẩu mới...</value>
+  </data>
+  <data name="AdminCommon_Country" xml:space="preserve">
+    <value>Quốc gia</value>
+  </data>
+  <data name="AdminCommon_Role" xml:space="preserve">
+    <value>Vai trò</value>
+  </data>
+  <data name="AdminCommon_AdminRole" xml:space="preserve">
+    <value>Quản trị viên</value>
+  </data>
+  <data name="AdminCommon_ViewerRole" xml:space="preserve">
+    <value>Người xem</value>
+  </data>
+  <data name="AdminCommon_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả hoặc nhấp để nhập tệp</value>
+  </data>
+  <data name="AdminCommon_Template" xml:space="preserve">
+    <value>Mẫu</value>
+  </data>
+  <data name="AdminCommon_Browse" xml:space="preserve">
+    <value>Duyệt</value>
+  </data>
+  <data name="AdminCommon_RequiredFields" xml:space="preserve">
+    <value>* Trường bắt buộc</value>
+  </data>
+  <data name="AdminAdmins_AddAccount" xml:space="preserve">
+    <value>Thêm tài khoản</value>
+  </data>
+  <data name="AdminAdmins_Username" xml:space="preserve">
+    <value>Tên đăng nhập *</value>
+  </data>
+  <data name="AdminAdmins_UsernamePlaceholder" xml:space="preserve">
+    <value>vd: quan_ly_the_thao</value>
+  </data>
+  <data name="AdminAdmins_FullNamePlaceholder" xml:space="preserve">
+    <value>vd: Nguyễn Văn A</value>
+  </data>
+  <data name="AdminAuthors_AuthorName" xml:space="preserve">
+    <value>Tên tác giả</value>
+  </data>
+  <data name="AdminAuthors_NamePlaceholder" xml:space="preserve">
+    <value>Nguyễn Văn A</value>
+  </data>
+  <data name="AdminAuthors_ImportHeading" xml:space="preserve">
+    <value>Nhập từ Excel</value>
+  </data>
+  <data name="AdminCategories_CategoryName" xml:space="preserve">
+    <value>Tên thể loại</value>
+  </data>
+  <data name="AdminCategories_NamePlaceholder" xml:space="preserve">
+    <value>Hành động, Giả tưởng</value>
+  </data>
+  <data name="AdminCategories_Description" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
+  <data name="AdminCategories_DescriptionPlaceholder" xml:space="preserve">
+    <value>Nhập nội dung mô tả...</value>
+  </data>
+  <data name="AdminChapters_ChapterDetails" xml:space="preserve">
+    <value>Thông tin chương</value>
+  </data>
+  <data name="AdminChapters_Title" xml:space="preserve">
+    <value>Tiêu đề chương *</value>
+  </data>
+  <data name="AdminChapters_TitlePlaceholder" xml:space="preserve">
+    <value>vd: Chương 1: Khởi đầu</value>
+  </data>
+  <data name="AdminChapters_AssignedStory" xml:space="preserve">
+    <value>Truyện được gán *</value>
+  </data>
+  <data name="AdminChapters_ChapterNumber" xml:space="preserve">
+    <value>Số chương *</value>
+  </data>
+  <data name="AdminChapters_NumberPlaceholder" xml:space="preserve">
+    <value>vd: 1</value>
+  </data>
+  <data name="AdminParagraphs_EditParagraph" xml:space="preserve">
+    <value>Sửa đoạn văn</value>
+  </data>
+  <data name="AdminParagraphs_Chapter" xml:space="preserve">
+    <value>Chương</value>
+  </data>
+  <data name="AdminParagraphs_Order" xml:space="preserve">
+    <value>Thứ tự đoạn</value>
+  </data>
+  <data name="AdminParagraphs_English" xml:space="preserve">
+    <value>Tiếng Anh</value>
+  </data>
+  <data name="AdminParagraphs_Vietnamese" xml:space="preserve">
+    <value>Tiếng Việt</value>
+  </data>
+  <data name="AdminParagraphs_Chinese" xml:space="preserve">
+    <value>Tiếng Trung</value>
+  </data>
+  <data name="AdminParagraphs_Japanese" xml:space="preserve">
+    <value>Tiếng Nhật</value>
+  </data>
+  <data name="AdminParagraphs_French" xml:space="preserve">
+    <value>Tiếng Pháp</value>
+  </data>
+  <data name="AdminParagraphs_Info" xml:space="preserve">
+    <value>Thông tin đoạn văn</value>
+  </data>
+  <data name="AdminParagraphs_New" xml:space="preserve">
+    <value>Mới</value>
+  </data>
+  <data name="AdminParagraphs_BlockType" xml:space="preserve">
+    <value>Loại khối</value>
+  </data>
+  <data name="AdminParagraphs_BlockChapterOpening" xml:space="preserve">
+    <value>0 - Mở đầu chương</value>
+  </data>
+  <data name="AdminParagraphs_BlockContinuousSentence" xml:space="preserve">
+    <value>1 - Câu liên tục</value>
+  </data>
+  <data name="AdminParagraphs_BlockNewParagraph" xml:space="preserve">
+    <value>2 - Đoạn mới (thụt lề)</value>
+  </data>
+  <data name="AdminParagraphs_BlockDialogue" xml:space="preserve">
+    <value>4 - Hội thoại (có dấu gạch đầu dòng)</value>
+  </data>
+  <data name="AdminParagraphs_Note" xml:space="preserve">
+    <value>Ghi chú</value>
+  </data>
+  <data name="AdminParagraphs_NoteDescription" xml:space="preserve">
+    <value>Nội dung đoạn văn có thể được chỉnh sửa bằng nhiều ngôn ngữ. Cấu trúc và định dạng nội tuyến sẽ được giữ nguyên.</value>
+  </data>
+  <data name="AdminParagraphs_EditorLoadingStory" xml:space="preserve">
+    <value>Đang tải tên truyện...</value>
+  </data>
+  <data name="AdminParagraphs_EditorLoadingChapter" xml:space="preserve">
+    <value>Đang tải chương...</value>
+  </data>
+  <data name="AdminParagraphs_EditorParagraphCount" xml:space="preserve">
+    <value>0 đoạn văn</value>
+  </data>
+  <data name="AdminParagraphs_EditorModifiedCount" xml:space="preserve">
+    <value>0 đã chỉnh sửa</value>
+  </data>
+  <data name="AdminParagraphs_Close" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="AdminParagraphs_LoadingChapterContent" xml:space="preserve">
+    <value>Đang tải nội dung chương...</value>
+  </data>
+  <data name="AdminParagraphs_EditingParagraph" xml:space="preserve">
+    <value>Đang sửa đoạn văn</value>
+  </data>
+  <data name="AdminParagraphs_Actions" xml:space="preserve">
+    <value>Thao tác:</value>
+  </data>
+  <data name="AdminParagraphs_MergePrevious" xml:space="preserve">
+    <value>Gộp trước</value>
+  </data>
+  <data name="AdminParagraphs_MergeNext" xml:space="preserve">
+    <value>Gộp sau</value>
+  </data>
+  <data name="AdminParagraphs_Image" xml:space="preserve">
+    <value>Ảnh</value>
+  </data>
+  <data name="AdminParagraphs_InsertAfter" xml:space="preserve">
+    <value>Chèn phía sau</value>
+  </data>
+  <data name="AdminParagraphs_Delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="AdminParagraphs_EditorLanguage" xml:space="preserve">
+    <value>Ngôn ngữ biên tập</value>
+  </data>
+  <data name="AdminParagraphs_Editing" xml:space="preserve">
+    <value>Đang sửa:</value>
+  </data>
+  <data name="AdminParagraphs_LiveReaderUpdate" xml:space="preserve">
+    <value>Cập nhật trực tiếp cho người đọc</value>
+  </data>
+  <data name="AdminParagraphs_Previous" xml:space="preserve">
+    <value>Trước</value>
+  </data>
+  <data name="AdminParagraphs_Next" xml:space="preserve">
+    <value>Tiếp</value>
+  </data>
+  <data name="AdminParagraphs_InsertNewParagraph" xml:space="preserve">
+    <value>Chèn đoạn văn mới</value>
+  </data>
+  <data name="AdminParagraphs_InsertImmediatelyAfter" xml:space="preserve">
+    <value>Chèn ngay sau vị trí thứ tự:</value>
+  </data>
+  <data name="AdminParagraphs_AvailableLanguageContents" xml:space="preserve">
+    <value>Nội dung các ngôn ngữ hiện có</value>
+  </data>
+  <data name="AdminParagraphs_LoadingConfiguredLanguages" xml:space="preserve">
+    <value>Đang tải ngôn ngữ đã cấu hình...</value>
+  </data>
+  <data name="AdminParagraphs_SaveReindex" xml:space="preserve">
+    <value>Lưu và đánh lại thứ tự</value>
+  </data>
+  <data name="AdminParagraphs_AttachIllustration" xml:space="preserve">
+    <value>Thêm hình minh họa</value>
+  </data>
+  <data name="AdminParagraphs_AssetsFolder" xml:space="preserve">
+    <value>Thư mục tài nguyên:</value>
+  </data>
+  <data name="AdminParagraphs_DisplayLayout" xml:space="preserve">
+    <value>Bố cục hiển thị</value>
+  </data>
+  <data name="AdminParagraphs_SingleImage" xml:space="preserve">
+    <value>Ảnh đơn tiêu chuẩn</value>
+  </data>
+  <data name="AdminParagraphs_PanoramaStrip" xml:space="preserve">
+    <value>Dải ảnh toàn cảnh (1 ảnh được cắt thành nhiều khung)</value>
+  </data>
+  <data name="AdminParagraphs_ThreeSeparateImages" xml:space="preserve">
+    <value>3 ảnh riêng biệt (3 khung)</value>
+  </data>
+  <data name="AdminParagraphs_ChooseImageOrDrop" xml:space="preserve">
+    <value>Chọn ảnh hoặc thả ảnh vào đây</value>
+  </data>
+  <data name="AdminParagraphs_ImageRequirements" xml:space="preserve">
+    <value>PNG, JPG, WEBP (tối đa 5MB)</value>
+  </data>
+  <data name="AdminParagraphs_ImagePreview" xml:space="preserve">
+    <value>Xem trước</value>
+  </data>
+  <data name="AdminParagraphs_ReplaceImage" xml:space="preserve">
+    <value>Nhấp để thay ảnh</value>
+  </data>
+  <data name="AdminParagraphs_SliceCount" xml:space="preserve">
+    <value>Số khung cắt</value>
+  </data>
+  <data name="AdminParagraphs_Panels3" xml:space="preserve">
+    <value>3 khung</value>
+  </data>
+  <data name="AdminParagraphs_Panels4" xml:space="preserve">
+    <value>4 khung</value>
+  </data>
+  <data name="AdminParagraphs_Panels5" xml:space="preserve">
+    <value>5 khung</value>
+  </data>
+  <data name="AdminParagraphs_SelectThreePanelImages" xml:space="preserve">
+    <value>Chọn 3 ảnh riêng biệt cho các khung</value>
+  </data>
+  <data name="AdminParagraphs_Panel1" xml:space="preserve">
+    <value>Khung 1</value>
+  </data>
+  <data name="AdminParagraphs_Panel2" xml:space="preserve">
+    <value>Khung 2</value>
+  </data>
+  <data name="AdminParagraphs_Panel3" xml:space="preserve">
+    <value>Khung 3</value>
+  </data>
+  <data name="AdminParagraphs_CaptionOptional" xml:space="preserve">
+    <value>Chú thích (không bắt buộc)</value>
+  </data>
+  <data name="AdminParagraphs_CaptionPlaceholder" xml:space="preserve">
+    <value>vd: Điện thờ cổ của các vị thần...</value>
+  </data>
+  <data name="AdminParagraphs_UploadAttach" xml:space="preserve">
+    <value>Tải lên và đính kèm</value>
+  </data>
+  <data name="AdminStories_StoryTitle" xml:space="preserve">
+    <value>Tiêu đề</value>
+  </data>
+  <data name="AdminStories_TitlePlaceholder" xml:space="preserve">
+    <value>Doraemon</value>
+  </data>
+  <data name="AdminStories_PublicationDate" xml:space="preserve">
+    <value>Ngày phát hành</value>
+  </data>
+  <data name="AdminStories_Author" xml:space="preserve">
+    <value>Tác giả</value>
+  </data>
+  <data name="AdminStories_Description" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
+  <data name="AdminStories_DescriptionPlaceholder" xml:space="preserve">
+    <value>Nhập nội dung mô tả...</value>
+  </data>
+  <data name="AdminStories_Categories" xml:space="preserve">
+    <value>Thể loại</value>
+  </data>
+  <data name="AdminStories_NoCategorySelected" xml:space="preserve">
+    <value>Chưa chọn thể loại</value>
+  </data>
+  <data name="AdminStories_Completed" xml:space="preserve">
+    <value>Đã hoàn thành</value>
+  </data>
+  <data name="AdminStories_Posting" xml:space="preserve">
+    <value>Đang đăng</value>
+  </data>
+  <data name="AdminStories_ComingSoon" xml:space="preserve">
+    <value>Sắp ra mắt</value>
+  </data>
+  <data name="AdminStories_English" xml:space="preserve">
+    <value>Tiếng Anh</value>
+  </data>
+  <data name="AdminStories_Vietnamese" xml:space="preserve">
+    <value>Tiếng Việt</value>
+  </data>
+  <data name="AdminStories_Chinese" xml:space="preserve">
+    <value>Tiếng Trung</value>
+  </data>
+  <data name="AdminStories_Japanese" xml:space="preserve">
+    <value>Tiếng Nhật</value>
+  </data>
+  <data name="AdminStories_French" xml:space="preserve">
+    <value>Tiếng Pháp</value>
+  </data>
+  <data name="AdminStories_SelectCategories" xml:space="preserve">
+    <value>Chọn thể loại</value>
+  </data>
+  <data name="AdminStories_ChooseOneOrMoreCategories" xml:space="preserve">
+    <value>Chọn một hoặc nhiều thể loại</value>
+  </data>
+  <data name="AdminAI_ImportParagraphs" xml:space="preserve">
+    <value>Nhập đoạn văn bằng AI</value>
+  </data>
+  <data name="AdminAI_ImportDescription" xml:space="preserve">
+    <value>Tải lên tệp tiếng Anh để tự động dịch sang các ngôn ngữ được hỗ trợ</value>
+  </data>
+  <data name="AdminAI_SourceUsageDescription" xml:space="preserve">
+    <value>AI sử dụng tệp này làm nguồn chính để phân tích hội thoại và phân loại kiểu đoạn văn</value>
+  </data>
+  <data name="AdminAI_Stories" xml:space="preserve">
+    <value>Truyện</value>
+  </data>
+  <data name="AdminAI_Chapters" xml:space="preserve">
+    <value>Chương</value>
+  </data>
+  <data name="AdminAI_SourceAndOptions" xml:space="preserve">
+    <value>Tệp nguồn và tùy chọn dịch</value>
+  </data>
+  <data name="AdminAI_Source" xml:space="preserve">
+    <value>Nguồn</value>
+  </data>
+  <data name="AdminAI_UploadEnglishSource" xml:space="preserve">
+    <value>Tải lên tệp nguồn tiếng Anh...</value>
+  </data>
+  <data name="AdminAI_ChooseOrDropFile" xml:space="preserve">
+    <value>Chọn hoặc thả tệp vào đây...</value>
+  </data>
+  <data name="AdminAI_TranslateEnglish" xml:space="preserve">
+    <value>Dịch từ tiếng Anh bằng AI</value>
+  </data>
+  <data name="AdminAI_BackgroundJob" xml:space="preserve">
+    <value>Tác vụ nền AI</value>
+  </data>
+  <data name="AdminAI_ProcessingMessage" xml:space="preserve">
+    <value>Hệ thống đang phân tích hội thoại và dịch các đoạn văn. Vui lòng không tải lại trang (F5)...</value>
+  </data>
+  <data name="AdminAI_HangfireProcessing" xml:space="preserve">
+    <value>Đang xử lý bằng Hangfire</value>
+  </data>
+  <data name="AdminLayout_Title" xml:space="preserve">
+    <value>Bảng điều khiển quản trị</value>
+  </data>
+  <data name="AdminLayout_Dashboard" xml:space="preserve">
+    <value>Tổng quan</value>
+  </data>
+  <data name="AdminLayout_Authors" xml:space="preserve">
+    <value>Tác giả</value>
+  </data>
+  <data name="AdminLayout_Categories" xml:space="preserve">
+    <value>Thể loại</value>
+  </data>
+  <data name="AdminLayout_Stories" xml:space="preserve">
+    <value>Truyện</value>
+  </data>
+  <data name="AdminLayout_Chapters" xml:space="preserve">
+    <value>Chương</value>
+  </data>
+  <data name="AdminLayout_Paragraphs" xml:space="preserve">
+    <value>Đoạn văn</value>
+  </data>
+  <data name="AdminLayout_Users" xml:space="preserve">
+    <value>Người dùng</value>
+  </data>
+  <data name="AdminLayout_Admins" xml:space="preserve">
+    <value>Quản trị viên</value>
+  </data>
+  <data name="AdminLayout_Logout" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="AdminLayout_ConfirmAction" xml:space="preserve">
+    <value>Xác nhận thao tác</value>
+  </data>
+  <data name="AdminLayout_Confirm" xml:space="preserve">
+    <value>Xác nhận</value>
+  </data>
+  <data name="AdminLayout_AreYouSure" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn thực hiện thao tác này không?</value>
+  </data>
+  <data name="AdminLayout_Reject" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="AdminLayout_Accept" xml:space="preserve">
+    <value>Đồng ý</value>
+  </data>
+  <data name="AdminLayout_LoadError" xml:space="preserve">
+    <value>Không thể tải dữ liệu hoặc trang không tồn tại.</value>
+  </data>
+  <data name="AdminLayout_ViewerReadOnlyNotice" xml:space="preserve">
+    <value>Bạn có quyền Người xem (chỉ đọc). Bạn không được phép thêm, sửa, xóa hoặc lưu dữ liệu!</value>
+  </data>
+  <data name="SharedChat_Title" xml:space="preserve">
+    <value>Trợ lý AI</value>
+  </data>
+  <data name="SharedChat_Welcome" xml:space="preserve">
+    <value>Xin chào! 👋 Tôi là trợ lý dịch thuật. Hãy nhập từ tiếng Anh bạn muốn giải thích!</value>
+  </data>
+  <data name="SharedChat_Placeholder" xml:space="preserve">
+    <value>Nhập nội dung...</value>
+  </data>
+  <data name="SharedChat_Translate" xml:space="preserve">
+    <value>Dịch</value>
+  </data>
+  <data name="SharedChat_Explain" xml:space="preserve">
+    <value>Giải thích</value>
+  </data>
+  <data name="SharedChat_ServerError" xml:space="preserve">
+    <value>Lỗi máy chủ</value>
+  </data>
+  <data name="SharedChat_HttpError" xml:space="preserve">
+    <value>Lỗi</value>
+  </data>
+  <data name="SharedChat_NoResponse" xml:space="preserve">
+    <value>AI không có phản hồi</value>
+  </data>
+  <data name="SharedChat_ConnectionError" xml:space="preserve">
+    <value>Lỗi kết nối</value>
+  </data>
+  <data name="Reader_StoryLoading" xml:space="preserve">
+    <value>Đang tải tên truyện...</value>
+  </data>
+  <data name="Reader_ChapterLoading" xml:space="preserve">
+    <value>Đang tải chương...</value>
+  </data>
+  <data name="Reader_DoubleClickHint" xml:space="preserve">
+    <value>Nhấp đúp vào câu bất kỳ để dịch.</value>
+  </data>
+  <data name="Reader_ContentLoading" xml:space="preserve">
+    <value>Đang tải nội dung...</value>
+  </data>
+  <data name="Reader_FirstChapter" xml:space="preserve">
+    <value>Chương đầu</value>
+  </data>
+  <data name="Reader_LastChapter" xml:space="preserve">
+    <value>Chương cuối</value>
+  </data>
+  <data name="Reader_ChapterListLoading" xml:space="preserve">
+    <value>Đang tải...</value>
+  </data>
+  <data name="Reader_DecreaseFontSize" xml:space="preserve">
+    <value>Giảm cỡ chữ</value>
+  </data>
+  <data name="Reader_IncreaseFontSize" xml:space="preserve">
+    <value>Tăng cỡ chữ</value>
+  </data>
+  <data name="Reader_LightTheme" xml:space="preserve">
+    <value>Giao diện sáng</value>
+  </data>
+  <data name="Reader_SepiaTheme" xml:space="preserve">
+    <value>Giao diện sepia</value>
+  </data>
+  <data name="Reader_DarkTheme" xml:space="preserve">
+    <value>Giao diện tối</value>
+  </data>
+  <data name="Reader_FocusMode" xml:space="preserve">
+    <value>Chế độ tập trung</value>
+  </data>
+  <data name="Reader_TranslateAll" xml:space="preserve">
+    <value>Dịch tất cả</value>
+  </data>
+  <data name="Reader_ChatAssistant" xml:space="preserve">
+    <value>Trợ lý chatbot</value>
+  </data>
+  <data name="Story_LatestStories" xml:space="preserve">
+    <value>Truyện mới nhất</value>
+  </data>
+  <data name="Story_ScrollToDiscover" xml:space="preserve">
+    <value>Cuộn xuống để khám phá thêm</value>
+  </data>
+  <data name="Story_LoadingStories" xml:space="preserve">
+    <value>Đang tải truyện...</value>
+  </data>
+  <data name="Story_AllCaughtUp" xml:space="preserve">
+    <value>Bạn đã đọc hết truyện!</value>
+  </data>
+  <data name="Story_Unread" xml:space="preserve">
+    <value>Chưa đọc</value>
+  </data>
+  <data name="Story_NotReadYet" xml:space="preserve">
+    <value>Chưa đọc</value>
+  </data>
+  <data name="Story_Updating" xml:space="preserve">
+    <value>Đang cập nhật</value>
+  </data>
+  <data name="Story_NoChapters" xml:space="preserve">
+    <value>Chưa có chương</value>
+  </data>
+  <data name="Story_NoChaptersYet" xml:space="preserve">
+    <value>Chưa có chương nào</value>
+  </data>
+  <data name="Story_Details" xml:space="preserve">
+    <value>Chi tiết</value>
+  </data>
+  <data name="Story_NoStoriesFound" xml:space="preserve">
+    <value>Không tìm thấy truyện</value>
+  </data>
+  <data name="Story_CategoryNoStories" xml:space="preserve">
+    <value>Thể loại này chưa có truyện mới. Vui lòng chọn thể loại khác!</value>
+  </data>
+  <data name="Story_Author" xml:space="preserve">
+    <value>Tác giả</value>
+  </data>
+  <data name="Story_Likes" xml:space="preserve">
+    <value>lượt thích</value>
+  </data>
+  <data name="Chapter_AutomaticallyUpdated" xml:space="preserve">
+    <value>Tự động cập nhật</value>
+  </data>
+  <data name="Chapter_NoChaptersYet" xml:space="preserve">
+    <value>Truyện chưa có chương nào.</value>
+  </data>
+  <data name="Chapter_Pagination" xml:space="preserve">
+    <value>Phân trang chương</value>
+  </data>
+  <data name="Chapter_PreviousPage" xml:space="preserve">
+    <value>Trang trước</value>
+  </data>
+  <data name="Chapter_NextPage" xml:space="preserve">
+    <value>Trang sau</value>
+  </data>
+  <data name="AdminParagraphs_CloseEditor" xml:space="preserve">
+    <value>Đóng trình soạn thảo</value>
+  </data>
+  <data name="AdminUsers_NamePlaceholder" xml:space="preserve">
+    <value>Nguyễn Văn A</value>
+  </data>
+  <data name="AdminCommon_Apply" xml:space="preserve">
+    <value>Áp dụng</value>
+  </data>
+  <data name="AdminCommon_Delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="AdminCommon_NoResults" xml:space="preserve">
+    <value>Không tìm thấy kết quả.</value>
+  </data>
+  <data name="AdminCommon_ErrorLoadingData" xml:space="preserve">
+    <value>Lỗi tải dữ liệu.</value>
+  </data>
+  <data name="AdminCommon_Loading" xml:space="preserve">
+    <value>Đang tải...</value>
+  </data>
+  <data name="AdminCommon_Processing" xml:space="preserve">
+    <value>Đang xử lý...</value>
+  </data>
+  <data name="AdminCommon_PleaseChooseExcel" xml:space="preserve">
+    <value>Vui lòng chọn tệp Excel!</value>
+  </data>
+  <data name="AdminCommon_SelectCountry" xml:space="preserve">
+    <value>Chọn quốc gia</value>
+  </data>
+  <data name="AdminCommon_SelectLanguages" xml:space="preserve">
+    <value>Chọn ngôn ngữ...</value>
+  </data>
+  <data name="AdminUsers_AddMember" xml:space="preserve">
+    <value>Thêm thành viên</value>
+  </data>
+  <data name="AdminUsers_UpdateMember" xml:space="preserve">
+    <value>Cập nhật thành viên</value>
+  </data>
+  <data name="AdminUsers_KeepPassword" xml:space="preserve">
+    <value>Để trống nếu muốn giữ mật khẩu hiện tại</value>
+  </data>
+  <data name="Reader_ExitFocus" xml:space="preserve">
+    <value>Thoát chế độ tập trung</value>
+  </data>
+  <data name="Reader_Show" xml:space="preserve">
+    <value>Hiển thị</value>
+  </data>
+  <data name="Reader_TranslationLanguageError" xml:space="preserve">
+    <value>Ngôn ngữ dịch phải khác ngôn ngữ nguồn!</value>
+  </data>
+  <data name="Story_NoSearchMatches" xml:space="preserve">
+    <value>Không tìm thấy truyện phù hợp với từ khóa tìm kiếm.</value>
+  </data>
+  <data name="Story_SearchResultsFor" xml:space="preserve">
+    <value>Kết quả tìm kiếm cho:</value>
+  </data>
+  <data name="Story_SearchFailed" xml:space="preserve">
+    <value>Tìm kiếm truyện thất bại!</value>
+  </data>
+  <data name="Admin_NotFoundAccounts" xml:space="preserve">
+    <value>Không tìm thấy tài khoản nào.</value>
+  </data>
+  <data name="Admin_NoDisplayName" xml:space="preserve">
+    <value>Chưa đặt tên hiển thị</value>
+  </data>
+  <data name="Admin_StatusActive" xml:space="preserve">
+    <value>Hoạt động</value>
+  </data>
+  <data name="Admin_StatusInactive" xml:space="preserve">
+    <value>Đã khóa</value>
+  </data>
+  <data name="Admin_Never" xml:space="preserve">
+    <value>Chưa bao giờ</value>
+  </data>
+  <data name="Admin_TitleEditAccount" xml:space="preserve">
+    <value>Chỉnh sửa tài khoản</value>
+  </data>
+  <data name="Admin_TitleDeleteAccount" xml:space="preserve">
+    <value>Xóa tài khoản</value>
+  </data>
+  <data name="Admin_ErrLoadAccounts" xml:space="preserve">
+    <value>Lỗi khi tải danh sách tài khoản.</value>
+  </data>
+  <data name="Admin_ErrConnectServerLoad" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ để tải dữ liệu.</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionDelete" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể xóa dữ liệu!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionSave" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể lưu thay đổi!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionModal" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể thêm hoặc sửa tài khoản!</value>
+  </data>
+  <data name="Admin_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một tài khoản để xóa!</value>
+  </data>
+  <data name="Admin_ErrConnectDelete" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ để xóa tài khoản.</value>
+  </data>
+  <data name="Admin_ErrConnectServer" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ.</value>
+  </data>
+  <data name="Admin_CannotFetchInfo" xml:space="preserve">
+    <value>Không thể lấy thông tin tài khoản!</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa tài khoản</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa tài khoản này?</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều tài khoản</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} tài khoản đã chọn?</value>
+  </data>
+  <data name="Admin_ActionCannotUndo" xml:space="preserve">
+    <value>Hành động này không thể hoàn tác.</value>
+  </data>
+  <data name="Admin_Processing" xml:space="preserve">
+    <value>Đang xử lý...</value>
+  </data>
+  <data name="Admin_SaveChanges" xml:space="preserve">
+    <value>Lưu thay đổi</value>
+  </data>
+  <data name="Admin_BtnDeleteText" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="Admin_ModalTitleAdd" xml:space="preserve">
+    <value>Thêm tài khoản</value>
+  </data>
+  <data name="Admin_ModalTitleEdit" xml:space="preserve">
+    <value>Cập nhật tài khoản</value>
+  </data>
+  <data name="Admin_PwdNoticeAdd" xml:space="preserve">
+    <value>(bắt buộc đối với tài khoản mới)</value>
+  </data>
+  <data name="Author_NotFound" xml:space="preserve">
+    <value>Không tìm thấy tác giả nào.</value>
+  </data>
+  <data name="Author_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách tác giả.</value>
+  </data>
+  <data name="Author_TitleAdd" xml:space="preserve">
+    <value>Thêm tác giả</value>
+  </data>
+  <data name="Author_TitleEdit" xml:space="preserve">
+    <value>Cập nhật tác giả</value>
+  </data>
+  <data name="Author_SelectCountry" xml:space="preserve">
+    <value>Chọn quốc gia</value>
+  </data>
+  <data name="Author_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc click để chọn</value>
+  </data>
+  <data name="Author_ChooseExcelFile" xml:space="preserve">
+    <value>Vui lòng chọn một file Excel!</value>
+  </data>
+  <data name="Author_ConfirmImport" xml:space="preserve">
+    <value>Xác nhận nhập file</value>
+  </data>
+  <data name="Author_ErrImport" xml:space="preserve">
+    <value>Có lỗi xảy ra trong quá trình nhập file!</value>
+  </data>
+  <data name="Author_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một tác giả để xóa!</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa tác giả</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingle" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa tác giả này?</value>
+  </data>
+  <data name="Author_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều tác giả</value>
+  </data>
+  <data name="Author_ConfirmDeleteMulti" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} tác giả đã chọn?</value>
+  </data>
+  <data name="Author_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0} (Do đang liên kết với các truyện hiện có).</value>
+  </data>
+  <data name="Author_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} tác giả.</value>
+  </data>
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>Không tìm thấy thể loại nào.</value>
+  </data>
+  <data name="Category_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách thể loại.</value>
+  </data>
+  <data name="Category_TitleAdd" xml:space="preserve">
+    <value>Thêm thể loại</value>
+  </data>
+  <data name="Category_TitleEdit" xml:space="preserve">
+    <value>Cập nhật thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa thể loại này?</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} thể loại đã chọn?</value>
+  </data>
+  <data name="Category_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một thể loại để xóa!</value>
+  </data>
+  <data name="Category_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0}.</value>
+  </data>
+  <data name="Category_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} thể loại.</value>
+  </data>
+  <data name="Category_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc click để chọn</value>
+  </data>
+  <data name="Chapter_NotFound" xml:space="preserve">
+    <value>Không tìm thấy chương truyện nào.</value>
+  </data>
+  <data name="Chapter_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách chương truyện.</value>
+  </data>
+  <data name="Chapter_TitleAdd" xml:space="preserve">
+    <value>Thêm chương mới</value>
+  </data>
+  <data name="Chapter_TitleEdit" xml:space="preserve">
+    <value>Cập nhật chương</value>
+  </data>
+  <data name="Chapter_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa chương</value>
+  </data>
+  <data name="Chapter_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa chương này?</value>
+  </data>
+  <data name="Chapter_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều chương</value>
+  </data>
+  <data name="Chapter_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} chương đã chọn?</value>
+  </data>
+  <data name="Chapter_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một chương để xóa!</value>
+  </data>
+  <data name="Chapter_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0}. Do đang liên kết với các bảng dữ liệu khác.</value>
+  </data>
+  <data name="Chapter_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} chương.</value>
+  </data>
+  <data name="Chapter_FilterAllStories" xml:space="preserve">
+    <value>Tất cả truyện</value>
+  </data>
+  <data name="Chapter_SelectStory" xml:space="preserve">
+    <value>Chọn truyện</value>
+  </data>
+  <data name="Chapter_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc click để chọn</value>
+  </data>
+  <data name="Story_NotFound" xml:space="preserve">
+    <value>Không tìm thấy bộ truyện nào.</value>
+  </data>
+  <data name="Story_ErrLoad" xml:space="preserve">
+    <value>Lỗi: Không thể tải danh sách truyện.</value>
+  </data>
+  <data name="Story_TitleAdd" xml:space="preserve">
+    <value>Thêm truyện mới</value>
+  </data>
+  <data name="Story_TitleEdit" xml:space="preserve">
+    <value>Cập nhật thông tin truyện</value>
+  </data>
+  <data name="Story_NoCategoriesSelected" xml:space="preserve">
+    <value>Chưa chọn thể loại nào</value>
+  </data>
+  <data name="Story_LangDefaultNotice" xml:space="preserve">
+    <value>* Tiếng Anh và Tiếng Việt là mặc định</value>
+  </data>
+  <data name="Story_LangLockedNotice" xml:space="preserve">
+    <value>🔒 Ngôn ngữ không thể sửa đổi sau khi đã tạo truyện</value>
+  </data>
+  <data name="Story_ReqSelectLang" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một ngôn ngữ cho truyện!</value>
+  </data>
+  <data name="Story_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa truyện</value>
+  </data>
+  <data name="Story_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa bộ truyện này?</value>
+  </data>
+  <data name="Story_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều truyện</value>
+  </data>
+  <data name="Story_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} bộ truyện đã chọn?</value>
+  </data>
+  <data name="Story_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một bộ truyện để xóa!</value>
+  </data>
+  <data name="Story_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0}. Do đang liên kết với các bảng dữ liệu khác.</value>
+  </data>
+  <data name="Story_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} bộ truyện.</value>
+  </data>
+  <data name="Story_MetricLoves" xml:space="preserve">
+    <value>lượt thích</value>
+  </data>
+  <data name="Story_MetricRates" xml:space="preserve">
+    <value>điểm</value>
+  </data>
+  <data name="Story_MetricRated" xml:space="preserve">
+    <value>lượt đánh giá</value>
+  </data>
+  <data name="Story_MetricFollowers" xml:space="preserve">
+    <value>người theo dõi</value>
+  </data>
+  <data name="Story_FilterAllCategories" xml:space="preserve">
+    <value>Thể loại</value>
+  </data>
+  <data name="Story_SelectAuthor" xml:space="preserve">
+    <value>Chọn tác giả</value>
+  </data>
+  <data name="Story_SelectLanguagesPlaceholder" xml:space="preserve">
+    <value>Chọn các ngôn ngữ...</value>
+  </data>
+  <data name="Story_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc nhấp để chọn</value>
+  </data>
+  <data name="User_NotFound" xml:space="preserve">
+    <value>Không tìm thấy người dùng nào.</value>
+  </data>
+  <data name="User_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách người dùng!</value>
+  </data>
+  <data name="User_TitleAddMember" xml:space="preserve">
+    <value>Thêm thành viên mới</value>
+  </data>
+  <data name="User_TitleEditMember" xml:space="preserve">
+    <value>Cập nhật thành viên</value>
+  </data>
+  <data name="User_PwdPlaceholderKeep" xml:space="preserve">
+    <value>Để trống nếu muốn giữ nguyên mật khẩu cũ</value>
+  </data>
+  <data name="User_SelectAtLeastOneUser" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một người dùng!</value>
+  </data>
+  <data name="User_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa người dùng</value>
+  </data>
+  <data name="User_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa người dùng này?</value>
+  </data>
+  <data name="User_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều người dùng</value>
+  </data>
+  <data name="User_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} người dùng đã chọn?</value>
+  </data>
+  <data name="User_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0} do ràng buộc khóa ngoại dữ liệu.</value>
+  </data>
+  <data name="User_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} người dùng.</value>
+  </data>
+  <data name="User_ErrDeleteUsersServer" xml:space="preserve">
+    <value>Không thể xóa người dùng đã chọn từ máy chủ.</value>
+  </data>
+  <data name="User_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc nhấp để chọn</value>
+  </data>
+  <data name="Para_NotFound" xml:space="preserve">
+    <value>Không tìm thấy đoạn văn nào.</value>
+  </data>
+  <data name="Para_ErrLoad" xml:space="preserve">
+    <value>Lỗi: Không thể tải danh sách đoạn văn.</value>
+  </data>
+  <data name="Para_FilterAllStories" xml:space="preserve">
+    <value>Tất cả truyện</value>
+  </data>
+  <data name="Para_FilterAllChapters" xml:space="preserve">
+    <value>Tất cả chương</value>
+  </data>
+  <data name="Para_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một đoạn văn!</value>
+  </data>
+  <data name="Para_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều đoạn văn</value>
+  </data>
+  <data name="Para_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} đoạn văn đã chọn?</value>
+  </data>
+  <data name="Para_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa đoạn văn</value>
+  </data>
+  <data name="Para_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa đoạn văn này?</value>
+  </data>
+  <data name="Para_DeleteInvalidId" xml:space="preserve">
+    <value>ID đoạn văn không hợp lệ!</value>
+  </data>
+  <data name="Para_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} đoạn văn.</value>
+  </data>
+  <data name="Para_ErrDeleteServer" xml:space="preserve">
+    <value>Lỗi xảy ra khi xóa đoạn văn từ máy chủ.</value>
+  </data>
+  <data name="Para_BlockTypeOpening" xml:space="preserve">
+    <value>Khởi đầu</value>
+  </data>
+  <data name="Para_BlockTypeNew" xml:space="preserve">
+    <value>Đoạn mới</value>
+  </data>
+  <data name="Para_BlockTypeDialogue" xml:space="preserve">
+    <value>Lời thoại</value>
+  </data>
+  <data name="Para_BlockTypeContinuous" xml:space="preserve">
+    <value>Nối tiếp</value>
+  </data>
+  <data name="Para_TitleInsertAfter" xml:space="preserve">
+    <value>Chèn đoạn văn phía sau</value>
+  </data>
+  <data name="Para_TitleEdit" xml:space="preserve">
+    <value>Chỉnh sửa đoạn văn</value>
+  </data>
+  <data name="Para_TitleReadChapter" xml:space="preserve">
+    <value>Đọc và sửa toàn bộ chương</value>
+  </data>
+  <data name="Para_TitleDelete" xml:space="preserve">
+    <value>Xóa đoạn văn</value>
+  </data>
+  <data name="Para_UnsavedTitle" xml:space="preserve">
+    <value>Thay đổi chưa được lưu</value>
+  </data>
+  <data name="Para_UnsavedMsg" xml:space="preserve">
+    <value>Bạn có {0} đoạn văn đã chỉnh sửa nhưng chưa lưu.</value>
+  </data>
+  <data name="Para_BtnSaveAndExit" xml:space="preserve">
+    <value>Lưu &amp; Thoát</value>
+  </data>
+  <data name="Para_BtnDiscardAndExit" xml:space="preserve">
+    <value>Hủy thay đổi &amp; Thoát</value>
+  </data>
+  <data name="Para_BtnStayHere" xml:space="preserve">
+    <value>Tiếp tục chỉnh sửa</value>
+  </data>
+  <data name="Para_ViewerNoSave" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể lưu thay đổi!</value>
+  </data>
+  <data name="Para_SaveSuccessAll" xml:space="preserve">
+    <value>Đã lưu toàn bộ thay đổi thành công!</value>
+  </data>
+  <data name="Para_SavingStatus" xml:space="preserve">
+    <value>Đang lưu...</value>
+  </data>
+  <data name="Para_ModifiedCountInfo" xml:space="preserve">
+    <value>Đã sửa {0} câu</value>
+  </data>
+  <data name="Para_NoParasFoundChapter" xml:space="preserve">
+    <value>Không tìm thấy đoạn văn nào trong chương này.</value>
+  </data>
+  <data name="Para_NoTextLang" xml:space="preserve">
+    <value>[Chưa có nội dung {0}]</value>
+  </data>
+  <data name="Para_ReqSelectStoryAndChapter" xml:space="preserve">
+    <value>Vui lòng chọn cả Truyện và Chương!</value>
+  </data>
+  <data name="Para_ReqEnglishSourceFile" xml:space="preserve">
+    <value>Vui lòng chọn tệp Tiếng Anh làm ngôn ngữ nguồn!</value>
+  </data>
+  <data name="Para_ReqAiOrFileTarget" xml:space="preserve">
+    <value>Vui lòng bật AI hoặc tải file cho các ngôn ngữ: {0}</value>
+  </data>
+  <data name="Para_AiTranslateFromEn" xml:space="preserve">
+    <value>Dịch bằng AI từ tiếng Anh</value>
+  </data>
+  <data name="Para_AiTranslatedActive" xml:space="preserve">
+    <value>✨ Dịch bởi AI</value>
+  </data>
+  <data name="Para_AiEnabledMsg" xml:space="preserve">
+    <value>Đã bật dịch AI cho {0}</value>
+  </data>
+  <data name="Para_AiDisabledMsg" xml:space="preserve">
+    <value>Đã tắt dịch AI cho {0}</value>
+  </data>
+  <data name="Para_EnqueuingStatus" xml:space="preserve">
+    <value>Đang xếp hàng xử lý...</value>
+  </data>
+  <data name="Para_ImportJobProcessing" xml:space="preserve">
+    <value>AI đang tiến hành dịch theo từng lô... Đang đồng bộ hóa dữ liệu.</value>
+  </data>
+  <data name="Para_ImportJobSuccessMsg" xml:space="preserve">
+    <value>Đã dịch và nhập toàn bộ chương thành công!</value>
+  </data>
+  <data name="Para_ImportJobFailed" xml:space="preserve">
+    <value>Tác vụ chạy ngầm thất bại! Vui lòng kiểm tra nhật ký Hangfire.</value>
+  </data>
+  <data name="Para_UnknownStory" xml:space="preserve">
+    <value>Truyện không xác định</value>
+  </data>
+  <data name="Para_UnknownChapter" xml:space="preserve">
+    <value>Chương không xác định</value>
+  </data>
+  <data name="Para_ParagraphsCountText" xml:space="preserve">
+    <value>{0} đoạn văn</value>
+  </data>
+  <data name="Para_ErrLoadChapterContent" xml:space="preserve">
+    <value>Không thể tải nội dung chương.</value>
+  </data>
+  <data name="Para_SelectParaToDelete" xml:space="preserve">
+    <value>Vui lòng chọn đoạn văn cần xóa!</value>
+  </data>
+  <data name="Para_ConfirmDeleteSideParaTitle" xml:space="preserve">
+    <value>Xóa đoạn văn</value>
+  </data>
+  <data name="Para_ConfirmDeleteSideParaMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa đoạn văn &lt;strong&gt;#{0}&lt;/strong&gt;?</value>
+  </data>
+  <data name="Para_DeletedSideParaSuccess" xml:space="preserve">
+    <value>Đã xóa đoạn văn và cập nhật lại thứ tự thành công!</value>
+  </data>
+  <data name="Para_ErrDeleteSideParaServer" xml:space="preserve">
+    <value>Lỗi máy chủ khi xóa đoạn văn!</value>
+  </data>
+  <data name="Para_SelectParaToInsert" xml:space="preserve">
+    <value>Vui lòng chọn đoạn văn để chèn câu sau!</value>
+  </data>
+  <data name="Para_InvalidChapterSelected" xml:space="preserve">
+    <value>Chương được chọn không hợp lệ!</value>
+  </data>
+  <data name="Para_LoadingLangConfig" xml:space="preserve">
+    <value>Đang tải cấu hình ngôn ngữ...</value>
+  </data>
+  <data name="Para_NoConfiguredLangFound" xml:space="preserve">
+    <value>Không tìm thấy cấu hình ngôn ngữ nào cho bộ truyện này.</value>
+  </data>
+  <data name="Para_ReqEnViFields" xml:space="preserve">
+    <value>Các trường Tiếng Anh và Tiếng Việt là bắt buộc!</value>
+  </data>
+  <data name="Para_SelectOnlyImageFile" xml:space="preserve">
+    <value>Chỉ được chọn hoặc kéo thả tệp định dạng hình ảnh!</value>
+  </data>
+  <data name="Para_SelectParaBeforeAttachImg" xml:space="preserve">
+    <value>Vui lòng chọn đoạn văn trước khi đính kèm hình ảnh!</value>
+  </data>
+  <data name="Para_ExistingMediaWarningTitle" xml:space="preserve">
+    <value>Cảnh báo thay thế ảnh minh họa</value>
+  </data>
+  <data name="Para_ExistingMediaWarningMsg" xml:space="preserve">
+    <value>Đoạn văn này đã có ảnh minh họa.&lt;br&gt;&lt;br&gt;&lt;span class="text-rose-500 font-semibold"&gt;&lt;i class="fa-solid fa-triangle-exclamation"&gt;&lt;/i&gt; Cảnh báo: Tiếp tục sẽ thay thế và xóa vĩnh viễn ảnh hiện tại!&lt;/span&gt;&lt;br&gt;&lt;br&gt;Bạn có muốn tiếp tục không?</value>
+  </data>
+  <data name="Para_ReqAll3MultiStripImgs" xml:space="preserve">
+    <value>Vui lòng chọn đủ cả 3 hình ảnh cho từng khung tranh!</value>
+  </data>
+  <data name="Para_ReqChooseImgUpload" xml:space="preserve">
+    <value>Vui lòng chọn tệp hình ảnh để tải lên!</value>
+  </data>
+  <data name="Para_AttachIllustrationSuccess" xml:space="preserve">
+    <value>Đính kèm ảnh minh họa thành công!</value>
+  </data>
+  <data name="Para_SelectParaToMerge" xml:space="preserve">
+    <value>Vui lòng chọn đoạn văn cần gộp!</value>
+  </data>
+  <data name="Para_CannotMergeFirstPrev" xml:space="preserve">
+    <value>Đây là đoạn văn đầu tiên nên không thể gộp với đoạn phía trước!</value>
+  </data>
+  <data name="Para_CannotMergeLastNext" xml:space="preserve">
+    <value>Đây là đoạn văn cuối cùng nên không thể gộp với đoạn phía sau!</value>
+  </data>
+  <data name="Para_MergeConfirmTitle" xml:space="preserve">
+    <value>Xác nhận gộp đoạn văn</value>
+  </data>
+  <data name="Para_MergeConfirmMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn gộp đoạn văn &lt;strong&gt;#{0}&lt;/strong&gt; với đoạn văn {1} &lt;strong&gt;#{2}&lt;/strong&gt;?</value>
+  </data>
+  <data name="Para_MergeImageWarningMsg" xml:space="preserve">
+    <value>&lt;br&gt;&lt;br&gt;&lt;span class="text-red-500 font-semibold"&gt;&lt;i class="fa-solid fa-triangle-exclamation"&gt;&lt;/i&gt; CẢNH BÁO: Phát hiện thẻ ảnh minh họa! Khi gộp, thẻ ảnh cũ sẽ bị xóa để tránh hỏng bố cục.&lt;/span&gt;</value>
+  </data>
+  <data name="Para_ErrMergeServer" xml:space="preserve">
+    <value>Lỗi máy chủ khi thực hiện gộp đoạn văn!</value>
+  </data>
+  <data name="Para_UnsavedBeforeUnloadMsg" xml:space="preserve">
+    <value>Bạn có các thay đổi chưa được lưu trong trình soạn thảo!</value>
+  </data>
+  <data name="Admin_PageTitle" xml:space="preserve">
+    <value>Quản lý Tài khoản Quản trị &amp; Người xem</value>
+  </data>
+  <data name="Admin_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo tên đăng nhập, họ tên...</value>
+  </data>
+  <data name="Admin_FilterAllRoles" xml:space="preserve">
+    <value>Tất cả vai trò</value>
+  </data>
+  <data name="Admin_FilterStatus" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="Admin_BtnAdd" xml:space="preserve">
+    <value>Thêm</value>
+  </data>
+  <data name="Admin_ColUserInfo" xml:space="preserve">
+    <value>Thông tin người dùng</value>
+  </data>
+  <data name="Admin_ColRole" xml:space="preserve">
+    <value>Vai trò</value>
+  </data>
+  <data name="Admin_ColStatus" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="Admin_ColLastLogin" xml:space="preserve">
+    <value>Đăng nhập cuối</value>
+  </data>
+  <data name="Admin_ColCreatedAt" xml:space="preserve">
+    <value>Ngày tạo</value>
+  </data>
+  <data name="Admin_ColActions" xml:space="preserve">
+    <value>Thao tác</value>
+  </data>
+  <data name="Author_PageTitle" xml:space="preserve">
+    <value>Quản lý Tác giả</value>
+  </data>
+  <data name="Author_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo tên, email...</value>
+  </data>
+  <data name="Author_FilterGender" xml:space="preserve">
+    <value>Giới tính</value>
+  </data>
+  <data name="Author_ColInfo" xml:space="preserve">
+    <value>Thông tin tác giả</value>
+  </data>
+  <data name="Author_ColDoB" xml:space="preserve">
+    <value>Ngày sinh (N-T-N)</value>
+  </data>
+  <data name="Btn_Export" xml:space="preserve">
+    <value>Xuất Excel</value>
+  </data>
+  <data name="Btn_Import" xml:space="preserve">
+    <value>Nhập Excel</value>
+  </data>
+  <data name="Category_PageTitle" xml:space="preserve">
+    <value>Quản lý Thể loại</value>
+  </data>
+  <data name="Category_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo tên thể loại...</value>
+  </data>
+  <data name="Category_ColName" xml:space="preserve">
+    <value>Tên thể loại</value>
+  </data>
+  <data name="Category_ColDescription" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
+  <data name="Chapter_PageTitle" xml:space="preserve">
+    <value>Quản lý Chương truyện</value>
+  </data>
+  <data name="Chapter_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo tên, email...</value>
+  </data>
+  <data name="Chapter_ColInfo" xml:space="preserve">
+    <value>Thông tin chương</value>
+  </data>
+  <data name="Chapter_ColCreateDate" xml:space="preserve">
+    <value>Ngày tạo (N-T-N)</value>
+  </data>
+  <data name="Chapter_ColNumber" xml:space="preserve">
+    <value>Thứ tự chương</value>
+  </data>
+  <data name="Para_PageTitle" xml:space="preserve">
+    <value>Quản lý Đoạn văn &amp; Dịch thuật</value>
+  </data>
+  <data name="Para_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo nội dung tiếng Việt...</value>
+  </data>
+  <data name="Para_ColInfo" xml:space="preserve">
+    <value>Thông tin đoạn văn</value>
+  </data>
+  <data name="Para_ColOrder" xml:space="preserve">
+    <value>Thứ tự</value>
+  </data>
+  <data name="Para_ColEnglish" xml:space="preserve">
+    <value>Tiếng Anh</value>
+  </data>
+  <data name="Para_ColVietnamese" xml:space="preserve">
+    <value>Tiếng Việt</value>
+  </data>
+  <data name="Para_ColChinese" xml:space="preserve">
+    <value>Tiếng Trung</value>
+  </data>
+  <data name="Para_ColJapanese" xml:space="preserve">
+    <value>Tiếng Nhật</value>
+  </data>
+  <data name="Para_ColFrench" xml:space="preserve">
+    <value>Tiếng Pháp</value>
+  </data>
+  <data name="Para_ColBlockType" xml:space="preserve">
+    <value>Phân loại khối</value>
+  </data>
+  <data name="Story_PageTitle" xml:space="preserve">
+    <value>Quản lý Truyện</value>
+  </data>
+  <data name="Story_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm theo tên truyện, tác giả...</value>
+  </data>
+  <data name="Story_StatusCompleted" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="Story_StatusPosting" xml:space="preserve">
+    <value>Đang ra</value>
+  </data>
+  <data name="Story_StatusComingSoon" xml:space="preserve">
+    <value>Sắp ra mắt</value>
+  </data>
+  <data name="Story_ColInfo" xml:space="preserve">
+    <value>Thông tin truyện</value>
+  </data>
+  <data name="Story_ColLanguages" xml:space="preserve">
+    <value>Ngôn ngữ</value>
+  </data>
+  <data name="Story_ColPublicationDate" xml:space="preserve">
+    <value>Ngày xuất bản (N-T-N)</value>
+  </data>
+  <data name="Story_ColDescription" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
+  <data name="Story_ColMetrics" xml:space="preserve">
+    <value>Số liệu tương tác</value>
+  </data>
+  <data name="User_PageTitle" xml:space="preserve">
+    <value>Quản lý Người dùng</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Tổng quan hệ thống</value>
+  </data>
+  <data name="Dashboard_SystemOverview" xml:space="preserve">
+    <value>Tổng quan hệ thống</value>
+  </data>
+  <data name="Dashboard_WelcomeBack" xml:space="preserve">
+    <value>Chào mừng bạn trở lại trang quản trị truyện</value>
+  </data>
+  <data name="Dashboard_HelloUser" xml:space="preserve">
+    <value>Xin chào, {0}!</value>
+  </data>
+  <data name="Dashboard_RoleViewer" xml:space="preserve">
+    <value>Người xem (Chỉ đọc)</value>
+  </data>
+  <data name="Dashboard_RoleSuperAdmin" xml:space="preserve">
+    <value>Quản trị cấp cao</value>
+  </data>
+  <data name="Dashboard_StatPending" xml:space="preserve">
+    <value>Đang chờ duyệt</value>
+  </data>
+  <data name="Dashboard_StatSinceYesterday" xml:space="preserve">
+    <value>so với hôm qua</value>
+  </data>
+  <data name="Dashboard_StatApproved" xml:space="preserve">
+    <value>Đã duyệt &amp; Xuất bản</value>
+  </data>
+  <data name="Dashboard_StatThisMonth" xml:space="preserve">
+    <value>tổng số trong tháng này</value>
+  </data>
+  <data name="Dashboard_StatRejected" xml:space="preserve">
+    <value>Nội dung bị từ chối</value>
+  </data>
+  <data name="Dashboard_StatSafetyLocked" xml:space="preserve">
+    <value>bị khóa bởi bộ lọc an toàn</value>
+  </data>
+  <data name="Dashboard_QuickManagement" xml:space="preserve">
+    <value>Quản lý nhanh</value>
+  </data>
+  <data name="Dashboard_CoreModulesShortcut" xml:space="preserve">
+    <value>Phím tắt chức năng chính</value>
+  </data>
+  <data name="Dashboard_ShortcutAdmins" xml:space="preserve">
+    <value>Quản trị &amp; Phân quyền</value>
+  </data>
+  <data name="Dashboard_SecurityBadge" xml:space="preserve">
+    <value>Trạng thái bảo mật</value>
+  </data>
+  <data name="Dashboard_SecurityTitle" xml:space="preserve">
+    <value>Kiểm soát truy cập theo vai trò (RBAC)</value>
+  </data>
+  <data name="Dashboard_SecurityDesc" xml:space="preserve">
+    <value>Chế độ người xem áp dụng quyền chỉ đọc trên tất cả danh mục. Các thao tác ghi, sửa và xóa đều được giám sát và bảo mật qua mã hóa Argon2 và bộ chặn server-side.</value>
+  </data>
+  <data name="Dashboard_ProtectedEnvironment" xml:space="preserve">
+    <value>Môi trường được bảo vệ</value>
+  </data>
+  <data name="AdminLogin_PageTitle" xml:space="preserve">
+    <value>Cổng Quản trị - Đăng nhập</value>
+  </data>
+  <data name="AdminLogin_PortalTitle" xml:space="preserve">
+    <value>Cổng Quản trị</value>
+  </data>
+  <data name="AdminLogin_PortalSubtitle" xml:space="preserve">
+    <value>Đăng nhập để quản lý nội dung và quyền hạn hệ thống</value>
+  </data>
+  <data name="AdminLogin_PlaceholderUsername" xml:space="preserve">
+    <value>Nhập tên đăng nhập của bạn</value>
+  </data>
+  <data name="AdminLogin_CaptchaLoading" xml:space="preserve">
+    <value>Đang tải...</value>
+  </data>
+  <data name="AdminLogin_CaptchaRefresh" xml:space="preserve">
+    <value>Làm mới câu hỏi</value>
+  </data>
+  <data name="AdminLogin_CaptchaError" xml:space="preserve">
+    <value>Lỗi! Bấm ↻</value>
+  </data>
+  <data name="AdminLogin_ForgotPrefix" xml:space="preserve">
+    <value>Quên mật khẩu? Vui lòng liên hệ</value>
+  </data>
+  <data name="AdminLogin_ForgotAdminContact" xml:space="preserve">
+    <value>Quản trị viên hệ thống</value>
+  </data>
+  <data name="AdminLogin_ForgotSuffix" xml:space="preserve">
+    <value>để đặt lại thông tin tài khoản của bạn.</value>
+  </data>
 </root>

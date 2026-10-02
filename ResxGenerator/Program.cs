@@ -15,14 +15,14 @@ namespace WebTruyenTranh.ResxGenerator
 
         private const string ExcelFile = "C:\\Users\\HP\\Documents\\Resources_TSN.xlsx";
 
-        private const string ResourceDirectory = "Resources";
+	private const string ResourceDirectory =
+   	 @"D:\ASP.NET\WebTruyenTranh\Resources";
 
-        private const string VietnameseResource =
-            "SharedResource.vi-VN.resx";
+	private const string VietnameseResource =
+    	"SharedResource.vi-VN.resx";
 
-        private const string EnglishResource =
-            "SharedResource.en-US.resx";
-
+	private const string EnglishResource =
+   	 "SharedResource.en-US.resx";
 
         // ============================================================
         // MAIN

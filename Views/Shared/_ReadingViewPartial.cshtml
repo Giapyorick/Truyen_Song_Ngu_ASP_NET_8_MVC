@@ -1,28 +1,28 @@
 ﻿<!-- Giao diện đọc truyện -->
-    <div class="reading-wrapper transition-all max-w-5xl mx-auto duration-300" id="mainWrapper">
+<div class="reading-wrapper transition-all max-w-5xl mx-auto duration-300" id="mainWrapper" data-reader-chapter="@SharedLocalizer["Story_Chapter"]" data-reader-focus="@SharedLocalizer["Reader_FocusMode"]" data-reader-exit-focus="@SharedLocalizer["Reader_ExitFocus"]" data-reader-translate-all="@SharedLocalizer["Reader_TranslateAll"]" data-reader-show="@SharedLocalizer["Reader_Show"]" data-reader-translation-error="@SharedLocalizer["Reader_TranslationLanguageError"]" data-story-read-continue="@SharedLocalizer["Story_ReadContinue"]">
     <div id="storyChapterHeader" class="text-center py-6 px-4 border-b border-gray-100 bg-white rounded-t-2xl">
-        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-2">Loading story name...</h1>
-        <h2 id="txtChapterTitle" class="text-base md:text-lg font-medium text-teal-600">Loading chapter...</h2>
+        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-2">@SharedLocalizer["Reader_StoryLoading"]</h1>
+        <h2 id="txtChapterTitle" class="text-base md:text-lg font-medium text-teal-600">@SharedLocalizer["Reader_ChapterLoading"]</h2>
     </div>
     <div class="text-center py-3 bg-gray-50 border-b border-gray-100 hint-bar">
         <span class="hint text-xs text-gray-500 font-medium">
-            <i class="fa-solid fa-circle-info me-1 text-blue-500"></i> Double-click on any sentence to translate.
+            <i class="fa-solid fa-circle-info me-1 text-blue-500"></i> @SharedLocalizer["Reader_DoubleClickHint"]
         </span>
     </div>
     <article id="paragraphList" class="reading-content p-8 min-h-[50vh] transition-all duration-300 pb-28" style="font-size: 18px;">
         <div class="text-center text-gray-400 py-16">
             <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
-            <p>Loading content...</p>
+            <p>@SharedLocalizer["Reader_ContentLoading"]</p>
         </div>
     </article></div><!-- Thanh công cụ đáy màn hình --><div id="fixedBottomBar" class="fixed bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 p-2 rounded-2xl z-[1010] transition-all duration-300 max-w-[95vw] overflow-x-auto">
     <div id="chapterNavigation" class="flex items-center gap-1.5 border border-gray-200 rounded-xl p-1 text-sm shrink-0">
-        <button id="btnChapterFirst" class="p-1.5 rounded-lg active:scale-95 transition" title="First chapter"><i class="fa-solid fa-backward-step"></i></button>
+        <button id="btnChapterFirst" class="p-1.5 rounded-lg active:scale-95 transition" title="@SharedLocalizer["Reader_FirstChapter"]"><i class="fa-solid fa-backward-step"></i></button>
         <button id="btnChapterPrev" class="p-1.5 rounded-lg active:scale-95 transition" title="Previous chapter"><i class="fa-solid fa-chevron-left"></i></button>
         <select id="chapterSelect" class="bg-transparent text-xs font-semibold py-1 px-1 focus:outline-none cursor-pointer max-w-[120px]">
-            <option value="">Loading...</option>
+            <option value="">@SharedLocalizer["Reader_ChapterListLoading"]</option>
         </select>
         <button id="btnChapterNext" class="p-1.5 rounded-lg active:scale-95 transition" title="Next chapter"><i class="fa-solid fa-chevron-right"></i></button>
-        <button id="btnChapterLast" class="p-1.5 rounded-lg active:scale-95 transition" title="Last chapter"><i class="fa-solid fa-forward-step"></i></button>
+        <button id="btnChapterLast" class="p-1.5 rounded-lg active:scale-95 transition" title="@SharedLocalizer["Reader_LastChapter"]"><i class="fa-solid fa-forward-step"></i></button>
     </div>
 
     <div id="languageSelectorGroup" class="hidden items-center gap-1.5 border border-gray-200 rounded-xl p-1 text-xs shrink-0">
@@ -36,30 +36,30 @@
     </div>
 
     <div class="flex items-center gap-1 border border-gray-200 rounded-xl p-1 text-sm shrink-0">
-        <button id="btnFontDecrease" class="px-2.5 py-1 rounded-lg active:scale-95 transition" title="Decrease font size">A-</button>
+        <button id="btnFontDecrease" class="px-2.5 py-1 rounded-lg active:scale-95 transition" title="@SharedLocalizer["Reader_DecreaseFontSize"]">A-</button>
         <span id="fontSizeDisplay" class="px-2 text-xs border-x border-gray-200">18px</span>
-        <button id="btnFontIncrease" class="px-2.5 py-1 rounded-lg active:scale-95 transition" title="Increase font size">A+</button>
+        <button id="btnFontIncrease" class="px-2.5 py-1 rounded-lg active:scale-95 transition" title="@SharedLocalizer["Reader_IncreaseFontSize"]">A+</button>
     </div>
 
     <div id="themeSelectorGroup" class="flex items-center gap-1.5 border border-gray-200 rounded-xl p-1 text-sm shrink-0">
-        <button data-theme="light" class="w-6 h-6 rounded-full border border-gray-300 bg-white" title="Light theme"></button>
-        <button data-theme="sepia" class="w-6 h-6 rounded-full border border-yellow-700/20 bg-[#f4ecd8]" title="Sepia theme"></button>
-        <button data-theme="dark" class="w-6 h-6 rounded-full border border-gray-700 bg-[#1e293b]" title="Dark theme"></button>
+        <button data-theme="light" class="w-6 h-6 rounded-full border border-gray-300 bg-white" title="@SharedLocalizer["Reader_LightTheme"]"></button>
+        <button data-theme="sepia" class="w-6 h-6 rounded-full border border-yellow-700/20 bg-[#f4ecd8]" title="@SharedLocalizer["Reader_SepiaTheme"]"></button>
+        <button data-theme="dark" class="w-6 h-6 rounded-full border border-gray-700 bg-[#1e293b]" title="@SharedLocalizer["Reader_DarkTheme"]"></button>
     </div></div><div id="rightActionControls" class="fixed bottom-5 right-5 flex items-center gap-3 z-[1010]">
     <!-- Nút Focus Mode -->
-    <button id="btnFocusMode" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Focus Mode">
+    <button id="btnFocusMode" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="@SharedLocalizer["Reader_FocusMode"]">
         <i class="fa-solid fa-eye-slash text-amber-500 text-base"></i>
-        <span class="btn-text">Focus Mode</span>
+        <span class="btn-text">@SharedLocalizer["Reader_FocusMode"]</span>
     </button>
 
     <!-- Nút Translate all -->
-    <button id="btnTranslateAll" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Translate all">
+    <button id="btnTranslateAll" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="@SharedLocalizer["Reader_TranslateAll"]">
         <i class="fa-solid fa-language text-main text-base"></i>
-        <span class="btn-text">Translate all</span>
+        <span class="btn-text">@SharedLocalizer["Reader_TranslateAll"]</span>
     </button>
 
     <!-- Nút Chat AI -->
-    <button id="chat-button" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="Chat bot assistant">
+    <button id="chat-button" class="flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 font-medium text-sm whitespace-nowrap" title="@SharedLocalizer["Reader_ChatAssistant"]">
         <span class="btn-text text-2xl leading-none">🌍</span>
     </button></div><!-- Lớp phủ Focus Mode --><div id="focusModeOverlay" class="fixed inset-0 z-40 hidden transition-all duration-300">
     <div class="max-w-5xl mx-auto h-full overflow-y-auto px-4 py-12">

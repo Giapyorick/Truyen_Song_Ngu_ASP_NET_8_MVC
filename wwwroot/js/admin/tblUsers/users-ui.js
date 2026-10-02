@@ -1,13 +1,13 @@
 /* users-ui.js - Quản lý giao diện, hiệu ứng Select2, Flatpickr, phóng to ảnh và đóng/mở Modal */
 
+const UI_LANG = window.ADMIN_LANG || {};
+
 $(document).ready(function () {
-    // Khởi tạo Flatpickr cho ô chọn ngày sinh
     $(".datepicker").flatpickr({
         dateFormat: "Y-m-d",
         allowInput: true
     });
 
-    // Khởi tạo Select2 với định dạng màu sắc gradient
     $('.select2-custom').each(function () {
         $(this).select2({
             width: '100%',
@@ -18,7 +18,6 @@ $(document).ready(function () {
     });
 });
 
-// Định dạng chấm tròn và chữ gradient cho từng option của Select2
 function formatState(state) {
     if (!state.id) { return state.text; }
 
@@ -41,39 +40,32 @@ function openModal(mode, id = null) {
 
     $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
 
-    // Trường hợp thêm mới
     if (mode === 'add') {
-        $('#modalTitle').text('Add member');
+        $('#modalTitle').text(UI_LANG.TitleAddMember || 'Add member');
         $('#userId').val('0');
         $('#passwordContainer').show();
         $('#userGender').val('Male').trigger('change.select2');
         $('#userStatus').val('Active').trigger('change.select2');
     } else {
-        // Trường hợp cập nhật
-        $('#modalTitle').text('Update member');
+        $('#modalTitle').text(UI_LANG.TitleEditMember || 'Update member');
         $('#passwordContainer').show();
         $('#userPassword')
             .val('')
-            .attr('placeholder', 'Leave blank to keep current password');
+            .attr('placeholder', UI_LANG.PwdPlaceholderKeep || 'Leave blank to keep current password');
 
         $.get('/Admin/tblUsers/GetById/' + id, function (data) {
-            console.log("data received:", data);
             $('#userId').val(data.userId);
             $('#userName').val(data.name);
             $('#userEmail').val(data.email);
             $('#userPhone').val(data.phone);
             $('#userDoB').val(data.doB);
 
-            // Chỉ cập nhật Select2 cho các thẻ select trong modal
             $('#userGender').val(data.gender).trigger('change.select2');
             $('#userStatus').val(data.status).trigger('change.select2');
 
             if (data.img && data.img.trim() !== "") {
                 const fullPath = data.img.startsWith('/') ? data.img : '/' + data.img;
-                console.log("last image path:", fullPath);
-
-                $imgPreview.attr('src', fullPath);
-                $imgPreview.removeClass('hidden'); $uploadIcon.addClass('hidden');
+                $imgPreview.attr('src', fullPath).removeClass('hidden'); $uploadIcon.addClass('hidden');
             } else {
                 $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
             }
@@ -81,13 +73,9 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-
-    // ĐÃ XÓA: $('.select2-custom').trigger('change'); (Tránh kích hoạt nhầm bộ lọc ngoài bảng)
-
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }
 
-// Đóng modal Thêm hoặc Sửa người dùng
 function closeModal() {
     const content = $('#modalContent');
     content.removeClass('translate-y-0 opacity-100 scale-100')
@@ -98,14 +86,12 @@ function closeModal() {
     }, 300);
 }
 
-// Mở modal Import Excel
 function openImportModal() {
     const modal = $('#importModal');
     modal.removeClass('hidden').addClass('flex');
     setTimeout(() => $('#importContent').addClass('scale-100 opacity-100'), 10);
 }
 
-// Đóng modal Import Excel
 function closeImportModal() {
     $('#importContent').removeClass('scale-100 opacity-100');
     setTimeout(() => {
@@ -114,14 +100,13 @@ function closeImportModal() {
     }, 300);
 }
 
-// Reset trạng thái form chọn file Excel
 function resetImportForm() {
     $('#excelFile').val('');
-    $('#fileStatus').text('Drag and drop or click to import file');
+    const dragDropText = UI_LANG.DragDropExcelUser || 'Drag and drop or click to import file';
+    $('#fileStatus').text(dragDropText);
     $('#dropZone').removeClass('border-indigo-500 bg-indigo-100/50');
 }
 
-// Lắng nghe sự kiện chọn file Excel
 $('#excelFile').on('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -130,7 +115,6 @@ $('#excelFile').on('change', function (e) {
     }
 });
 
-// Xem trước ảnh khi chọn từ file input
 function previewImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -142,28 +126,26 @@ function previewImage(input) {
     }
 }
 
-// Mở modal phóng to ảnh
 function openImagePreview(src) {
     if (!src) return;
     $('#imageModalContent').attr('src', src);
     $('#imageModal').removeClass('hidden').addClass('flex');
 }
 
-// Đóng modal phóng to ảnh
 function closeImagePreview() {
     $('#imageModal').addClass('hidden').removeClass('flex');
 }
 
-// Cập nhật trạng thái và số lượng trên nút Delete (N)
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = UI_LANG.BtnDeleteText || 'Delete';
 
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`);
         $btn.prop('disabled', false); $btn.removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`);
         $btn.prop('disabled', true); $btn.addClass('opacity-50 cursor-not-allowed');
     }
 }

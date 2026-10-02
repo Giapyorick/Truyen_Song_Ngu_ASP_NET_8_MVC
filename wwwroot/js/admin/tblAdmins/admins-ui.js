@@ -1,7 +1,8 @@
 ﻿/* admins-ui.js - Quản lý giao diện, hiệu ứng Select2 và đóng mở Modal */
 
+const UI_LANG = window.ADMIN_LANG || {};
+
 $(document).ready(function () {
-    // Khởi tạo Select2 với định dạng màu sắc gradient
     $('.select2-custom').each(function () {
         $(this).select2({
             width: '100%',
@@ -12,7 +13,6 @@ $(document).ready(function () {
     });
 });
 
-// Định dạng chấm tròn và chữ màu gradient cho từng option của Select2
 function formatState(state) {
     if (!state.id) { return state.text; }
 
@@ -28,28 +28,25 @@ function formatState(state) {
 
 // Mở modal Thêm hoặc Sửa Admin
 function openModal(mode, id = null) {
-    // Chặn người dùng Viewer trước khi mở modal
     if (window.IS_VIEWER_MODE) {
-        showToast('Viewer account has view-only permissions. Cannot add or edit accounts!', 'error');
+        showToast(UI_LANG.ViewerNoPermissionModal || 'Viewer account has view-only permissions. Cannot add or edit accounts!', 'error');
         return;
     }
 
     const modal = $('#modalOverlay');
     $('#userForm')[0].reset();
 
-    // Trường hợp thêm mới
     if (mode === 'add') {
-        $('#modalTitle').text('Add Account');
+        $('#modalTitle').text(UI_LANG.ModalTitleAdd || 'Add Account');
         $('#adminId').val('0');
         $('#adminPassword').prop('required', true);
-        $('#pwdNotice').text('(required for new account)');
+        $('#pwdNotice').text(UI_LANG.PwdNoticeAdd || '(required for new account)');
         $('#adminRole').val('Viewer').trigger('change.select2');
         $('#adminStatus').val('true').trigger('change.select2');
     } else {
-        // Trường hợp cập nhật
-        $('#modalTitle').text('Update Account');
+        $('#modalTitle').text(UI_LANG.ModalTitleEdit || 'Update Account');
         $('#adminPassword').prop('required', false);
-        $('#pwdNotice').text('(leave blank to keep current password)');
+        $('#pwdNotice').text(UI_LANG.PwdNoticeEdit || '(leave blank to keep current password)');
 
         $.get('/Admin/tblAdmins/GetById/' + id, function (res) {
             if (res.success) {
@@ -60,19 +57,15 @@ function openModal(mode, id = null) {
                 $('#adminRole').val(data.role).trigger('change.select2');
                 $('#adminStatus').val(data.isActive ? "true" : "false").trigger('change.select2');
             } else {
-                showToast(res.message || 'Cannot fetch account information!', 'error');
+                showToast(res.message || (UI_LANG.CannotFetchInfo || 'Cannot fetch account information!'), 'error');
             }
         });
     }
 
     modal.removeClass('hidden').addClass('flex');
-
-    // ĐÃ XÓA: $('.select2-custom').trigger('change'); (Tránh kích hoạt nhầm bộ lọc ngoài bảng)
-
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }
 
-// Đóng modal Thêm hoặc Sửa Admin
 function closeModal() {
     const content = $('#modalContent');
     content.removeClass('translate-y-0 opacity-100 scale-100')
@@ -87,12 +80,13 @@ function closeModal() {
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = UI_LANG.BtnDeleteText || 'Delete';
 
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`);
         $btn.prop('disabled', false); $btn.removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`);
         $btn.prop('disabled', true); $btn.addClass('opacity-50 cursor-not-allowed');
     }
 }

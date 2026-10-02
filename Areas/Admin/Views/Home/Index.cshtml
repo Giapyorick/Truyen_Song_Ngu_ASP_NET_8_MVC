@@ -1,5 +1,9 @@
+@using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = SharedLocalizer["Dashboard_Title"];
     // Lấy thông tin tài khoản và phân quyền từ Session
     var adminFullName = Context.Session.GetString("AdminFullName") ?? Context.Session.GetString("AdminUser") ?? "Admin User";
     var currentUserRole = Context.Session.GetString("AdminRole") ?? "Viewer";
@@ -10,27 +14,27 @@
     <!-- Top Header Bar -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 py-4 px-8 flex justify-between items-center shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
         <div>
-            <h1 id="page-title" class="text-xl font-black text-cus tracking-tight">System Overview</h1>
-            <p class="text-xs text-gray-400 mt-0.5">Welcome back to the comic book administration portal</p>
+            <h1 id="page-title" class="text-xl font-black text-cus tracking-tight">@SharedLocalizer["Dashboard_SystemOverview"]</h1>
+            <p class="text-xs text-gray-400 mt-0.5">@SharedLocalizer["Dashboard_WelcomeBack"]</p>
         </div>
 
         <!-- Thông tin User đang đăng nhập & Avatar -->
         <div class="flex items-center gap-4">
             <div class="text-right">
-                <div class="text-sm font-bold text-gray-800">Hello, @adminFullName!</div>
+                <div class="text-sm font-bold text-gray-800">@string.Format(SharedLocalizer["Dashboard_HelloUser"].Value, adminFullName)</div>
                 <div class="flex items-center justify-end gap-1.5 mt-0.5">
                     @if (isViewer)
                     {
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200/60">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            Viewer (Read-Only)
+                            @SharedLocalizer["Dashboard_RoleViewer"]
                         </span>
                     }
                     else
                     {
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-600 border border-teal-200/60">
                             <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                            Super Admin
+                            @SharedLocalizer["Dashboard_RoleSuperAdmin"]
                         </span>
                     }
                 </div>
@@ -38,7 +42,7 @@
 
             <!-- Avatar hiển thị chữ cái đầu -->
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-teal-500/20 text-sm">
-                @adminFullName.Substring(0, 1).ToUpper()
+                @(string.IsNullOrEmpty(adminFullName) ? "A" : adminFullName.Substring(0, 1).ToUpper())
             </div>
         </div>
     </header>
@@ -52,7 +56,7 @@
             <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-wait hover:shadow-lg transition-all duration-300 border border-slate-100">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pending Approval</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">@SharedLocalizer["Dashboard_StatPending"]</p>
                         <h2 class="text-3xl font-black text-wait">45</h2>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner">
@@ -63,7 +67,7 @@
                     <span class="text-amber-500 font-bold flex items-center gap-1">
                         <i class="fas fa-arrow-trend-up"></i> +5.4%
                     </span>
-                    <span>since yesterday</span>
+                    <span>@SharedLocalizer["Dashboard_StatSinceYesterday"]</span>
                 </div>
             </div>
 
@@ -71,7 +75,7 @@
             <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-accepted hover:shadow-lg transition-all duration-300 border border-slate-100">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Approved & Published</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">@SharedLocalizer["Dashboard_StatApproved"]</p>
                         <h2 class="text-3xl font-black text-accepted">1,280</h2>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner">
@@ -82,7 +86,7 @@
                     <span class="text-emerald-500 font-bold flex items-center gap-1">
                         <i class="fas fa-arrow-trend-up"></i> +12.8%
                     </span>
-                    <span>total this month</span>
+                    <span>@SharedLocalizer["Dashboard_StatThisMonth"]</span>
                 </div>
             </div>
 
@@ -90,7 +94,7 @@
             <div class="stat-card bg-white p-6 rounded-[1.8rem] shadow-sm shadow-deny hover:shadow-lg transition-all duration-300 border border-slate-100">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Rejected Contents</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">@SharedLocalizer["Dashboard_StatRejected"]</p>
                         <h2 class="text-3xl font-black text-deny">12</h2>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner">
@@ -101,7 +105,7 @@
                     <span class="text-rose-500 font-bold flex items-center gap-1">
                         <i class="fas fa-arrow-trend-down"></i> -2.1%
                     </span>
-                    <span>locked by safety filter</span>
+                    <span>@SharedLocalizer["Dashboard_StatSafetyLocked"]</span>
                 </div>
             </div>
         </div>
@@ -111,8 +115,8 @@
             <!-- Cột trái: Quick Navigation Actions -->
             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 lg:col-span-2 space-y-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="font-extrabold text-gray-800 text-sm uppercase tracking-wider">Quick Management</h3>
-                    <span class="text-[11px] text-gray-400 font-medium">Core modules shortcut</span>
+                    <h3 class="font-extrabold text-gray-800 text-sm uppercase tracking-wider">@SharedLocalizer["Dashboard_QuickManagement"]</h3>
+                    <span class="text-[11px] text-gray-400 font-medium">@SharedLocalizer["Dashboard_CoreModulesShortcut"]</span>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
@@ -121,7 +125,7 @@
                         <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-teal-600 mb-2 group-hover:scale-110 transition-transform">
                             <i class="fas fa-book-open"></i>
                         </div>
-                        <div class="text-xs font-bold text-gray-700 group-hover:text-teal-600">Stories</div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-teal-600">@SharedLocalizer["AdminLayout_Stories"]</div>
                     </a>
 
                     <a asp-area="Admin" asp-controller="tblChapters" asp-action="Chapters"
@@ -129,7 +133,7 @@
                         <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-cyan-600 mb-2 group-hover:scale-110 transition-transform">
                             <i class="fas fa-list-check"></i>
                         </div>
-                        <div class="text-xs font-bold text-gray-700 group-hover:text-cyan-600">Chapters</div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-cyan-600">@SharedLocalizer["AdminLayout_Chapters"]</div>
                     </a>
 
                     <a asp-area="Admin" asp-controller="tblParagraphs" asp-action="Paragraphs"
@@ -137,7 +141,7 @@
                         <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 mb-2 group-hover:scale-110 transition-transform">
                             <i class="fas fa-paragraph"></i>
                         </div>
-                        <div class="text-xs font-bold text-gray-700 group-hover:text-indigo-600">Paragraphs</div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-indigo-600">@SharedLocalizer["AdminLayout_Paragraphs"]</div>
                     </a>
 
                     <a asp-area="Admin" asp-controller="tblAdmins" asp-action="Admins"
@@ -145,7 +149,7 @@
                         <div class="w-10 h-10 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center text-purple-600 mb-2 group-hover:scale-110 transition-transform">
                             <i class="fas fa-shield-halved"></i>
                         </div>
-                        <div class="text-xs font-bold text-gray-700 group-hover:text-purple-600">Admins & RBAC</div>
+                        <div class="text-xs font-bold text-gray-700 group-hover:text-purple-600">@SharedLocalizer["Dashboard_ShortcutAdmins"]</div>
                     </a>
                 </div>
             </div>
@@ -154,16 +158,16 @@
             <div class="bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-transparent p-6 rounded-[2rem] border border-teal-100/80 flex flex-col justify-between">
                 <div>
                     <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-teal-500 text-white shadow-sm">
-                        Security Status
+                        @SharedLocalizer["Dashboard_SecurityBadge"]
                     </span>
-                    <h4 class="text-base font-extrabold text-gray-800 mt-3">Role-Based Access Control</h4>
+                    <h4 class="text-base font-extrabold text-gray-800 mt-3">@SharedLocalizer["Dashboard_SecurityTitle"]</h4>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">
-                        Viewer mode enforces read-only state across all management tables. All write, update, and delete actions are monitored and secured via Argon2 hashing and server-side interceptors.
+                        @SharedLocalizer["Dashboard_SecurityDesc"]
                     </p>
                 </div>
 
                 <div class="pt-4 border-t border-teal-200/40 flex items-center justify-between text-[11px] text-teal-700 font-semibold">
-                    <span>Protected Environment</span>
+                    <span>@SharedLocalizer["Dashboard_ProtectedEnvironment"]</span>
                     <i class="fas fa-shield-alt text-teal-600"></i>
                 </div>
             </div>

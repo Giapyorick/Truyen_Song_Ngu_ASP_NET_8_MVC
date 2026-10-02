@@ -14,6 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="ResxGenerator\**" />
+    <Content Remove="ResxGenerator\**" />
+    <EmbeddedResource Remove="ResxGenerator\**" />
+    <None Remove="ResxGenerator\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="EPPlus" Version="7.5.2" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />

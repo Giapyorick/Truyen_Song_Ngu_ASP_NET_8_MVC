@@ -44,6 +44,9 @@ public partial class TruyenSongNguContext : DbContext
     public virtual DbSet<TblUserReadingProgress> TblUserReadingProgresses { get; set; }
 
     public virtual DbSet<TblVocabulary> TblVocabularies { get; set; }
+    public virtual ICollection<TblCategoryTranslation> TblCategoryTranslations { get; set; } = new List<TblCategoryTranslation>();
+    public virtual ICollection<TblStoryTranslation> TblStoryTranslations { get; set; } = new List<TblStoryTranslation>();
+    public virtual ICollection<TblChapterTranslation> TblChapterTranslations { get; set; } = new List<TblChapterTranslation>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -53,6 +56,34 @@ public partial class TruyenSongNguContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        // Composite Key cho Category Translation
+        modelBuilder.Entity<TblCategoryTranslation>(entity =>
+        {
+            entity.HasKey(e => new { e.CategoryId, e.LanguageCode });
+            entity.HasOne(d => d.Category)
+                  .WithMany(p => p.TblCategoryTranslations)
+                  .HasForeignKey(d => d.CategoryId);
+        });
+
+        // Composite Key cho Story Translation
+        modelBuilder.Entity<TblStoryTranslation>(entity =>
+        {
+            entity.HasKey(e => new { e.StoryId, e.LanguageCode });
+            entity.HasOne(d => d.Story)
+                  .WithMany(p => p.TblStoryTranslations)
+                  .HasForeignKey(d => d.StoryId);
+        });
+
+        // Composite Key cho Chapter Translation
+        modelBuilder.Entity<TblChapterTranslation>(entity =>
+        {
+            entity.HasKey(e => new { e.ChapterId, e.LanguageCode });
+            entity.HasOne(d => d.Chapter)
+                  .WithMany(p => p.TblChapterTranslations)
+                  .HasForeignKey(d => d.ChapterId);
+        });
         modelBuilder.Entity<TblAdmin>(entity =>
         {
             entity.HasKey(e => e.AdminId);

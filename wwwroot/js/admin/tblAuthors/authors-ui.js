@@ -1,5 +1,7 @@
 ﻿/* authors-ui.js - Quản lý giao diện, hiệu ứng và tương tác DOM */
 
+const UI_LANG = window.ADMIN_LANG || {};
+
 $(document).ready(function () {
     // 1. Khởi tạo Flatpickr
     $(".datepicker").flatpickr({
@@ -7,30 +9,7 @@ $(document).ready(function () {
         allowInput: true
     });
 
-    // 2. Khởi tạo Select2 Custom màu gradient
-    $('.select2-custom').each(function () {
-        $(this).select2({
-            width: '100%',
-            minimumResultsForSearch: Infinity,
-            templateResult: formatSelectState,
-            templateSelection: formatSelectState
-        });
-    });
-
-    // 3. Load danh sách quốc gia
-    $.get('/data/countries.txt', function (data) {
-        const lines = data.split('\n');
-        let options = '<option value="Unknow">Select country</option>';
-        lines.forEach(c => {
-            c = c.trim();
-            if (c !== '') options += `<option value="${c}">${c}</option>`;
-        });
-        $('#authorCountry').html(options).select2({
-            allowClear: true,
-            width: '100%'
-        });
-    });
-
+    // 2. Khởi tạo Select2 Custom màu gradient cho các dropdown khác
     $('.select2-custom').not('#authorCountry').each(function () {
         $(this).select2({
             width: '100%',
@@ -40,13 +19,15 @@ $(document).ready(function () {
         });
     });
 
-    // 2. Nạp danh sách quốc gia bất đồng bộ
+    // 3. Nạp danh sách quốc gia bất đồng bộ
     loadCountries();
 });
+
 function loadCountries(selectedValue = "Unknow") {
     $.get('/data/countries.txt', function (data) {
         const lines = data.split('\n');
-        let options = '<option value="Unknow">Select country</option>';
+        const defaultText = UI_LANG.SelectCountry || 'Select country';
+        let options = `<option value="Unknow">${defaultText}</option>`;
 
         lines.forEach(c => {
             const country = c.trim();
@@ -58,17 +39,15 @@ function loadCountries(selectedValue = "Unknow") {
         const $select = $('#authorCountry');
         $select.html(options);
 
-        // Hủy khởi tạo cũ nếu đã có
         if ($select.hasClass("select2-hidden-accessible")) {
             $select.select2('destroy');
         }
 
-        // Khởi tạo Select2 cho Country với dropdownParent để không bị modal che
         $select.select2({
             width: '100%',
             allowClear: false,
-            dropdownParent: $('#modalOverlay'), // Cực kỳ quan trọng khi nằm trong Modal
-            placeholder: 'Select country'
+            dropdownParent: $('#modalOverlay'),
+            placeholder: defaultText
         });
 
         $select.val(selectedValue).trigger('change');
@@ -123,7 +102,8 @@ function closeImportModal() {
     setTimeout(() => {
         $('#importModal').removeClass('flex').addClass('hidden');
         $('#excelFile').val('');
-        $('#fileStatus').text('Kéo thả file vào đây hoặc click để chọn');
+        const dragDropText = UI_LANG.DragDropExcel || 'Drag and drop file here or click to choose';
+        $('#fileStatus').text(dragDropText);
         $('#dropZone').removeClass('border-indigo-500 bg-indigo-100/50');
     }, 300);
 }
@@ -132,9 +112,11 @@ function closeImportModal() {
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = UI_LANG.BtnDeleteText || 'Delete';
+
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`).prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`).prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
     }
 }

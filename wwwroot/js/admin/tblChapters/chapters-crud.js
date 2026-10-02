@@ -1,5 +1,7 @@
 ﻿/* chapters-crud.js - Xử lý API, Bảng dữ liệu, Lọc, CRUD form, Xóa nhiều & Import/Export Excel */
 
+const L = window.ADMIN_LANG || {};
+
 let savedChapterPage = localStorage.getItem('chapterPage');
 let currentPage = savedChapterPage ? parseInt(savedChapterPage) : 1;
 const pageSize = 5;
@@ -14,11 +16,11 @@ function openModal(mode, id = null) {
     $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
 
     if (mode === 'add') {
-        $('#modalTitle').text('Add chapter');
+        $('#modalTitle').text(L.TitleAddChapter || 'Add chapter');
         $('#chapterId').val('0');
         $('#chapterStoryId').val('Unknow').trigger('change.select2');
     } else {
-        $('#modalTitle').text('Update chapter');
+        $('#modalTitle').text(L.TitleEditChapter || 'Update chapter');
 
         $.get('/Admin/tblChapters/GetById/' + id, function (data) {
             console.log("data received:", data);
@@ -32,9 +34,6 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-
-    // ĐÃ BỎ: $('.select2-custom').trigger('change'); (Tránh kích hoạt nhầm bộ lọc #filterStory)
-
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }
 
@@ -51,10 +50,11 @@ function closeModal() {
 
 // Xóa 1 chapter đơn lẻ
 async function deleteChapter(id) {
-    const confirmed = await customConfirm(
-        `Are you sure to remove this chapter?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Chapter"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleChapterMsg || 'Are you sure to remove this chapter?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleChapterTitle || "Delete Chapter";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (confirmed) {
         const $row = $(`button[onclick="deleteChapter(${id})"]`).closest('tr');
         $row.addClass('opacity-50 pointer-events-none');
@@ -67,7 +67,6 @@ async function deleteChapter(id) {
                 if (response.success) {
                     showToast(response.message, 'success');
 
-                    // Nếu là dòng duy nhất còn lại trên trang và đang ở trang > 1 thì lùi trang
                     const remainingRows = $('#user-list-body tr').length - 1;
                     if (remainingRows <= 0 && currentPage > 1) {
                         currentPage--;
@@ -80,7 +79,7 @@ async function deleteChapter(id) {
                 }
             },
             error: function () {
-                showToast("Cannot connect to the server to delete.", 'error');
+                showToast(L.ErrConnectDelete || "Cannot connect to the server to delete.", 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         });
@@ -99,7 +98,6 @@ function exportExcel() {
 $('#chapterForm').on('submit', function (e) {
     e.preventDefault();
 
-    // Lưu lại trang hiện tại vào Storage
     localStorage.setItem('chapterPage', currentPage);
 
     const submitBtn = $(this).find('button[type="submit"]');
@@ -109,7 +107,7 @@ $('#chapterForm').on('submit', function (e) {
     const isAdding = (chapterId == "0" || chapterId == "" || !chapterId);
     const url = isAdding ? '/Admin/tblChapters/Add' : '/Admin/tblChapters/Update';
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -122,8 +120,6 @@ $('#chapterForm').on('submit', function (e) {
                 showToast(response.message, 'success');
                 closeModal();
 
-                // NẾU LÀ THÊM MỚI -> VỀ TRANG 1
-                // NẾU LÀ CẬP NHẬT -> GIỮ NGUYÊN TRANG HIỆN TẠI
                 if (isAdding) {
                     loadChapterList(1);
                 } else {
@@ -136,10 +132,10 @@ $('#chapterForm').on('submit', function (e) {
             }
         },
         error: function () {
-            showToast("Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || "Cannot connect to the server.", 'error');
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
@@ -167,13 +163,13 @@ function loadChapterList(page = null) {
         data: filters,
         success: function (data) {
             let html = '';
-            console.log("Data received from the Server:", data);
             if (!data.chapters || data.chapters.length === 0) {
                 if (currentPage > 1) {
                     loadChapterList(currentPage - 1);
                     return;
                 }
-                $body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundChapters || 'Not found any results.';
+                $body.html(`<tr><td colspan="6" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -210,7 +206,7 @@ function loadChapterList(page = null) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad bg-blue-50
                                     hover:bg-blue-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
 
@@ -219,7 +215,7 @@ function loadChapterList(page = null) {
                                     flex items-center justify-center
                                     rounded-lg btn-grad-cancel bg-red-50
                                     hover:bg-red-600 hover:text-white
-                                    transition-all duration-200">
+                                    transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -232,7 +228,8 @@ function loadChapterList(page = null) {
             updateDeleteButton();
         },
         error: function (xhr) {
-            $body.html('<tr><td colspan="6" class="text-center py-10 text-red-500">Error: Input data.</td></tr>');
+            const errLoad = L.ErrLoadChapters || 'Error: Input data.';
+            $body.html(`<tr><td colspan="6" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
         }
     });
 }
@@ -241,7 +238,7 @@ function loadChapterList(page = null) {
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (fileInput.files.length === 0) {
-        showToast('Please choose file Excel!', 'error');
+        showToast(L.ChooseExcelFile || 'Please choose file Excel!', 'error');
         return;
     }
 
@@ -249,7 +246,7 @@ function executeImport() {
     formData.append('file', fileInput.files[0]);
 
     const $btn = $('#btnDoImport');
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
         url: '/Admin/tblChapters/ImportToExcel',
@@ -267,10 +264,10 @@ function executeImport() {
             }
         },
         error: function () {
-            showToast('Error during import file!', 'error');
+            showToast(L.ErrImport || 'Error during import file!', 'error');
         },
         complete: function () {
-            $btn.prop('disabled', false).text('Confirm Import');
+            $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import');
         }
     });
 }
@@ -285,7 +282,6 @@ function renderPagination(currentPage, totalPages) {
     const maxVisible = 2;
     let html = `<div class="flex items-center gap-1">`;
 
-    // First
     html += `
     <button onclick="loadChapterList(1)"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -293,7 +289,6 @@ function renderPagination(currentPage, totalPages) {
         ⏮
     </button>`;
 
-    // Prev
     html += `
     <button onclick="loadChapterList(${currentPage - 1})"
         class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-40' : ''}"
@@ -317,7 +312,6 @@ function renderPagination(currentPage, totalPages) {
         html += pageBtn(totalPages, currentPage);
     }
 
-    // Next
     html += `
     <button onclick="loadChapterList(${currentPage + 1})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -325,7 +319,6 @@ function renderPagination(currentPage, totalPages) {
         ▶
     </button>`;
 
-    // Last
     html += `
     <button onclick="loadChapterList(${totalPages})"
         class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-40' : ''}"
@@ -333,7 +326,6 @@ function renderPagination(currentPage, totalPages) {
         ⏭
     </button>`;
 
-    // Go to page
     html += `
     <div class="flex items-center gap-1 ml-3">
         <span class="text-sm">Go:</span>
@@ -383,7 +375,6 @@ $(document).ready(function () {
         loadChapterList(1);
     });
 
-    // Checkbox chọn tất cả
     $('#selectAll').on('change', function () {
         const isChecked = this.checked;
 
@@ -395,7 +386,6 @@ $(document).ready(function () {
         });
     });
 
-    // Checkbox từng hàng
     $(document).on('change', '.user-checkbox', function () {
         const total = $('.user-checkbox').length;
         const checked = $('.user-checkbox:checked').length;
@@ -413,16 +403,16 @@ $(document).ready(function () {
             .get();
 
         if (ids.length === 0) {
-            showToast('Please select at least one chapter!', 'error');
+            showToast(L.SelectAtLeastOneChapter || 'Please select at least one chapter!', 'error');
             return;
         }
 
-        const confirmed = await customConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> chapters?<br>` +
-            `<small class="text-red-400">This action cannot be undone.</small>`,
-            "Delete Multiple"
-        );
+        const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+        const multiMsg = (L.ConfirmDeleteMultiChaptersMsg || 'Are you sure you want to delete <strong>{0}</strong> chapters?')
+            .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiChaptersTitle || "Delete Multiple";
 
+        const confirmed = await customConfirm(multiMsg, multiTitle);
         if (!confirmed) return;
 
         $.ajax({
@@ -432,17 +422,14 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
                 if (res.blocked && res.blocked.length > 0) {
-                    showToast(
-                        `Cannot delete this ID: ${res.blocked.join(', ')}\n` +
-                        `Because it was used to link foreign keys.`,
-                        'error'
-                    );
+                    const blockedTemplate = L.BlockedDeleteChapter || 'Cannot delete this ID: {0}\nBecause it was used to link foreign keys.';
+                    showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
                 }
                 if (res.deleted && res.deleted.length > 0) {
-                    showToast(`Deleted ${res.deleted.length} chapter(s) successfully.`, 'success');
+                    const deletedTemplate = L.DeletedChaptersSuccess || 'Deleted {0} chapter(s) successfully.';
+                    showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
                 }
 
-                // Nếu xóa hết các dòng đang hiển thị trên trang hiện tại và đang ở trang > 1
                 const totalOnPage = $('.user-checkbox').length;
                 if (ids.length >= totalOnPage && currentPage > 1) {
                     currentPage--;

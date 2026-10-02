@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Admin_NotFoundAccounts" xml:space="preserve">
+    <value>Không tìm thấy tài khoản nào.</value>
+  </data>
+  <data name="Admin_NoDisplayName" xml:space="preserve">
+    <value>Chưa đặt tên hiển thị</value>
+  </data>
+  <data name="Admin_StatusActive" xml:space="preserve">
+    <value>Hoạt động</value>
+  </data>
+  <data name="Admin_StatusInactive" xml:space="preserve">
+    <value>Đã khóa</value>
+  </data>
+  <data name="Admin_Never" xml:space="preserve">
+    <value>Chưa bao giờ</value>
+  </data>
+  <data name="Admin_TitleEditAccount" xml:space="preserve">
+    <value>Chỉnh sửa tài khoản</value>
+  </data>
+  <data name="Admin_TitleDeleteAccount" xml:space="preserve">
+    <value>Xóa tài khoản</value>
+  </data>
+  <data name="Admin_ErrLoadAccounts" xml:space="preserve">
+    <value>Lỗi khi tải danh sách tài khoản.</value>
+  </data>
+  <data name="Admin_ErrConnectServerLoad" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ để tải dữ liệu.</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionDelete" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể xóa dữ liệu!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionSave" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể lưu thay đổi!</value>
+  </data>
+  <data name="Admin_ViewerNoPermissionModal" xml:space="preserve">
+    <value>Tài khoản Viewer chỉ có quyền xem. Không thể thêm hoặc sửa tài khoản!</value>
+  </data>
+  <data name="Admin_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một tài khoản để xóa!</value>
+  </data>
+  <data name="Admin_ErrConnectDelete" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ để xóa tài khoản.</value>
+  </data>
+  <data name="Admin_ErrConnectServer" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ.</value>
+  </data>
+  <data name="Admin_CannotFetchInfo" xml:space="preserve">
+    <value>Không thể lấy thông tin tài khoản!</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa tài khoản</value>
+  </data>
+  <data name="Admin_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa tài khoản này?</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều tài khoản</value>
+  </data>
+  <data name="Admin_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} tài khoản đã chọn?</value>
+  </data>
+  <data name="Admin_ActionCannotUndo" xml:space="preserve">
+    <value>Hành động này không thể hoàn tác.</value>
+  </data>
+  <data name="Admin_Processing" xml:space="preserve">
+    <value>Đang xử lý...</value>
+  </data>
+  <data name="Admin_SaveChanges" xml:space="preserve">
+    <value>Lưu thay đổi</value>
+  </data>
+  <data name="Admin_BtnDeleteText" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="Admin_ModalTitleAdd" xml:space="preserve">
+    <value>Thêm tài khoản</value>
+  </data>
+  <data name="Admin_ModalTitleEdit" xml:space="preserve">
+    <value>Cập nhật tài khoản</value>
+  </data>
+  <data name="Admin_PwdNoticeAdd" xml:space="preserve">
+    <value>(bắt buộc đối với tài khoản mới)</value>
+  </data>
+  <data name="Author_NotFound" xml:space="preserve">
+    <value>Không tìm thấy tác giả nào.</value>
+  </data>
+  <data name="Author_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách tác giả.</value>
+  </data>
+  <data name="Author_TitleAdd" xml:space="preserve">
+    <value>Thêm tác giả</value>
+  </data>
+  <data name="Author_TitleEdit" xml:space="preserve">
+    <value>Cập nhật tác giả</value>
+  </data>
+  <data name="Author_SelectCountry" xml:space="preserve">
+    <value>Chọn quốc gia</value>
+  </data>
+  <data name="Author_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc click để chọn</value>
+  </data>
+  <data name="Author_ChooseExcelFile" xml:space="preserve">
+    <value>Vui lòng chọn một file Excel!</value>
+  </data>
+  <data name="Author_ConfirmImport" xml:space="preserve">
+    <value>Xác nhận nhập file</value>
+  </data>
+  <data name="Author_ErrImport" xml:space="preserve">
+    <value>Có lỗi xảy ra trong quá trình nhập file!</value>
+  </data>
+  <data name="Author_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một tác giả để xóa!</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa tác giả</value>
+  </data>
+  <data name="Author_ConfirmDeleteSingle" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa tác giả này?</value>
+  </data>
+  <data name="Author_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều tác giả</value>
+  </data>
+  <data name="Author_ConfirmDeleteMulti" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} tác giả đã chọn?</value>
+  </data>
+  <data name="Author_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0} (Do đang liên kết với các truyện hiện có).</value>
+  </data>
+  <data name="Author_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} tác giả.</value>
+  </data>
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>Không tìm thấy thể loại nào.</value>
+  </data>
+  <data name="Category_ErrLoad" xml:space="preserve">
+    <value>Lỗi khi tải danh sách thể loại.</value>
+  </data>
+  <data name="Category_TitleAdd" xml:space="preserve">
+    <value>Thêm thể loại</value>
+  </data>
+  <data name="Category_TitleEdit" xml:space="preserve">
+    <value>Cập nhật thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleTitle" xml:space="preserve">
+    <value>Xóa thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteSingleMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa thể loại này?</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiTitle" xml:space="preserve">
+    <value>Xóa nhiều thể loại</value>
+  </data>
+  <data name="Category_ConfirmDeleteMultiMsg" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa {0} thể loại đã chọn?</value>
+  </data>
+  <data name="Category_SelectAtLeastOne" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một thể loại để xóa!</value>
+  </data>
+  <data name="Category_BlockedDelete" xml:space="preserve">
+    <value>Không thể xóa mã: {0}.</value>
+  </data>
+  <data name="Category_DeletedSuccess" xml:space="preserve">
+    <value>Đã xóa thành công {0} thể loại.</value>
+  </data>
+  <data name="Category_DragDropExcel" xml:space="preserve">
+    <value>Kéo thả file vào đây hoặc click để chọn</value>
+  </data>
+</root>

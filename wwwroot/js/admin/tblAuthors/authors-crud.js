@@ -1,5 +1,7 @@
 ﻿/* authors-crud.js - Xử lý API, Filter, CRUD & Pagination */
 
+const L = window.ADMIN_LANG || {};
+
 let currentPage = 1;
 const pageSize = 5;
 let isUpdating = false;
@@ -24,13 +26,12 @@ $(document).ready(function () {
 
         if (
             e.originalEvent ||
-            $(this).is(':focus') ||
-            $(e.target).closest('#modalOverlay').length === 0
+            $(this).is(':focus') || $(e.target).closest('#modalOverlay').length === 0
         ) {
-            localStorage.setItem('authorPage', 1);
-            loadAuthorList(1);
-        }
-    });
+        localStorage.setItem('authorPage', 1);
+        loadAuthorList(1);
+    }
+});
 });
 
 // Submit form Thêm / Sửa
@@ -45,7 +46,7 @@ $('#authorForm').on('submit', function (e) {
     const isAddAction = (!authorId || authorId === "0");
     const url = isAddAction ? '/Admin/tblAuthors/Add' : '/Admin/tblAuthors/Update';
 
-    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+    submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
         url: url,
@@ -67,11 +68,11 @@ $('#authorForm').on('submit', function (e) {
             }
         },
         error: function () {
-            showToast("Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || "Cannot connect to the server.", 'error');
             isUpdating = false;
         },
         complete: function () {
-            submitBtn.prop('disabled', false).html('Save Changes');
+            submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
@@ -97,14 +98,16 @@ $(document).on('change', '.user-checkbox', function () {
 $('#btnDeleteSelected').on('click', async function () {
     const ids = $('.user-checkbox:checked').map(function () { return parseInt(this.value); }).get();
     if (ids.length === 0) {
-        showToast('Please select at least one author!', 'error');
+        showToast(L.SelectAtLeastOneAuthor || 'Please select at least one author!', 'error');
         return;
     }
 
-    const confirmed = await customConfirm(
-        `Are you sure you want to delete <strong>${ids.length}</strong> authors?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Multiple"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteMultiAuthors || 'Are you sure you want to delete <strong>{0}</strong> authors?')
+        .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteMultiAuthorsTitle || "Delete Multiple";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (!confirmed) return;
 
     $.ajax({
@@ -114,13 +117,18 @@ $('#btnDeleteSelected').on('click', async function () {
         data: { ids: ids },
         success: function (res) {
             if (res.blocked && res.blocked.length > 0) {
-                showToast(`Cannot delete ID(s): <strong>${res.blocked.join(', ')}</strong> (Linked to existing stories).`, 'error');
+                const blockedTemplate = L.BlockedDeleteAuthor || 'Cannot delete ID(s): <strong>{0}</strong> (Linked to existing stories).';
+                showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
             }
             if (res.deleted && res.deleted.length > 0) {
-                showToast(`Deleted ${res.deleted.length} author(s).`, 'success');
+                const deletedTemplate = L.DeletedAuthorsSuccess || 'Deleted {0} author(s).';
+                showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
             }
             loadAuthorList(currentPage);
             $('#selectAll').prop('checked', false);
+        },
+        error: function () {
+            showToast(L.ErrConnectDelete || 'Cannot connect to server to delete account.', 'error');
         }
     });
 });
@@ -137,7 +145,7 @@ $('#excelFile').on('change', function (e) {
 // Load danh sách Author qua AJAX
 function loadAuthorList(page = 1) {
     currentPage = page;
-    const $body = $('#user-list-body');
+    const $body =$('#user-list-body');
     const genderVal = $('#filterGender').val();
     const statusVal = $('#filterStatus').val();
 
@@ -153,7 +161,8 @@ function loadAuthorList(page = 1) {
         },
         success: function (data) {
             if (!data.authors || data.authors.length === 0) {
-                $body.html('<tr><td colspan="6" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundAuthors || 'Not found any results.';
+                $body.html(`<tr><td colspan="6" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -163,6 +172,15 @@ function loadAuthorList(page = 1) {
                 const avatarHtml = author.img
                     ? `<img onclick="openImagePreview(this.src)" src="/${author.img}" class="w-11 h-11 rounded-2xl object-cover shadow-sm border border-gray-100 cursor-pointer">`
                     : `<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">${author.authorName ? author.authorName.charAt(0).toUpperCase() : 'U'}</div>`;
+
+                const statusText = author.status === 'Active' ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
+
+                // XÁC ĐỊNH GIỚI TÍNH BÊN TRONG VÒNG LẶP CHO TỪNG TÁC GIẢ
+                const isMale = (author.gender || '').toLowerCase() === 'male';
+                const genderClass = isMale ? 'male' : 'female';
+                const genderText = isMale 
+                    ? (L.GenderMale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderMale) || 'Male') 
+                    : (L.GenderFemale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderFemale) || 'Female');
 
                 html += `
                 <tr class="group hover:bg-indigo-50/30 transition-all">
@@ -174,8 +192,8 @@ function loadAuthorList(page = 1) {
                             ${avatarHtml}
                             <div>
                                 <div class="font-bold text-gray-700">${author.authorName}</div>
-                                <div class="text-xs text-gray-400">${author.email}</div>
-                                <div class="text-xs text-gray-400">${author.country}</div>
+                                <div class="text-xs text-gray-400">${author.email || ''}</div>
+                                <div class="text-xs text-gray-400">${author.country || ''}</div>
                             </div>
                         </div>
                     </td>
@@ -183,17 +201,21 @@ function loadAuthorList(page = 1) {
                         <span class="px-3 py-1.5 bg-slate-100 text-gray-600 rounded-lg text-xs font-semibold">${author.doB || ''}</span>
                     </td>
                     <td class="px-6 py-5 text-center">
-                        <span class="font-bold px-3 py-1.5 ${author.gender === 'Male' ? 'male' : 'female'} rounded-xl text-[10px] uppercase tracking-wider">${author.gender}</span>
+                        <span class="font-bold px-3 py-1.5 ${genderClass} rounded-xl text-[10px] uppercase tracking-wider">
+                            ${genderText}
+                        </span>
                     </td>
                     <td class="px-6 py-5 text-center">
-                        <span class="font-bold px-3 py-1.5 ${author.status === 'Active' ? 'active' : 'inactive'} rounded-xl text-[10px] uppercase tracking-wider">${author.status}</span>
+                        <span class="font-bold px-3 py-1.5 ${author.status === 'Active' ? 'active' : 'inactive'} rounded-xl text-[10px] uppercase tracking-wider">
+                            ${statusText}
+                        </span>
                     </td>
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
-                            <button onclick="openModal('edit', ${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200">
+                            <button onclick="openModal('edit', ${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
-                            <button onclick="deleteAuthor(${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200">
+                            <button onclick="deleteAuthor(${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -207,7 +229,8 @@ function loadAuthorList(page = 1) {
             isUpdating = false;
         },
         error: function () {
-            $body.html('<tr><td colspan="6" class="text-center py-10 text-red-500">Error loading data.</td></tr>');
+            const errLoad = L.ErrLoadAuthors || 'Error loading data.';
+            $body.html(`<tr><td colspan="6" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
             isUpdating = false;
         }
     });
@@ -223,10 +246,10 @@ function openModal(mode, id = null) {
     $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
 
     if (mode === 'add') {
-        $('#modalTitle').text('Add author');
+        $('#modalTitle').text(L.TitleAddAuthor || 'Add author');
         $('#authorId').val('0');
     } else {
-        $('#modalTitle').text('Update author');
+        $('#modalTitle').text(L.TitleEditAuthor || 'Update author');
         editingPage = currentPage;
 
         $.get('/Admin/tblAuthors/GetById/' + id, function (data) {
@@ -257,10 +280,11 @@ function closeModal() {
 
 // Xóa 1 tác giả
 async function deleteAuthor(id) {
-    const confirmed = await customConfirm(
-        `Are you sure to remove this author?<br><small class="text-red-400">This action cannot be undone.</small>`,
-        "Delete Author"
-    );
+    const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
+    const confirmMsg = (L.ConfirmDeleteSingleAuthor || 'Are you sure to remove this author?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleAuthorTitle || "Delete Author";
+
+    const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (!confirmed) return;
 
     const $row = $(`button[onclick="deleteAuthor(${id})"]`).closest('tr');
@@ -277,12 +301,12 @@ async function deleteAuthor(id) {
                     showToast(res.message, 'success');
                 });
             } else {
-                showToast("Lỗi: " + res.message, 'error');
+                showToast("Error: " + res.message, 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         },
         error: function () {
-            showToast("Cannot connect to server.", 'error');
+            showToast(L.ErrConnectServer || "Cannot connect to server.", 'error');
             $row.removeClass('opacity-50 pointer-events-none');
         }
     });
@@ -292,13 +316,13 @@ async function deleteAuthor(id) {
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
     if (!fileInput.files.length) {
-        showToast('Please choose an Excel file!', 'error');
+        showToast(L.ChooseExcelFile || 'Please choose an Excel file!', 'error');
         return;
     }
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
-    const $btn = $('#btnDoImport').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+    const $btn = $('#btnDoImport').prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
         url: '/Admin/tblAuthors/ImportExcel',
@@ -315,8 +339,8 @@ function executeImport() {
                 showToast(res.message, 'error');
             }
         },
-        error: () => showToast('Error during import!', 'error'),
-        complete: () => $btn.prop('disabled', false).text('Confirm Import')
+        error: () => showToast(L.ErrImport || 'Error during import!', 'error'),
+        complete: () => $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import')
     });
 }
 

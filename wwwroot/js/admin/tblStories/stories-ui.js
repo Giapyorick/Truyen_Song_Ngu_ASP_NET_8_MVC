@@ -1,16 +1,15 @@
 /* stories-ui.js - Quản lý giao diện, Select2, Flatpickr, Preview ảnh & Modal chọn Category */
 
+const UI_LANG = window.ADMIN_LANG || {};
+
 let selectedCategoryIds = new Set();
-console.log('selectedCategoryIds', selectedCategoryIds);
 
 $(document).ready(function () {
-    // 1. Khởi tạo Flatpickr
     $(".datepicker").flatpickr({
         dateFormat: "Y-m-d",
         allowInput: true
     });
 
-    // 2. Khởi tạo Select2 thông thường
     $('.select2-custom').not('#filterCategory').each(function () {
         $(this).select2({
             width: '100%',
@@ -20,20 +19,17 @@ $(document).ready(function () {
         });
     });
 
-    // 3. Khởi tạo Select2 Multi-select cho ô chọn Ngôn ngữ (#storyLang)
     $('#storyLang').select2({
         width: '100%',
-        placeholder: 'Select languages...',
+        placeholder: UI_LANG.SelectLanguagesPlaceholder || 'Select languages...',
         closeOnSelect: false
     });
 
-    // 4. Nạp dữ liệu dropdown
     loadAuthors();
     loadCategoryFilter();
     loadCategories();
 });
 
-// Định dạng chấm tròn và chữ gradient cho option Select2
 function formatState(state) {
     if (!state.id) { return state.text; }
 
@@ -47,15 +43,14 @@ function formatState(state) {
     );
 }
 
-// Nạp danh sách tác giả vào dropdown CRUD form
 function loadAuthors(selectedId = null) {
     fetch('/Admin/tblStories/GetAuthorsForSelect')
         .then(res => res.json())
         .then(data => {
-            console.log(data);
             const select = document.getElementById('storyAuthorName');
             if (!select) return;
-            select.innerHTML = `<option value="Unknow">Select author</option>`;
+            const selectAuthorText = UI_LANG.SelectAuthor || 'Select author';
+            select.innerHTML = `<option value="Unknow">${selectAuthorText}</option>`;
 
             data.forEach(a => {
                 const selected = selectedId == a.id ? 'selected' : '';
@@ -68,13 +63,14 @@ function loadAuthors(selectedId = null) {
         });
 }
 
-// Nạp danh mục vào dropdown bộ lọc ở thanh công cụ và khởi tạo Select2 sạch sẽ
 function loadCategoryFilter(selectedId = 'all') {
     fetch('/Admin/tblStories/GetCategoriesForSelect')
         .then(res => res.json())
         .then(data => {
             const $select = $('#filterCategory');
-            $select.empty(); $select.append(`<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">Categories</option>`);
+            $select.empty();
+            const allCatText = UI_LANG.FilterAllCategories || 'Categories';
+            $select.append(`<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">${allCatText}</option>`);
 
             data.forEach(c => {
                 $select.append(`
@@ -84,12 +80,10 @@ function loadCategoryFilter(selectedId = 'all') {
                 `);
             });
 
-            // Nếu Select2 đã khởi tạo trước đó thì hủy để áp dụng options mới
             if ($select.hasClass("select2-hidden-accessible")) {
                 $select.select2('destroy');
             }
 
-            // Khởi tạo Select2 với đầy đủ template gradient và ẩn ô tìm kiếm thừa
             $select.select2({
                 width: '100%',
                 minimumResultsForSearch: Infinity,
@@ -102,7 +96,6 @@ function loadCategoryFilter(selectedId = 'all') {
         });
 }
 
-// Mở modal chọn nhiều danh mục
 function openCategoryModal() {
     const modal = document.getElementById('categoryModal');
     const content = document.getElementById('categoryModalContent');
@@ -115,7 +108,6 @@ function openCategoryModal() {
     }, 50);
 }
 
-// Đóng modal chọn danh mục
 function closeCategoryModal() {
     const modal = document.getElementById('categoryModal');
     const content = document.getElementById('categoryModalContent');
@@ -128,7 +120,6 @@ function closeCategoryModal() {
     }, 300);
 }
 
-// Nạp danh sách checkbox trong modal danh mục
 function loadCategories() {
     fetch('/Admin/tblStories/GetCategoriesForSelect')
         .then(res => res.json())
@@ -155,7 +146,6 @@ function loadCategories() {
         });
 }
 
-// Áp dụng các danh mục đã tick vào thẻ xem trước preview
 function applyCategories() {
     selectedCategoryIds.clear();
 
@@ -180,13 +170,13 @@ function applyCategories() {
         });
 
     if (selectedCategoryIds.size === 0) {
-        preview.innerHTML = `<span class="text-xs text-gray-400">No category selected</span>`;
+        const noCatText = UI_LANG.NoCategoriesSelected || 'No category selected';
+        preview.innerHTML = `<span class="text-xs text-gray-400">${noCatText}</span>`;
     }
 
     closeCategoryModal();
 }
 
-// Xem trước ảnh khi chọn từ máy
 function previewImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -198,7 +188,6 @@ function previewImage(input) {
     }
 }
 
-// Phóng to ảnh
 function openImagePreview(src) {
     if (!src) return;
     $('#imageModalContent').attr('src', src);
@@ -209,14 +198,12 @@ function closeImagePreview() {
     $('#imageModal').addClass('hidden').removeClass('flex');
 }
 
-// Mở modal Import Excel
 function openImportModal() {
     const modal = $('#importModal');
     modal.removeClass('hidden').addClass('flex');
     setTimeout(() => $('#importContent').addClass('scale-100 opacity-100'), 10);
 }
 
-// Đóng modal Import Excel
 function closeImportModal() {
     $('#importContent').removeClass('scale-100 opacity-100');
     setTimeout(() => {
@@ -235,20 +222,21 @@ $('#excelFile').on('change', function (e) {
 
 function resetImportForm() {
     $('#excelFile').val('');
-    $('#fileStatus').text('Drag and drop the file here or click to select it.');
+    const dragDropText = UI_LANG.DragDropExcelStory || 'Drag and drop the file here or click to select it.';
+    $('#fileStatus').text(dragDropText);
     $('#dropZone').removeClass('border-indigo-500 bg-indigo-100/50');
 }
 
-// Cập nhật số lượng trên nút Delete(N)
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = UI_LANG.BtnDeleteText || 'Delete';
 
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`);
         $btn.prop('disabled', false); $btn.removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`);
         $btn.prop('disabled', true); $btn.addClass('opacity-50 cursor-not-allowed');
     }
 }

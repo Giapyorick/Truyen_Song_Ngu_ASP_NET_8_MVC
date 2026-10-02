@@ -12,14 +12,14 @@
 
                     <div class="chapter-thumb-wrapper">
                         <img src="https://picsum.photos/300/180?random=@item.ChapterId"
-                             alt="Chapter @item.ChapterNumber"
+                             alt="@SharedLocalizer["Story_Chapter"] @item.ChapterNumber"
                              class="chapter-thumb-img"
                              loading="lazy" />
                     </div>
 
                     <div class="chapter-info-wrapper">
                         <div class="chapter-title text-main">
-                            Chapter @item.ChapterNumber: @item.Title
+                            @SharedLocalizer["Story_Chapter"] @item.ChapterNumber: @item.Title
                         </div>
 
                         <div class="chapter-meta">
@@ -28,7 +28,7 @@
                                 @item.CreatedDate?.ToString("dd/MM/yyyy")
                             </span>
                             <span class="text-main">
-                                <i class="far text-main fa-eye me-1"></i>Automatically update
+                                <i class="far text-main fa-eye me-1"></i>@SharedLocalizer["Chapter_AutomaticallyUpdated"]
                             </span>
                         </div>
                     </div>
@@ -42,18 +42,18 @@
         else
         {
             <div class="text-center p-4 text-muted bg-white rounded-4 border border-light" style="border-radius: 20px;">
-                <p class="mb-0 small fst-italic">The story does not have any chapters yet.</p>
+                <p class="mb-0 small fst-italic">@SharedLocalizer["Chapter_NoChaptersYet"]</p>
             </div>
         }
 
     </div>
 
     <div class="w-100 py-4 d-flex justify-content-center">
-        <nav aria-label="Chapter pagination">
+        <nav aria-label="@SharedLocalizer["Chapter_Pagination"]">
             <ul class="pagination pagination-modern mb-0" data-story-id="@Model.StoryId">
 
                 <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                    <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage - 1)" aria-label="Previous">
+                    <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage - 1)" aria-label="@SharedLocalizer["Chapter_PreviousPage"]">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
@@ -66,7 +66,7 @@
                 }
 
                 <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                    <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage + 1)" aria-label="Next">
+                    <a class="page-link page-nav-link" href="#" data-page="@(Model.CurrentPage + 1)" aria-label="@SharedLocalizer["Chapter_NextPage"]">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>

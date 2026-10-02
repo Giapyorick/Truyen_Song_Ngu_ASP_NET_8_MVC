@@ -1,5 +1,7 @@
 ﻿/* paragraphs-crud.js - Xử lý Bảng dữ liệu, Phân trang, Bộ lọc, CRUD câu đơn, Xóa nhiều & Export */
 
+var L = window.ADMIN_LANG || {};
+
 let currentPage = 1;
 const pageSize = 10;
 
@@ -58,17 +60,20 @@ $(document).ready(function () {
     $(document).on('click', '#btnDeleteSelected', async function () {
         const ids = $('.user-checkbox:checked').map(function () { return parseInt(this.value); }).get();
         if (ids.length === 0) {
-            showToast('Please select at least one paragraph!', 'error');
+            showToast(L.SelectAtLeastOnePara || 'Please select at least one paragraph!', 'error');
             return;
         }
 
-        const confirmed = await safeConfirm(
-            `Are you sure you want to delete <strong>${ids.length}</strong> selected paragraphs?<br><small class="text-red-400">The chapter will be automatically re-indexed.</small>`,
-            "Delete Multiple"
-        );
+        const actionText = L.ActionCannotUndo || 'The chapter will be automatically re-indexed.';
+        const multiMsg = (L.ConfirmDeleteMultiParasMsg || 'Are you sure you want to delete <strong>{0}</strong> selected paragraphs?')
+            .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
+        const multiTitle = L.ConfirmDeleteMultiParasTitle || "Delete Multiple";
+
+        const confirmed = await safeConfirm(multiMsg, multiTitle);
         if (!confirmed) return;
 
-        const $btn = $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Deleting...');
+        const deletingText = L.Processing || 'Deleting...';
+        const $btn = $(this).prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-2"></i>${deletingText}`);
 
         $.ajax({
             url: '/Admin/tblParagraphs/DeleteMultiple',
@@ -77,16 +82,18 @@ $(document).ready(function () {
             data: { ids: ids },
             success: function (res) {
                 if (res.success) {
-                    showToast(res.message || `Deleted ${res.deleted ? res.deleted.length : ids.length} paragraph(s).`, 'success');
+                    const count = res.deleted ? res.deleted.length : ids.length;
+                    const successMsg = (L.DeletedParasSuccess || 'Deleted {0} paragraph(s).').replace('{0}', count);
+                    showToast(res.message || successMsg, 'success');
                     $('#selectAll').prop('checked', false);
                     updateDeleteButton();
                     loadParagraphList(currentPage);
                 } else {
-                    showToast(res.message || 'Error occurred while deleting paragraphs.', 'error');
+                    showToast(res.message || (L.ErrDeleteParasServer || 'Error occurred while deleting paragraphs.'), 'error');
                 }
             },
             error: function (xhr) {
-                const msg = xhr.responseJSON ? xhr.responseJSON.message : "Cannot connect to server!";
+                const msg = xhr.responseJSON ? xhr.responseJSON.message : (L.ErrConnectServer || "Cannot connect to server!");
                 showToast(msg, 'error');
             },
             complete: () => {
@@ -115,7 +122,7 @@ $(document).ready(function () {
             $('#paragraphFrenchValue').val(normalizeQuillHtml(quillFrench.root.innerHTML));
 
         const formData = new FormData(this);
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner animate-spin"></i> Processing...');
+        submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
         $.ajax({
             url: '/Admin/tblParagraphs/Update',
@@ -132,13 +139,12 @@ $(document).ready(function () {
                     showToast(res.message, 'error');
                 }
             },
-            error: () => showToast('Cannot connect to server', 'error'),
-            complete: () => submitBtn.prop('disabled', false).html('Save Changes')
+            error: () => showToast(L.ErrConnectServer || 'Cannot connect to server', 'error'),
+            complete: () => submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes')
         });
     });
 });
 
-// Định dạng Select2
 function formatSelectState(state) {
     if (!state.id) return state.text;
     const gradient = $(state.element).data('color') || 'linear-gradient(135deg, #667eea, #764ba2)';
@@ -150,7 +156,6 @@ function formatSelectState(state) {
     );
 }
 
-// Khởi tạo các Quill Editor trong Modal CRUD
 function initModalQuillEditors() {
     const commonModules = {
         toolbar: quillToolbar,
@@ -169,7 +174,6 @@ function initModalQuillEditors() {
     quillFrench = new Quill('#paragraphFrench', { theme: 'snow', modules: commonModules });
 }
 
-// Chuyển tab ngôn ngữ trong Modal CRUD
 function switchParagraphLanguage(language) {
     $('.paragraph-language-content').addClass('hidden');
     $('#tabEnglish, #tabVietnamese, #tabChinese, #tabJapanese, #tabFrench')
@@ -201,7 +205,6 @@ function setLanguageInputState(language, exists) {
     if (!exists) input.val('');
 }
 
-// Mở Modal CRUD câu đơn
 function openModal(mode, id) {
     if (mode !== 'edit') return;
 
@@ -275,7 +278,7 @@ function openModal(mode, id) {
             const firstLanguage = languages.find(lang => lang.value !== null);
             if (firstLanguage) switchParagraphLanguage(firstLanguage.name);
         })
-        .fail(() => showToast('Cannot load paragraph information', 'error'));
+        .fail(() => showToast(L.CannotFetchInfo || 'Cannot load paragraph information', 'error'));
 }
 
 function closeModal() {
@@ -283,25 +286,25 @@ function closeModal() {
     setTimeout(() => $('#modalOverlay').removeClass('flex').addClass('hidden'), 300);
 }
 
-// Load dropdown Stories trên bộ lọc
 function loadFilterStories() {
     $.get('/Admin/tblParagraphs/GetStoriesForSelect', function (data) {
-        const $story = $('#filterStory').html('<option value="all">Stories</option>');
+        const allText = L.FilterAllStories || 'Stories';
+        const $story = $('#filterStory').html(`<option value="all">${allText}</option>`);
         data.forEach(s => $story.append(`<option value="${s.id}">${s.name}</option>`));
         $story.trigger('change.select2');
     });
 }
 
-// Load dropdown Chapters trên bộ lọc
 function loadChaptersByStory(storyId) {
     const $chapter = $('#filterChapter');
+    const allText = L.FilterAllChapters || 'Chapter';
     if (!storyId || storyId === 'all') {
-        $chapter.html('<option value="all">Chapter</option>').trigger('change.select2');
+        $chapter.html(`<option value="all">${allText}</option>`).trigger('change.select2');
         return;
     }
 
     $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId }, function (data) {
-        $chapter.html('<option value="all">Chapter</option>');
+        $chapter.html(`<option value="all">${allText}</option>`);
         data.forEach(c => $chapter.append(`<option value="${c.id}">${c.name}</option>`));
         $chapter.trigger('change.select2');
     });
@@ -332,7 +335,8 @@ function loadParagraphList(page = 1) {
         data: filters,
         success: function (data) {
             if (!data.paragraphs || data.paragraphs.length === 0) {
-                $body.html('<tr><td colspan="10" class="text-center py-10 text-gray-500">Not found any results.</td></tr>');
+                const notFound = L.NotFoundParagraphs || 'Not found any results.';
+                $body.html(`<tr><td colspan="10" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
             }
@@ -344,10 +348,10 @@ function loadParagraphList(page = 1) {
 
                 let blockBadge = '';
                 switch (bType) {
-                    case 0: blockBadge = '<span class="px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-xs font-semibold">0 - Opening</span>'; break;
-                    case 2: blockBadge = '<span class="px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-semibold">2 - New paragraph</span>'; break;
-                    case 4: blockBadge = '<span class="px-2.5 py-1 bg-purple-50 text-purple-600 border border-purple-200 rounded-lg text-xs font-semibold">4 - Dialogue</span>'; break;
-                    default: blockBadge = '<span class="px-2.5 py-1 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium">1 - Continuous</span>'; break;
+                    case 0: blockBadge = `<span class="px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-xs font-semibold">0 - ${L.BlockTypeOpening || 'Opening'}</span>`; break;
+                    case 2: blockBadge = `<span class="px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-semibold">2 - ${L.BlockTypeNew || 'New paragraph'}</span>`; break;
+                    case 4: blockBadge = `<span class="px-2.5 py-1 bg-purple-50 text-purple-600 border border-purple-200 rounded-lg text-xs font-semibold">4 - ${L.BlockTypeDialogue || 'Dialogue'}</span>`; break;
+                    default: blockBadge = `<span class="px-2.5 py-1 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium">1 - ${L.BlockTypeContinuous || 'Continuous'}</span>`; break;
                 }
 
                 html += `
@@ -369,16 +373,16 @@ function loadParagraphList(page = 1) {
                     <td class="px-6 py-5 whitespace-nowrap">${blockBadge}</td>
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-2">
-                            <button type="button" title="Insert paragraph after" onclick="openInsertParagraphModal(${p.chapterId}, ${p.paragraphOrder})" class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center">
+                            <button type="button" title="${L.TitleInsertAfter || 'Insert paragraph after'}" onclick="openInsertParagraphModal(${p.chapterId}, ${p.paragraphOrder})" class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center">
                                 <i class="fas fa-plus text-[11px]"></i>
                             </button>
-                            <button type="button" title="Edit paragraph" onclick="openModal('edit', ${p.paragraphId})" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
+                            <button type="button" title="${L.TitleEditPara || 'Edit paragraph'}" onclick="openModal('edit', ${p.paragraphId})" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
-                            <button type="button" title="Read & edit whole chapter" onclick="openChapterEditor(${p.chapterId})" class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center">
+                            <button type="button" title="${L.TitleReadChapter || 'Read & edit whole chapter'}" onclick="openChapterEditor(${p.chapterId})" class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center">
                                 <i class="fas fa-book-open text-[11px]"></i>
                             </button>
-                            <button onclick="deleteParagraph(${p.paragraphId})" title="Delete paragraph" class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center">
+                            <button onclick="deleteParagraph(${p.paragraphId})" title="${L.TitleDeletePara || 'Delete paragraph'}" class="w-7 h-7 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -390,21 +394,25 @@ function loadParagraphList(page = 1) {
             renderPagination(data.currentPage, data.totalPages);
             updateDeleteButton();
         },
-        error: () => $body.html('<tr><td colspan="10" class="text-center py-10 text-red-500">Error loading data.</td></tr>')
+        error: () => {
+            const errLoad = L.ErrLoadParagraphs || 'Error loading data.';
+            $body.html(`<tr><td colspan="10" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
+        }
     });
 }
 
 // Xóa đơn 1 câu
 async function deleteParagraph(id) {
     if (!id || id <= 0) {
-        showToast("Invalid paragraph ID!", "error");
+        showToast(L.DeleteParaInvalidId || "Invalid paragraph ID!", "error");
         return;
     }
 
-    const confirmed = await safeConfirm(
-        `Are you sure you want to delete this paragraph?<br><small class="text-red-400">The chapter will be automatically re-ordered.</small>`,
-        "Delete Paragraph"
-    );
+    const actionText = L.ActionCannotUndo || 'The chapter will be automatically re-ordered.';
+    const confirmMsg = (L.ConfirmDeleteSingleParaMsg || 'Are you sure you want to delete this paragraph?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmTitle = L.ConfirmDeleteSingleParaTitle || "Delete Paragraph";
+
+    const confirmed = await safeConfirm(confirmMsg, confirmTitle);
     if (!confirmed) return;
 
     const $row = $(`button[onclick*="deleteParagraph(${id})"]`).closest('tr');
@@ -427,32 +435,31 @@ async function deleteParagraph(id) {
             }
         },
         error: function (xhr) {
-            const msg = xhr.responseJSON ? xhr.responseJSON.message : "Cannot connect to server to delete.";
+            const msg = xhr.responseJSON ? xhr.responseJSON.message : (L.ErrConnectDelete || "Cannot connect to server to delete.");
             showToast(msg, 'error');
             $row.removeClass('opacity-50 pointer-events-none');
         }
     });
 }
 
-// Xuất file Excel
 function exportExcel() {
     const search = $('#filterSearch').val();
     const chapterId = $('#filterChapter').val();
     window.location.href = `/Admin/tblParagraphs/ExportToExcel?search=${search}&chapterId=${chapterId}`;
 }
 
-// Cập nhật nút Delete(N)
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = L.BtnDeleteText || 'Delete';
+
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`).prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`).prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
     }
 }
 
-// Phân trang
 function renderPagination(curr, total) {
     const container = $('#pagination-container').empty();
     if (total <= 1) return;

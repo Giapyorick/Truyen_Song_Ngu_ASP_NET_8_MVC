@@ -28,6 +28,7 @@
 
 async function handleAction(endpoint) {
     const inputElement = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
     const text = inputElement.value.trim();
     if (!text) return;
 
@@ -47,7 +48,7 @@ async function handleAction(endpoint) {
         });
 
         if (!response.ok) {
-            let errorDetail = `Server Error (${response.status}: ${response.statusText})`;
+            let errorDetail = `${chatBox.dataset.httpError || 'Error'} (${response.status}: ${response.statusText})`;
             const rawText = await response.text();
 
             if (rawText) {
@@ -64,12 +65,12 @@ async function handleAction(endpoint) {
         }
 
         const data = await response.json();
-        const resultText = data.translatedText || data.result || "No response from AI";
+        const resultText = data.translatedText || data.result || chatBox.dataset.noResponse || "No response from AI";
         updateMessage(loadingId, resultText);
 
     } catch (error) {
         console.error("Fetch Exception:", error);
-        updateMessage(loadingId, ` Connection Error: ${error.message}`);
+        updateMessage(loadingId, ` ${chatBox.dataset.connectionError || 'Connection error'}: ${error.message}`);
     } finally {
         inputElement.disabled = false;
         inputElement.focus();

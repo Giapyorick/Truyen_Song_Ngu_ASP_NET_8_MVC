@@ -44,9 +44,10 @@ class ReadingViewer {
     // Hiển thị danh sách chương vào thẻ Select
     renderChapterSelect() {
         let html = '';
+        const chapterLabel = $('#mainWrapper').data('reader-chapter') || 'Chapter';
         this.chapterList.forEach(c => {
             const selected = c.chapterId == this.chapterId ? 'selected' : '';
-            html += `<option value="${c.chapterId}" ${selected}>Chapter ${c.chapterNumber}</option>`;
+            html += `<option value="${c.chapterId}" ${selected}>${chapterLabel} ${c.chapterNumber}</option>`;
         });
         $('#chapterSelect').html(html);
     }
@@ -55,7 +56,8 @@ class ReadingViewer {
     updateChapterTitleText() {
         const current = this.chapterList.find(c => c.chapterId == this.chapterId);
         if (current) {
-            $('#txtChapterTitle').text(`Chapter ${current.chapterNumber}: ${current.title || ''}`);
+            const chapterLabel = $('#mainWrapper').data('reader-chapter') || 'Chapter';
+            $('#txtChapterTitle').text(`${chapterLabel} ${current.chapterNumber}: ${current.title || ''}`);
         }
     }
 
@@ -488,7 +490,7 @@ class ReadingViewer {
             const newTarget = $('#targetLangSelect').val();
 
             if (newSrc === newTarget) {
-                showToast("Translation language must be different from the source language!", error);
+                showToast($('#mainWrapper').data('reader-translation-error') || 'Translation language must be different from the source language!', 'error');
                 $('#srcLangSelect').val(self.currentSrcLang);
                 $('#targetLangSelect').val(self.currentTargetLang);
                 return;
@@ -497,7 +499,7 @@ class ReadingViewer {
             self.currentSrcLang = newSrc;
             self.currentTargetLang = newTarget;
             self.isAllTranslated = false;
-            $('#btnTranslateAll').removeClass('active').find('.btn-text').text('Translate all');
+            $('#btnTranslateAll').removeClass('active').find('.btn-text').text($('#mainWrapper').data('reader-translate-all') || 'Translate all');
 
             self.renderParagraphs();
 
@@ -542,7 +544,9 @@ class ReadingViewer {
             }
 
             const srcLabel = self.langMap[self.currentSrcLang] || self.currentSrcLang.toUpperCase();
-            $btn.find('.btn-text').text(self.isAllTranslated ? `Show ${srcLabel}` : 'Translate all');
+            const translateAllLabel = $('#mainWrapper').data('reader-translate-all') || 'Translate all';
+            const showLabel = $('#mainWrapper').data('reader-show') || 'Show';
+            $btn.find('.btn-text').text(self.isAllTranslated ? `${showLabel} ${srcLabel}` : translateAllLabel);
         });
 
         $('#btnFontDecrease').on('click', () => self.changeFontSize(-2));
@@ -601,7 +605,7 @@ class ReadingViewer {
             });
 
             $('body').addClass('overflow-hidden');
-            $btn.addClass('bg-amber-500 text-white').find('.btn-text').text('Exit Focus'); $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+            $btn.addClass('bg-amber-500 text-white').find('.btn-text').text($('#mainWrapper').data('reader-exit-focus') || 'Exit Focus'); $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
         } else {
             $fixedBar.removeClass('focus-layout-active'); $actionControls.removeClass('focus-layout-active');
 
@@ -611,7 +615,7 @@ class ReadingViewer {
             }, 300);
 
             $('body').removeClass('overflow-hidden');
-            $btn.removeClass('bg-amber-500 text-white').find('.btn-text').text('Focus Mode'); $btn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+            $btn.removeClass('bg-amber-500 text-white').find('.btn-text').text($('#mainWrapper').data('reader-focus') || 'Focus Mode'); $btn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
         }
     }
 }

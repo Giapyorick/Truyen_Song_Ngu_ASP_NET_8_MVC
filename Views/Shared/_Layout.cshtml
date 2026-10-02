@@ -52,7 +52,7 @@
                     <a asp-controller="Home" asp-action="Index"
                        class="nav-link @(currentController.Equals("Home", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-house"></i>
-                        <span>Home</span>
+                        <span>@SharedLocalizer["Nav_Home"]</span>
                     </a>
                 </li>
                 
@@ -63,7 +63,7 @@
                     <button type="button"
                             id="btnOpenSearch"
                             class="nav-link flex items-center justify-center p-2 text-slate-600 hover:text-teal-700 transition"
-                            title="Search stories">
+                            title="@SharedLocalizer["Nav_SearchTooltip"]">
                         <i class="fa-solid fa-magnifying-glass text-sm"></i>
                     </button>
 
@@ -74,7 +74,7 @@
                             <input type="text"
                                    id="liveSearchInput"
                                    autocomplete="off"
-                                   placeholder="Search stories..."
+                                   placeholder="@SharedLocalizer["Nav_SearchPlaceholder"]"
                                    class="w-48 sm:w-64 pl-8 pr-7 py-1 text-xs rounded-full border border-teal-300/60 bg-white/90 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-200 outline-none transition text-slate-700 shadow-sm" />
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-teal-600 text-[11px] pointer-events-none"></i>
 
@@ -90,22 +90,22 @@
                 <li>
                     <a href="#" class="nav-link">
                         <i class="fa-solid fa-language"></i>
-                        <span>Bilingual EN-VI</span>
-                        <span class="nav-badge">HOT</span>
+                        <span>@SharedLocalizer["Nav_Bilingual"]</span>
+                        <span class="nav-badge">@SharedLocalizer["Nav_BilingualBadge"]</span>
                     </a>
                 </li>
                 <li>
                     <a asp-controller="Categories" asp-action="Index"
                        class="nav-link @(currentController.Equals("Categories", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-layer-group"></i>
-                        <span>Categories</span>
+                        <span>@SharedLocalizer["Nav_Categories"]</span>
                     </a>
                 </li>
                 <li>
                     <a asp-controller="Rankings" asp-action="Index"
                        class="nav-link @(currentController.Equals("Rankings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <i class="fa-solid fa-chart-simple"></i>
-                        <span>Rankings</span>
+                        <span>@SharedLocalizer["Nav_Rankings"]</span>
                     </a>
                 </li>
             </ul>
@@ -119,11 +119,11 @@
                 <div class="flex items-center gap-3">
                     <a asp-controller="Profile" asp-action="Index"
                        class="flex items-center gap-2 text-slate-700 hover:text-teal-700 font-bold text-sm bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 transition"
-                       title="Profile">
+                       title="@SharedLocalizer["Nav_Profile"]">
                         <i class="fa-solid fa-circle-user text-main text-lg"></i>
                         <span class="max-w-[120px] text-main truncate">@currentUserName</span>
                     </a>
-                    <a asp-controller="Login" asp-action="Logout" class="text-xs font-semibold text-rose-500 hover:text-rose-700 bg-white px-3 py-3 rounded-xl transition" title="Logout">
+                    <a asp-controller="Login" asp-action="Logout" class="text-xs font-semibold text-rose-500 hover:text-rose-700 bg-white px-3 py-3 rounded-xl transition" title="@SharedLocalizer["Nav_Logout"]">
                         <i class="fa-solid text-deny fa-arrow-right-from-bracket"></i>
                     </a>
                 </div>
@@ -133,7 +133,7 @@
                 <!-- CHƯA ĐĂNG NHẬP: Bấm vào mở Modal Login -->
                 <button type="button" onclick="openLoginModal()" class="btn-header-login flex items-center gap-2">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    <span>Login</span>
+                    <span>@SharedLocalizer["Nav_SignIn"]</span>
                 </button>
             }
         </div>
@@ -238,40 +238,40 @@
                         <span class="brand-title">BilingualManga</span>
                     </div>
                     <p class="brand-desc">
-                        A leading bilingual manga platform, providing a seamless experience to relax while naturally and effectively expanding your vocabulary.
+                        @SharedLocalizer["Footer_Description"]
                     </p>
                     <div class="footer-badge">
                         <i class="fa-solid fa-sparkles"></i>
-                        <span>Smart Language Learning</span>
+                        <span>@SharedLocalizer["Footer_SmartLearning"]</span>
                     </div>
                 </div>
 
                 <!-- Cột 2: Điều hướng nhanh -->
                 <div class="footer-col">
-                    <h4 class="col-title">Discover</h4>
+                    <h4 class="col-title">@SharedLocalizer["Footer_Discover"]</h4>
                     <ul class="footer-links">
-                        <li><a href="/"><i class="fa-solid fa-angle-right"></i> Home</a></li>
-                        <li><a href="/Stories"><i class="fa-solid fa-angle-right"></i> Manga List</a></li>
-                        <li><a href="/Profile"><i class="fa-solid fa-angle-right"></i> Library</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> Rankings</a></li>
+                        <li><a href="/"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Home"]</a></li>
+                        <li><a href="/Stories"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_MangaList"]</a></li>
+                        <li><a href="/Profile"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Library"]</a></li>
+                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Rankings"]</a></li>
                     </ul>
                 </div>
 
                 <!-- Cột 3: Chính sách & Pháp lý -->
                 <div class="footer-col">
-                    <h4 class="col-title">Policies</h4>
+                    <h4 class="col-title">@SharedLocalizer["Footer_Policies"]</h4>
                     <ul class="footer-links">
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> Terms of Service</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> Privacy Policy</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> Copyright Notices</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> Reader Support</a></li>
+                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Terms"]</a></li>
+                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Privacy"]</a></li>
+                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_CopyrightNotices"]</a></li>
+                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_ReaderSupport"]</a></li>
                     </ul>
                 </div>
 
                 <!-- Cột 4: Mạng xã hội & Cộng đồng -->
                 <div class="footer-col">
-                    <h4 class="col-title">Community</h4>
-                    <p class="community-text">Join the discussions and get notified about the latest bilingual translated chapters.</p>
+                    <h4 class="col-title">@SharedLocalizer["Footer_Community"]</h4>
+                    <p class="community-text">@SharedLocalizer["Footer_CommunityDescription"]</p>
                     <div class="social-links">
                         <a href="#" class="social-btn facebook" title="Facebook">
                             <i class="fa-brands fa-facebook-f"></i>
@@ -292,10 +292,10 @@
             <!-- Dòng phân cách & Copyright -->
             <div class="footer-bottom">
                 <div class="copyright-text">
-                    © 2026 <span class="highlight">BilingualManga</span>. All rights reserved.
+                    © 2026 <span class="highlight">BilingualManga</span>. @SharedLocalizer["Footer_AllRightsReserved"]
                 </div>
                 <div class="made-by">
-                    Handcrafted with <i class="fa-solid fa-heart heart-beat"></i> for manga learners.
+                    @SharedLocalizer["Footer_MadeForLearners"] <i class="fa-solid fa-heart heart-beat"></i> @SharedLocalizer["Footer_MangaLearners"]
                 </div>
             </div>
         </div>
@@ -402,7 +402,7 @@
                                 $grid.html(`
                                     <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                         <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
-                                        <p class="text-sm font-semibold">No stories match your search keyword.</p>
+                                        <p class="text-sm font-semibold">${$('<div>').text('@SharedLocalizer["Story_NoSearchMatches"]').html()}</p>
                                     </div>
                                 `);
                             }
@@ -410,14 +410,14 @@
                             // Cập nhật tiêu đề hiển thị
                             const $title = $('.section-title');
                             if (keyword.trim().length > 0) {
-                                $title.html(`Search Results for: <span class="text-teal-600">"${keyword}"</span>`);
+                                $title.html(`${$('<div>').text('@SharedLocalizer["Story_SearchResultsFor"]').html()} <span class="text-teal-600">"${keyword}"</span>`);
                                 $('#infiniteScrollTrigger').addClass('hidden'); // Tạm ẩn trigger cuộn trang khi đang search
                             } else {
-                                $title.text('Latest Stories'); $('#infiniteScrollTrigger').removeClass('hidden');
+                                $title.text('@SharedLocalizer["Story_LatestStories"]'); $('#infiniteScrollTrigger').removeClass('hidden');
                             }
                         },
                         error: function () {
-                            showToast('Failed to search stories!', 'error');
+                            showToast('@SharedLocalizer["Story_SearchFailed"]', 'error');
                         },
                         complete: function () {
                             $grid.removeClass('opacity-50 pointer-events-none');
@@ -503,22 +503,22 @@
                                 $grid.html(`
                                     <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                         <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
-                                        <p class="text-sm font-semibold">No stories match your search keyword.</p>
+                                        <p class="text-sm font-semibold">${$('<div>').text('@SharedLocalizer["Story_NoSearchMatches"]').html()}</p>
                                     </div>
                                 `);
                             }
 
                             const $title = $('.section-title');
                             if (keyword.trim().length > 0) {
-                                $title.html(`Search Results for: <span class="text-teal-600">"${keyword}"</span>`);
+                                $title.html(`${$('<div>').text('@SharedLocalizer["Story_SearchResultsFor"]').html()} <span class="text-teal-600">"${keyword}"</span>`);
                                 $('#infiniteScrollTrigger').addClass('hidden');
                             } else {
-                                $title.text('Latest Stories'); $('#infiniteScrollTrigger').removeClass('hidden');
+                                $title.text('@SharedLocalizer["Story_LatestStories"]'); $('#infiniteScrollTrigger').removeClass('hidden');
                             }
                         },
                         error: function () {
                             if (typeof showToast === 'function') {
-                                showToast('Failed to search stories!', 'error');
+                                showToast('@SharedLocalizer["Story_SearchFailed"]', 'error');
                             }
                         },
                         complete: function () {
@@ -537,6 +537,49 @@
                 }
             });
     </script>
+    @using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
+<script>
+    window.ADMIN_LANG = {
+        // Table & Status
+        NotFoundAccounts: "@Html.Raw(SharedLocalizer["Admin_NotFoundAccounts"])",
+        NoDisplayName: "@Html.Raw(SharedLocalizer["Admin_NoDisplayName"])",
+        StatusActive: "@Html.Raw(SharedLocalizer["Admin_StatusActive"])",
+        StatusInactive: "@Html.Raw(SharedLocalizer["Admin_StatusInactive"])",
+        Never: "@Html.Raw(SharedLocalizer["Admin_Never"])",
+        TitleEditAccount: "@Html.Raw(SharedLocalizer["Admin_TitleEditAccount"])",
+        TitleDeleteAccount: "@Html.Raw(SharedLocalizer["Admin_TitleDeleteAccount"])",
+        
+        // Errors & Toasts
+        ErrLoadAccounts: "@Html.Raw(SharedLocalizer["Admin_ErrLoadAccounts"])",
+        ErrConnectServerLoad: "@Html.Raw(SharedLocalizer["Admin_ErrConnectServerLoad"])",
+        ViewerNoPermissionDelete: "@Html.Raw(SharedLocalizer["Admin_ViewerNoPermissionDelete"])",
+        ViewerNoPermissionSave: "@Html.Raw(SharedLocalizer["Admin_ViewerNoPermissionSave"])",
+        ViewerNoPermissionModal: "@Html.Raw(SharedLocalizer["Admin_ViewerNoPermissionModal"])",
+        SelectAtLeastOne: "@Html.Raw(SharedLocalizer["Admin_SelectAtLeastOne"])",
+        ErrConnectDelete: "@Html.Raw(SharedLocalizer["Admin_ErrConnectDelete"])",
+        ErrConnectServer: "@Html.Raw(SharedLocalizer["Admin_ErrConnectServer"])",
+        CannotFetchInfo: "@Html.Raw(SharedLocalizer["Admin_CannotFetchInfo"])",
+
+        // Confirm Dialogs & Actions
+        ConfirmDeleteSingleTitle: "@Html.Raw(SharedLocalizer["Admin_ConfirmDeleteSingleTitle"])",
+        ConfirmDeleteSingleMsg: "@Html.Raw(SharedLocalizer["Admin_ConfirmDeleteSingleMsg"])",
+        ConfirmDeleteMultiTitle: "@Html.Raw(SharedLocalizer["Admin_ConfirmDeleteMultiTitle"])",
+        ConfirmDeleteMultiMsg: "@Html.Raw(SharedLocalizer["Admin_ConfirmDeleteMultiMsg"])",
+        ActionCannotUndo: "@Html.Raw(SharedLocalizer["Admin_ActionCannotUndo"])",
+        Processing: "@Html.Raw(SharedLocalizer["Admin_Processing"])",
+        SaveChanges: "@Html.Raw(SharedLocalizer["Admin_SaveChanges"])",
+        BtnDeleteText: "@Html.Raw(SharedLocalizer["Admin_BtnDeleteText"])",
+
+        // Modal Form
+        ModalTitleAdd: "@Html.Raw(SharedLocalizer["Admin_ModalTitleAdd"])",
+        ModalTitleEdit: "@Html.Raw(SharedLocalizer["Admin_ModalTitleEdit"])",
+        PwdNoticeAdd: "@Html.Raw(SharedLocalizer["Admin_PwdNoticeAdd"])",
+        PwdNoticeEdit: "@Html.Raw(SharedLocalizer["Admin_PwdNoticeEdit"])"
+    };
+</script>
 
     <style>
             body {

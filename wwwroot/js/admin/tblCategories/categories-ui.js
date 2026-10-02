@@ -1,7 +1,8 @@
 ﻿/* categories-ui.js - Quản lý giao diện, hiệu ứng Select2 và đóng mở Modal */
 
+const UI_LANG = window.ADMIN_LANG || {};
+
 $(document).ready(function () {
-    // Khởi tạo Select2 với định dạng màu sắc gradient
     $('.select2-custom').each(function () {
         $(this).select2({
             width: '100%',
@@ -12,7 +13,6 @@ $(document).ready(function () {
     });
 });
 
-// Định dạng chấm tròn và chữ màu gradient cho từng option của Select2
 function formatState(state) {
     if (!state.id) { return state.text; }
 
@@ -29,19 +29,15 @@ function formatState(state) {
 // Mở modal Thêm hoặc Sửa thể loại
 function openModal(mode, id = null) {
     const modal = $('#modalOverlay');
-
     $('#userForm')[0].reset();
 
-    // Trường hợp thêm mới
     if (mode === 'add') {
-        $('#modalTitle').text('Add category');
+        $('#modalTitle').text(UI_LANG.TitleAddCategory || 'Add category');
         $('#categoryId').val('0');
         $('#categoryStatus').val('Active').trigger('change.select2');
     } else {
-        // Trường hợp cập nhật
-        $('#modalTitle').text('Update category');
+        $('#modalTitle').text(UI_LANG.TitleEditCategory || 'Update category');
         $.get('/Admin/tblCategories/GetById/' + id, function (data) {
-            console.log("data received:", data);
             $('#categoryId').val(data.categoryId);
             $('#categoryName').val(data.name);
             $('#categoryDescription').val(data.description);
@@ -50,13 +46,9 @@ function openModal(mode, id = null) {
     }
 
     modal.removeClass('hidden').addClass('flex');
-
-    // ĐÃ XÓA: $('.select2-custom').trigger('change'); (Dòng này làm kích hoạt nhầm bộ lọc và nhảy về trang 1)
-
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
 }
 
-// Đóng modal Thêm hoặc Sửa thể loại
 function closeModal() {
     const content = $('#modalContent');
     content.removeClass('translate-y-0 opacity-100 scale-100')
@@ -67,14 +59,12 @@ function closeModal() {
     }, 300);
 }
 
-// Mở modal Import Excel
 function openImportModal() {
     const modal = $('#importModal');
     modal.removeClass('hidden').addClass('flex');
     setTimeout(() => $('#importContent').addClass('scale-100 opacity-100'), 10);
 }
 
-// Đóng modal Import Excel
 function closeImportModal() {
     $('#importContent').removeClass('scale-100 opacity-100');
     setTimeout(() => {
@@ -83,14 +73,13 @@ function closeImportModal() {
     }, 300);
 }
 
-// Reset trạng thái form chọn file Excel
 function resetImportForm() {
     $('#excelFile').val('');
-    $('#fileStatus').text('Drag and drop or click to import file');
+    const dragDropText = UI_LANG.DragDropExcelCategory || 'Drag and drop or click to import file';
+    $('#fileStatus').text(dragDropText);
     $('#dropZone').removeClass('border-indigo-500 bg-indigo-100/50');
 }
 
-// Lắng nghe sự kiện chọn file Excel
 $('#excelFile').on('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -99,16 +88,16 @@ $('#excelFile').on('change', function (e) {
     }
 });
 
-// Cập nhật trạng thái và số lượng trên nút Delete (N)
 function updateDeleteButton() {
     const count = $('.user-checkbox:checked').length;
     const $btn = $('#btnDeleteSelected');
+    const deleteLabel = UI_LANG.BtnDeleteText || 'Delete';
 
     if (count > 0) {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete(${count})`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}(${count})`);
         $btn.prop('disabled', false); $btn.removeClass('opacity-50 cursor-not-allowed');
     } else {
-        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>Delete`);
+        $btn.html(`<i class="fas fa-trash-alt mr-2"></i>${deleteLabel}`);
         $btn.prop('disabled', true); $btn.addClass('opacity-50 cursor-not-allowed');
     }
 }
