@@ -33,81 +33,118 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         {
             return View(); 
         }
-		[HttpGet]
-        public async Task<IActionResult> GetStoriesForSelect()
+        [HttpGet]
+        public async Task<IActionResult> GetStoriesForSelect(string? culture)
         {
-           return Json(_context.TblStories
-            .Select(x => new {
-                id = x.StoryId,
-                name = x.Title
-            }).ToList());
+            var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                ? culture.Trim()
+                : System.Globalization.CultureInfo.CurrentUICulture.Name;
+            var currentCulture = rawCulture.ToLower().StartsWith("vi") ? "vi-VN" : "en-US";
+            string langPrefix = currentCulture.StartsWith("vi") ? "vi" : "en";
+
+            var stories = await _context.TblStories
+                .AsNoTracking()
+                .Select(s => new
+                {
+                    id = s.StoryId,
+                    name = s.TblStoryTranslations
+                            .Where(t => t.LanguageCode.StartsWith(langPrefix))
+                            .Select(t => t.Title)
+                            .FirstOrDefault() ?? s.Title
+                })
+                .OrderBy(s => s.name)
+                .ToListAsync();
+
+            return Json(stories);
         }
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
             var chapter = await _context.TblChapters
-				.Include(x => x.Story)
+                .Include(x => x.Story)
+                .Include(x => x.TblChapterTranslations)
                 .AsNoTracking()
-                .Select(u => new {
-                        u.ChapterId,
-                        u.Title,
-                        u.StoryId,
-						StoryTitle = u.Story.Title,
-                        u.ChapterNumber,
-                        CreateDate = u.CreatedDate.HasValue ? u.CreatedDate.Value.ToString("yyyy-MM-dd") : ""
-                    })
                 .FirstOrDefaultAsync(x => x.ChapterId == id);
-                
 
             if (chapter == null) return NotFound();
-            return Json(chapter);
+
+            var transVi = chapter.TblChapterTranslations.FirstOrDefault(t => t.LanguageCode == "vi-VN");
+
+            return Json(new
+            {
+                chapter.ChapterId,
+                TitleEn = chapter.Title ?? "",      // Tiếng Anh lấy thẳng bảng gốc
+                TitleVi = transVi?.Title ?? "",     // Tiếng Việt lấy từ bảng translation
+                chapter.StoryId,
+                chapter.ChapterNumber,
+                CreateDate = chapter.CreatedDate.HasValue ? chapter.CreatedDate.Value.ToString("yyyy-MM-dd") : ""
+            });
         }
 
         [HttpGet]
-        public async Task<IActionResult> List(string? search, string? storyId, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> List(string? search, string? storyId, string? culture, int page = 1, int pageSize = 5)
         {
             try
-    		{
-				var query = _context.TblChapters
-                    .AsNoTracking()
-                    .Select(c => new
-					{
-						c.ChapterId,
-						c.Title,
-						c.StoryId,
-						StoryTitle = c.Story.Title,
-						c.ChapterNumber,
-						CreateDate = c.CreatedDate.HasValue ? c.CreatedDate.Value.ToString("yyyy-MM-dd") : ""
-					});
+            {
+                var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                    ? culture.Trim()
+                    : System.Globalization.CultureInfo.CurrentUICulture.Name;
+                var currentCulture = rawCulture.ToLower().StartsWith("vi") ? "vi-VN" : "en-US";
+                string langPrefix = currentCulture.StartsWith("vi") ? "vi" : "en";
 
-				if (!string.IsNullOrEmpty(search))
-					query = query.Where(x => x.Title.Contains(search) || x.StoryTitle.Contains(search));
+                var query = _context.TblChapters.AsNoTracking().AsQueryable();
 
-				if (!string.IsNullOrEmpty(storyId) && storyId != "all")
-				{
-					int stId = int.Parse(storyId);
-					query = query.Where(x => x.StoryId == stId);
-				}
+                if (!string.IsNullOrEmpty(storyId) && storyId != "all")
+                {
+                    int stId = int.Parse(storyId);
+                    query = query.Where(x => x.StoryId == stId);
+                }
 
-				int totalItems = await query.CountAsync();
-				int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                var projectedQuery = query.Select(c => new
+                {
+                    c.ChapterId,
+                    // Tiêu đề chương song ngữ
+                    Title = c.TblChapterTranslations
+                             .Where(t => t.LanguageCode.StartsWith(langPrefix))
+                             .Select(t => t.Title)
+                             .FirstOrDefault() ?? c.Title,
 
-				var data = await query
+                    c.StoryId,
+                    // Tên truyện song ngữ
+                    StoryTitle = c.Story.TblStoryTranslations
+                                  .Where(st => st.LanguageCode.StartsWith(langPrefix))
+                                  .Select(st => st.Title)
+                                  .FirstOrDefault() ?? c.Story.Title,
+
+                    c.ChapterNumber,
+                    CreateDate = c.CreatedDate.HasValue ? c.CreatedDate.Value.ToString("yyyy-MM-dd") : ""
+                });
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    projectedQuery = projectedQuery.Where(x => x.Title.Contains(search) || x.StoryTitle.Contains(search));
+                }
+
+                int totalItems = await projectedQuery.CountAsync();
+                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                var data = await projectedQuery
                     .OrderByDescending(u => u.StoryId)
                     .ThenBy(x => x.ChapterNumber)
-					.Skip((page - 1) * pageSize)
-					.Take(pageSize)
-					.ToListAsync();
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
-				return Json(new
-				{
-					chapters = data,
-					currentPage = page,
-					totalPages,
-					totalItems
-				});
-			}
-            catch (Exception ex) 
+                return Json(new
+                {
+                    chapters = data,
+                    currentPage = page,
+                    totalPages,
+                    totalItems,
+                    debugCulture = currentCulture
+                });
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -324,6 +361,102 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     
                     return Json(new { success = false, message = "No valid data was found in the file." });
                 }
+            }
+        }
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public async Task<IActionResult> SaveChapter(
+    [FromForm] ChaptersViewModel model,
+    [FromForm] string? TitleVi,
+    [FromForm] string? TitleEn)
+        {
+            var isNew = model.ChapterId == 0;
+            TblChapter chapter;
+
+            var cleanTitleEn = !string.IsNullOrWhiteSpace(TitleEn) ? TitleEn.Trim() : (!string.IsNullOrWhiteSpace(model.Title) ? model.Title.Trim() : "");
+            var cleanTitleVi = !string.IsNullOrWhiteSpace(TitleVi) ? TitleVi.Trim() : "";
+
+            if (isNew)
+            {
+                // 1. BẢNG GỐC TBLCHAPTER CHỈ LƯU TIẾNG ANH
+                chapter = new TblChapter
+                {
+                    Title = cleanTitleEn,
+                    StoryId = model.StoryId,
+                    ChapterNumber = model.ChapterNumber,
+                    CreatedDate = DateTime.Now
+                };
+
+                await _context.TblChapters.AddAsync(chapter);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                chapter = await _context.TblChapters
+                    .Include(c => c.TblChapterTranslations)
+                    .FirstOrDefaultAsync(x => x.ChapterId == model.ChapterId);
+
+                if (chapter == null) return Json(new { success = false, message = "Chapter not found" });
+
+                // Cập nhật tiếng Anh vào bảng gốc
+                if (!string.IsNullOrWhiteSpace(cleanTitleEn)) chapter.Title = cleanTitleEn;
+                chapter.StoryId = model.StoryId;
+                chapter.ChapterNumber = model.ChapterNumber;
+            }
+
+            // 2. CHỈ LƯU TIẾNG VIỆT VÀO BẢNG TBLCHAPTERTRANSLATION
+            if (!string.IsNullOrWhiteSpace(cleanTitleVi))
+            {
+                var transVi = await _context.TblChapterTranslations
+                    .FirstOrDefaultAsync(t => t.ChapterId == chapter.ChapterId && t.LanguageCode == "vi-VN");
+
+                if (transVi == null)
+                {
+                    _context.TblChapterTranslations.Add(new TblChapterTranslation
+                    {
+                        ChapterId = chapter.ChapterId,
+                        LanguageCode = "vi-VN",
+                        Title = cleanTitleVi
+                    });
+                }
+                else
+                {
+                    transVi.Title = cleanTitleVi;
+                }
+            }
+
+            // Dọn dẹp bản ghi en-US nếu có lỡ lưu trước đây
+            var oldEnTrans = await _context.TblChapterTranslations
+                .Where(t => t.ChapterId == chapter.ChapterId && t.LanguageCode.StartsWith("en"))
+                .ToListAsync();
+            if (oldEnTrans.Any())
+            {
+                _context.TblChapterTranslations.RemoveRange(oldEnTrans);
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = isNew ? "Chapter added successfully!" : "Chapter updated successfully!" });
+        }
+
+        // 5. Dịch tự động tiêu đề chương bằng AI
+        [HttpPost]
+        public async Task<IActionResult> TranslateWithAi(string text, string fromLang, string toLang, [FromServices] IAiTranslationService aiService)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return Json(new { success = false, message = "Original content is empty!" });
+
+            try
+            {
+                var translated = await aiService.TranslateAsync(text, fromLang, toLang);
+                if (string.IsNullOrWhiteSpace(translated))
+                {
+                    return Json(new { success = false, message = "AI did not return any translation!" });
+                }
+                return Json(new { success = true, result = translated });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
 

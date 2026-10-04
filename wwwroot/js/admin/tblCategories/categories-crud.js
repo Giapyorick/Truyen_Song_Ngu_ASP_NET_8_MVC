@@ -1,40 +1,221 @@
-﻿/* categories-crud.js */
+﻿/* categories-crud.js - Hỗ trợ song ngữ & Dịch AI */
 
 const L = window.ADMIN_LANG || {};
 
-// 1. Lấy trang đã lưu từ localStorage, nếu không có mới lấy 1
 let savedCategoryPage = localStorage.getItem('categoryPage');
 let currentPage = savedCategoryPage ? parseInt(savedCategoryPage) : 1;
 const pageSize = 5;
 
+// ==================== CÁC HÀM XÁC ĐỊNH NGÔN NGỮ HIỆN TẠI ====================
+function getCurrentCulture() {
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+        c = c.trim();
+        if (c.indexOf('.AspNetCore.Culture=') === 0) {
+            const val = decodeURIComponent(c.substring('.AspNetCore.Culture='.length));
+            const match = val.match(/uic=([^|;]+)/) || val.match(/c=([^|;]+)/);
+            if (match && match[1]) return match[1];
+        }
+    }
+    const htmlLang = $('html').attr('lang');
+    if (htmlLang) return htmlLang;
+
+    return 'en-US';
+}
+
+function checkIsViMode() {
+    return getCurrentCulture().toLowerCase().indexOf('vi') === 0;
+}
+
+// Bộ đệm lưu trữ bản dịch trong Modal
+let categoryTranslations = {
+    en: { name: '', desc: '' },
+    vi: { name: '', desc: '' }
+};
+
+// 1. Cập nhật nhãn và giao diện Modal theo ngôn ngữ đang chọn
+function updateLanguageUIHeader() {
+    const isVi = checkIsViMode();
+
+    if (isVi) {
+        $('#currentLangFlag').text('🇻🇳');
+        $('#currentLangTitleDesc').html('Bản nhập chính: <strong>Tiếng Việt</strong>');
+        $('#btnToggleTranslateLabel').html('Thêm / Sửa Tiếng Anh 🇺🇸');
+        $('#lblTitlePrimary').html('Tên thể loại (Tiếng Việt) <span class="text-red-500">*</span>');
+        $('#lblDescPrimary').text('Mô tả thể loại (Tiếng Việt)');
+        $('#primaryName').attr('placeholder', 'Nhập tên thể loại bằng tiếng Việt...');
+        $('#primaryDesc').attr('placeholder', 'Nhập mô tả bằng tiếng Việt...');
+
+        $('#secondaryPanelHeader').html('<i class="fas fa-layer-group text-teal-600"></i> Bản dịch Tiếng Anh (English Translation)');
+        $('#secondaryPanelNotice').text('* Dịch sang Tiếng Anh để phục vụ độc giả quốc tế.');
+        $('#btnAiTranslateLabel').text('Dịch sang Tiếng Anh bằng AI');
+        $('#lblRefBoxTitle').html('<i class="fas fa-eye text-gray-400"></i> Bản gốc Tiếng Việt (Tham khảo đối chiếu)');
+        $('#lblRefName').text('Tên Tiếng Việt gốc');
+        $('#lblRefDesc').text('Mô tả Tiếng Việt gốc');
+
+        $('#lblTargetHeader').html('<i class="fas fa-pen text-teal-500"></i> Nhập bản dịch Tiếng Anh 🇺🇸');
+        $('#lblTargetName').text('Tên Tiếng Anh (English)');
+        $('#lblTargetDesc').text('Mô tả Tiếng Anh (English)');
+        $('#targetName').attr('placeholder', 'Enter category name in English...');
+        $('#targetDesc').attr('placeholder', 'Enter description in English...');
+    } else {
+        $('#currentLangFlag').text('🇺🇸');
+        $('#currentLangTitleDesc').html('Primary Version: <strong>English</strong>');
+        $('#btnToggleTranslateLabel').html('Add / Edit Vietnamese 🇻🇳');
+        $('#lblTitlePrimary').html('Category Name (English) <span class="text-red-500">*</span>');
+        $('#lblDescPrimary').text('Category Description (English)');
+        $('#primaryName').attr('placeholder', 'Enter category name in English...');
+        $('#primaryDesc').attr('placeholder', 'Enter category description in English...');
+
+        $('#secondaryPanelHeader').html('<i class="fas fa-layer-group text-teal-600"></i> Vietnamese Translation (Bản dịch tiếng Việt)');
+        $('#secondaryPanelNotice').text('* Translate into Vietnamese for local readers.');
+        $('#btnAiTranslateLabel').text('Auto-translate to Vietnamese with AI');
+        $('#lblRefBoxTitle').html('<i class="fas fa-eye text-gray-400"></i> Original English (Reference)');
+        $('#lblRefName').text('Original English Name');
+        $('#lblRefDesc').text('Original English Description');
+
+        $('#lblTargetHeader').html('<i class="fas fa-pen text-teal-500"></i> Vietnamese Input (Tiếng Việt) 🇻🇳');
+        $('#lblTargetName').text('Vietnamese Name (Tên TV)');
+        $('#lblTargetDesc').text('Vietnamese Description (Mô tả TV)');
+        $('#targetName').attr('placeholder', 'Nhập tên thể loại tiếng Việt...');
+        $('#targetDesc').attr('placeholder', 'Nhập mô tả tiếng Việt...');
+    }
+}
+
+// 2. Mở/đóng panel bản dịch song song
+function toggleTranslationPanel() {
+    const $panel =$('#secondaryLangPanel');
+    const isVi = checkIsViMode();
+
+    if (isVi) {
+        categoryTranslations.vi.name = ($('#primaryName').val() || '').trim();
+        categoryTranslations.vi.desc = ($('#primaryDesc').val() || '').trim();
+
+        $('#refName').val(categoryTranslations.vi.name);
+        $('#refDesc').val(categoryTranslations.vi.desc);
+        $('#targetName').val(categoryTranslations.en.name);
+        $('#targetDesc').val(categoryTranslations.en.desc);
+    } else {
+        categoryTranslations.en.name = ($('#primaryName').val() || '').trim();
+        categoryTranslations.en.desc = ($('#primaryDesc').val() || '').trim();
+
+        $('#refName').val(categoryTranslations.en.name);
+        $('#refDesc').val(categoryTranslations.en.desc);
+        $('#targetName').val(categoryTranslations.vi.name);
+        $('#targetDesc').val(categoryTranslations.vi.desc);
+    }
+
+    $panel.toggleClass('hidden');
+}
+$(document).on('input', '#targetName', function () {
+    const isVi = checkIsViMode();
+    if (isVi) categoryTranslations.en.name = $(this).val();
+    else categoryTranslations.vi.name = $(this).val();
+});
+$(document).on('input', '#targetDesc', function () {
+    const isVi = checkIsViMode();
+    if (isVi) categoryTranslations.en.desc = $(this).val();
+    else categoryTranslations.vi.desc = $(this).val();
+});
+
+// 3. Dịch bằng AI
+function translateCurrentViaAi() {
+    const isVi = checkIsViMode();
+    const sourceName = ($('#primaryName').val() || $('#refName').val() || '').trim();
+    const sourceDesc = ($('#primaryDesc').val() || $('#refDesc').val() || '').trim();
+
+    const fromLang = isVi ? 'Vietnamese' : 'English';
+    const toLang = isVi ? 'English' : 'Vietnamese';
+
+    if (!sourceName && !sourceDesc) {
+        showToast(L.ReqSourceBeforeTranslate || 'Please enter category name or description before translating!', 'error');
+        return;
+    }
+
+    const $btn =$('#btnAiTranslate');
+    const translatingText = L.BtnAiTranslating || 'Translating...';
+    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-1"></i> ${translatingText}`);
+    showToast(L.AiTranslatingStatus || 'AI translation in progress...', 'info');
+
+    let hasUpdated = false;
+    let requests = [];
+
+    if (sourceName) {
+        const nameReq = $.post('/Admin/tblCategories/TranslateWithAi', { text: sourceName, fromLang, toLang }).done(function (res) {
+            if (res.success && res.result) {
+                $('#targetName').val(res.result);
+                if (isVi) categoryTranslations.en.name = res.result;
+                else categoryTranslations.vi.name = res.result;
+                hasUpdated = true;
+            }
+        });
+        requests.push(nameReq);
+    }
+
+    if (sourceDesc) {
+        const descReq = $.post('/Admin/tblCategories/TranslateWithAi', { text: sourceDesc, fromLang, toLang }).done(function (res) {
+            if (res.success && res.result) {
+                $('#targetDesc').val(res.result);
+                if (isVi) categoryTranslations.en.desc = res.result;
+                else categoryTranslations.vi.desc = res.result;
+                hasUpdated = true;
+            }
+        });
+        requests.push(descReq);
+    }
+
+    $.when.apply($, requests).always(function () {
+        const defaultBtnText = L.BtnAiTranslateDefault || 'Auto-translate with AI';
+        $btn.prop('disabled', false).html(`<i class="fas fa-wand-magic-sparkles text-amber-200 mr-1"></i> ${defaultBtnText}`);
+        if (hasUpdated) {
+            showToast(L.AiTranslateCompleted || 'AI translation completed successfully!', 'success');
+        }
+    });
+}
 // Tải danh sách thể loại từ server qua AJAX
 function loadCategoryList(page = null) {
     if (page !== null && page !== undefined) {
         currentPage = parseInt(page);
     }
-
-    // Lưu ngay trang hiện tại vào bộ nhớ trình duyệt
     localStorage.setItem('categoryPage', currentPage);
 
     const $body = $('#user-list-body');
     const statusVal = $('#filterStatus').val();
+    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture().trim() : 'en-US';
+
+    console.log("==================== DEBUG CATEGORIES LIST ====================");
+    console.log("1. Cookie thô:", document.cookie);
+    console.log("2. Thẻ <html lang>:", $('html').attr('lang'));
+    console.log("3. Current Culture tính được:", currentCulture);
+    console.log("4. Có phải Tiếng Việt (checkIsViMode)?", checkIsViMode());
+
     const filters = {
         search: $('#filterSearch').val(),
         status: statusVal === 'all' ? '' : statusVal,
+        culture: currentCulture,
         page: currentPage,
         pageSize: pageSize
     };
+
+    console.log("5. Params gửi lên API /Admin/tblCategories/List:", filters);
 
     $.ajax({
         url: '/Admin/tblCategories/List',
         type: 'GET',
         data: filters,
         success: function (data) {
-            let html = '';
+            console.log("6. Dữ liệu Controller trả về:", data);
 
-            // Nếu không có dữ liệu
+            if (data && data.categories && data.categories.length > 0) {
+                console.log("7. Thể loại đầu tiên nhận được:", {
+                    CategoryId: data.categories[0].categoryId,
+                    Name: data.categories[0].name,
+                    Description: data.categories[0].description
+                });
+            }
+
+            let html = '';
             if (!data.categories || data.categories.length === 0) {
-                // Nếu đang ở trang > 1 mà không có dữ liệu (do vừa xóa hết), tự lùi 1 trang
                 if (currentPage > 1) {
                     loadCategoryList(currentPage - 1);
                     return;
@@ -53,17 +234,15 @@ function loadCategoryList(page = null) {
                 html += `
                 <tr class="group hover:bg-indigo-50/30 transition-all">
                     <td class="px-6 py-5 text-center">
-                        <input type="checkbox" class="user-checkbox w-5 h-5 rounded-md border-gray-300" value="${category.categoryId}" data-id="${category.categoryId}">
+                        <input type="checkbox" class="user-checkbox w-5 h-5 rounded-md border-gray-300" value="${category.categoryId}">
                     </td>
-                    <td class="px-4 py-5">
-                        <div class="flex items-center gap-4">
-                            <div class="font-bold text-gray-700">${category.name}</div>
+                    <td class="px-4 py-5 font-bold text-gray-700">
+                        ${category.name}
+                    </td>
+                    <td class="px-6 py-5 text-gray-600 text-sm max-w-xs md:max-w-sm">
+                        <div class="line-clamp-2 truncate-multiline" title="${(category.description || '').replace(/"/g, '&quot;')}">
+                            ${category.description || '<span class="text-gray-400 italic">No description</span>'}
                         </div>
-                    </td>
-                    <td class="px-6 py-5">
-                        <span class="px-3 py-1.5 bg-slate-100 text-gray-600 rounded-lg text-xs font-semibold">
-                            ${category.description || ''}
-                        </span>
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${statusClass} rounded-xl text-[10px] uppercase tracking-wider">
@@ -76,7 +255,6 @@ function loadCategoryList(page = null) {
                                 class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
-
                             <button onclick="deleteCategory(${category.categoryId})"
                                 class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
@@ -87,17 +265,17 @@ function loadCategoryList(page = null) {
             });
 
             $body.html(html);
-            // Ưu tiên currentPage của biến JS để tránh lỗi backend trả về lệch
             renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
         },
         error: function (xhr) {
+            console.error("Lỗi khi gọi API List:", xhr);
             const errLoad = L.ErrLoadCategories || 'Error loading data.';
             $body.html(`<tr><td colspan="5" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
         }
     });
-}
 
+}
 async function deleteCategory(id) {
     const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
     const confirmMsg = (L.ConfirmDeleteSingleCategoryMsg || 'Are you sure to remove this category?') + `<br><small class="text-red-400">${actionText}</small>`;
@@ -182,43 +360,54 @@ function executeImport() {
     });
 }
 
-// Xử lý gửi Form Thêm / Cập nhật
 $('#userForm').on('submit', function (e) {
     e.preventDefault();
-
+    const isVi = checkIsViMode();
     const submitBtn = $(this).find('button[type="submit"]');
     const formData = new FormData(this);
-    const categoryId = $('#categoryId').val();
-    const isAdding = (categoryId == "0" || categoryId == "" || !categoryId);
-    const url = isAdding ? '/Admin/tblCategories/Add' : '/Admin/tblCategories/Update';
+
+    if (isVi) {
+        categoryTranslations.vi.name = ($('#primaryName').val() || '').trim();
+        categoryTranslations.vi.desc = ($('#primaryDesc').val() || '').trim();
+        categoryTranslations.en.name = ($('#targetName').val() || categoryTranslations.en.name || '').trim();
+        categoryTranslations.en.desc = ($('#targetDesc').val() || categoryTranslations.en.desc || '').trim();
+    } else {
+        categoryTranslations.en.name = ($('#primaryName').val() || '').trim();
+        categoryTranslations.en.desc = ($('#primaryDesc').val() || '').trim();
+        categoryTranslations.vi.name = ($('#targetName').val() || categoryTranslations.vi.name || '').trim();
+        categoryTranslations.vi.desc = ($('#targetDesc').val() || categoryTranslations.vi.desc || '').trim();
+    }
+
+    if (!categoryTranslations.en.name && !categoryTranslations.vi.name) {
+        showToast(L.ReqCategoryName || 'Please enter category name!', 'error');
+        $('#primaryName').focus();
+        return;
+    }
+
+    formData.set('NameEn', categoryTranslations.en.name);
+    formData.set('DescEn', categoryTranslations.en.desc);
+    formData.set('NameVi', categoryTranslations.vi.name);
+    formData.set('DescVi', categoryTranslations.vi.desc);
 
     submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
-        url: url,
+        url: '/Admin/tblCategories/SaveCategory',
         type: 'POST',
         data: formData,
         contentType: false,
         processData: false,
-        success: function (response) {
-            if (response.success) {
-                showToast(response.message, 'success');
+        success: function (res) {
+            if (res.success) {
+                showToast(res.message, 'success');
                 closeModal();
-
-                if (isAdding) {
-                    loadCategoryList(1);
-                } else {
-                    // Lấy lại đúng trang đã lưu trước đó trong bộ nhớ
-                    const savedPage = localStorage.getItem('categoryPage');
-                    const targetPage = savedPage ? parseInt(savedPage) : currentPage;
-                    loadCategoryList(targetPage);
-                }
+                loadCategoryList(currentPage);
             } else {
-                showToast("Error: " + response.message, 'error');
+                showToast('Error: ' + res.message, 'error');
             }
         },
         error: function () {
-            showToast(L.ErrConnectServer || "Cannot connect to the server.", 'error');
+            showToast(L.ErrConnectServer || 'Server connection error!', 'error');
         },
         complete: function () {
             submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');

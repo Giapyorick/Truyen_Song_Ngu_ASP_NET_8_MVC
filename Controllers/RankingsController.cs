@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.ViewModels;
 
@@ -19,47 +21,70 @@ namespace WebTruyenTranh.Controllers
 
         // GET: /Rankings?type=likes
         [HttpGet]
-        public async Task<IActionResult> Index(string type = "likes")
+        public IActionResult Index(string type = "likes")
         {
-            ViewBag.CurrentType = type.ToLower();
-            var stories = await QueryRankedStories(type);
-            return View(stories);
-        }
+            ViewBag.CurrentType = (type ?? "likes").ToLower();
 
-        // GET: /Rankings/GetRankedStoriesPartial?type=likes (Dùng cho AJAX bấm nút không load lại trang)
+            // KHÔNG cần query 20 truyện ở đây, để InfiniteScroller tự gọi API GetStoriesInfinite phân trang
+            return View(new List<StoryListViewModel>());
+        }
+        // GET: /Rankings/GetRankedStoriesPartial?type=likes
         [HttpGet]
         public async Task<IActionResult> GetRankedStoriesPartial(string type = "likes")
         {
             var stories = await QueryRankedStories(type);
-            // Tận dụng lại chính _StoryListPartial của bạn
-            return PartialView("~/Views/Shared/_StoryListPartial.cshtml", stories);
+            return PartialView("_StoryCardsPartial", stories);
         }
 
         private async Task<List<StoryListViewModel>> QueryRankedStories(string type)
         {
-            var query = _context.TblStories
-                .AsNoTracking();
+            // 1. Nhận diện chuẩn ngôn ngữ hiện tại của người dùng
+            var rqCulture = HttpContext.Features.Get<IRequestCultureFeature>();
+            var cultureName = rqCulture?.RequestCulture.UICulture.Name
+                              ?? Request.Cookies[CookieRequestCultureProvider.DefaultCookieName]
+                              ?? CultureInfo.CurrentUICulture.Name;
 
-            // Sắp xếp linh hoạt theo từng loại xếp hạng
-            query = type.ToLower() switch
+            bool isVi = cultureName.StartsWith("vi", System.StringComparison.OrdinalIgnoreCase);
+            string langPrefix = isVi ? "vi" : "en";
+
+            var query = _context.TblStories.AsNoTracking();
+
+            // 2. Sắp xếp theo từng loại tiêu chí
+            query = (type?.ToLower()) switch
             {
-                "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate),
-                "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes),
-                "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate),
-                _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower) // Mặc định là 'likes'
+                "rate" => query.OrderByDescending(s => s.Rate)
+                               .ThenByDescending(s => s.CountRate)
+                               .ThenByDescending(s => s.StoryId),
+                "follower" => query.OrderByDescending(s => s.CountFolower)
+                                   .ThenByDescending(s => s.Likes)
+                                   .ThenByDescending(s => s.StoryId),
+                "most_rated" => query.OrderByDescending(s => s.CountRate)
+                                     .ThenByDescending(s => s.Rate)
+                                     .ThenByDescending(s => s.StoryId),
+                _ => query.OrderByDescending(s => s.Likes)
+                          .ThenByDescending(s => s.CountFolower)
+                          .ThenByDescending(s => s.StoryId)
             };
 
+            // 3. Ánh xạ song ngữ chính xác
             return await query
-                .Take(20) // Lấy Top 20 truyện dẫn đầu
+                .Take(20)
                 .Select(s => new StoryListViewModel
                 {
                     StoryID = s.StoryId,
-                    Title = s.Title,
+                    // Tiếng Việt lấy từ TblStoryTranslations, Tiếng Anh lấy từ s.Title gốc
+                    Title = isVi
+                        ? (s.TblStoryTranslations
+                            .Where(t => t.LanguageCode.StartsWith("vi"))
+                            .Select(t => t.Title)
+                            .FirstOrDefault() ?? s.Title ?? "Undefined")
+                        : (s.Title ?? "Undefined"),
                     Img = s.Img,
                     Lang = s.Lang,
                     Rate = s.Rate,
                     Likes = s.Likes,
                     CountFolower = s.CountFolower,
+                    CountRate = s.CountRate,
                     HasProgress = false,
                     LatestChapters = _context.TblChapters
                         .Where(ch => ch.StoryId == s.StoryId)
@@ -69,7 +94,12 @@ namespace WebTruyenTranh.Controllers
                         {
                             ChapterId = ch.ChapterId,
                             ChapterNumber = ch.ChapterNumber,
-                            ChapterTitle = ch.Title
+                            ChapterTitle = isVi
+                                ? (ch.TblChapterTranslations
+                                    .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                                    .Select(ct => ct.Title)
+                                    .FirstOrDefault() ?? ch.Title)
+                                : ch.Title
                         }).ToList()
                 })
                 .ToListAsync();

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.ViewModels;
 
@@ -17,18 +19,34 @@ namespace WebTruyenTranh.Controllers
             _context = context;
         }
 
-        // GET: /Categories hoặc /Categories?categoryId=1
         [HttpGet]
         public async Task<IActionResult> Index(int? categoryId)
         {
+            var rqCulture = HttpContext.Features.Get<IRequestCultureFeature>();
+            var cultureName = rqCulture?.RequestCulture.UICulture.Name
+                              ?? Request.Cookies[CookieRequestCultureProvider.DefaultCookieName]
+                              ?? CultureInfo.CurrentUICulture.Name;
+
+            bool isVi = cultureName.StartsWith("vi", System.StringComparison.OrdinalIgnoreCase);
+
             var categories = await _context.TblCategories
                 .AsNoTracking()
                 .Where(c => !string.IsNullOrEmpty(c.Name))
                 .Select(c => new CategoryItemDto
                 {
                     CategoryId = c.CategoryId,
-                    Name = c.Name,
-                    Description = c.Description,
+                    Name = isVi
+                        ? (c.TblCategoryTranslations
+                            .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                            .Select(ct => ct.Name)
+                            .FirstOrDefault() ?? c.Name)
+                        : c.Name,
+                    Description = isVi
+                        ? (c.TblCategoryTranslations
+                            .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                            .Select(ct => ct.Description)
+                            .FirstOrDefault() ?? c.Description)
+                        : c.Description,
                     StoryCount = _context.TblCategoryOfStories.Count(cs => cs.CategoryId == c.CategoryId)
                 })
                 .ToListAsync();
@@ -45,22 +63,26 @@ namespace WebTruyenTranh.Controllers
             ViewBag.SelectedCategoryName = selectedCat?.Name ?? "";
             ViewBag.SelectedCategoryDesc = selectedCat?.Description ?? "";
 
-            var stories = categoryId.HasValue
-                ? await GetStoriesByCategoryId(categoryId.Value)
-                : new List<StoryListViewModel>();
-
-            return View(stories);
+            // KHÔNG cần query danh sách truyện ở đây nữa, truyền List rỗng để InfiniteScroller tự tải Page 1
+            return View(new List<StoryListViewModel>());
         }
 
-        // AJAX lấy Partial View danh sách truyện
         [HttpGet]
         public async Task<IActionResult> GetStoriesPartial(int categoryId)
         {
-            var stories = await GetStoriesByCategoryId(categoryId);
-            return PartialView("_StoryListPartial", stories);
+            var rqCulture = HttpContext.Features.Get<IRequestCultureFeature>();
+            var cultureName = rqCulture?.RequestCulture.UICulture.Name
+                              ?? Request.Cookies[CookieRequestCultureProvider.DefaultCookieName]
+                              ?? CultureInfo.CurrentUICulture.Name;
+
+            bool isVi = cultureName.StartsWith("vi", System.StringComparison.OrdinalIgnoreCase);
+            string langPrefix = isVi ? "vi" : "en";
+
+            var stories = await GetStoriesByCategoryId(categoryId, isVi, langPrefix);
+            return PartialView("_StoryCardsPartial", stories);
         }
 
-        private async Task<List<StoryListViewModel>> GetStoriesByCategoryId(int categoryId)
+        private async Task<List<StoryListViewModel>> GetStoriesByCategoryId(int categoryId, bool isVi, string langPrefix)
         {
             return await (from cs in _context.TblCategoryOfStories
                           join s in _context.TblStories on cs.StoryId equals s.StoryId
@@ -68,12 +90,18 @@ namespace WebTruyenTranh.Controllers
                           select new StoryListViewModel
                           {
                               StoryID = s.StoryId,
-                              Title = s.Title,
+                              Title = isVi
+                                  ? (s.TblStoryTranslations
+                                      .Where(st => st.LanguageCode.StartsWith("vi"))
+                                      .Select(st => st.Title)
+                                      .FirstOrDefault() ?? s.Title ?? "Undefined")
+                                  : (s.Title ?? "Undefined"),
                               Img = s.Img,
                               Lang = s.Lang,
                               Rate = s.Rate,
                               Likes = s.Likes,
                               CountFolower = s.CountFolower,
+                              CountRate = s.CountRate,
                               HasProgress = false,
                               LatestChapters = _context.TblChapters
                                   .Where(ch => ch.StoryId == s.StoryId)
@@ -83,7 +111,12 @@ namespace WebTruyenTranh.Controllers
                                   {
                                       ChapterId = ch.ChapterId,
                                       ChapterNumber = ch.ChapterNumber,
-                                      ChapterTitle = ch.Title
+                                      ChapterTitle = isVi
+                                          ? (ch.TblChapterTranslations
+                                              .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                                              .Select(ct => ct.Title)
+                                              .FirstOrDefault() ?? ch.Title)
+                                          : ch.Title
                                   }).ToList()
                           })
                           .AsNoTracking()

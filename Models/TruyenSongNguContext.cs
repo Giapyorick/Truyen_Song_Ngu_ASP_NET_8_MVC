@@ -44,9 +44,9 @@ public partial class TruyenSongNguContext : DbContext
     public virtual DbSet<TblUserReadingProgress> TblUserReadingProgresses { get; set; }
 
     public virtual DbSet<TblVocabulary> TblVocabularies { get; set; }
-    public virtual ICollection<TblCategoryTranslation> TblCategoryTranslations { get; set; } = new List<TblCategoryTranslation>();
-    public virtual ICollection<TblStoryTranslation> TblStoryTranslations { get; set; } = new List<TblStoryTranslation>();
-    public virtual ICollection<TblChapterTranslation> TblChapterTranslations { get; set; } = new List<TblChapterTranslation>();
+    public virtual DbSet<TblStoryTranslation> TblStoryTranslations { get; set; } = null!;
+    public virtual DbSet<TblCategoryTranslation> TblCategoryTranslations { get; set; } = null!;
+    public virtual DbSet<TblChapterTranslation> TblChapterTranslations { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -58,9 +58,9 @@ public partial class TruyenSongNguContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Composite Key cho Category Translation
         modelBuilder.Entity<TblCategoryTranslation>(entity =>
         {
+            entity.ToTable("TblCategoryTranslation"); // Khớp với script CREATE TABLE đã chạy trong SSMS
             entity.HasKey(e => new { e.CategoryId, e.LanguageCode });
             entity.HasOne(d => d.Category)
                   .WithMany(p => p.TblCategoryTranslations)
@@ -70,6 +70,7 @@ public partial class TruyenSongNguContext : DbContext
         // Composite Key cho Story Translation
         modelBuilder.Entity<TblStoryTranslation>(entity =>
         {
+            entity.ToTable("TblStoryTranslation"); // Khớp với script CREATE TABLE đã chạy trong SSMS
             entity.HasKey(e => new { e.StoryId, e.LanguageCode });
             entity.HasOne(d => d.Story)
                   .WithMany(p => p.TblStoryTranslations)
@@ -79,6 +80,7 @@ public partial class TruyenSongNguContext : DbContext
         // Composite Key cho Chapter Translation
         modelBuilder.Entity<TblChapterTranslation>(entity =>
         {
+            entity.ToTable("TblChapterTranslation");
             entity.HasKey(e => new { e.ChapterId, e.LanguageCode });
             entity.HasOne(d => d.Chapter)
                   .WithMany(p => p.TblChapterTranslations)

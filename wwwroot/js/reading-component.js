@@ -44,7 +44,10 @@ class ReadingViewer {
     // Hiển thị danh sách chương vào thẻ Select
     renderChapterSelect() {
         let html = '';
-        const chapterLabel = $('#mainWrapper').data('reader-chapter') || 'Chapter';
+        const isViMode = document.cookie.includes('c=vi-VN') || document.cookie.includes('uic=vi-VN');
+        const defaultLabel = isViMode ? 'Chương' : 'Chapter';
+        const chapterLabel = $('#mainWrapper').data('reader-chapter') || defaultLabel;
+
         this.chapterList.forEach(c => {
             const selected = c.chapterId == this.chapterId ? 'selected' : '';
             html += `<option value="${c.chapterId}" ${selected}>${chapterLabel} ${c.chapterNumber}</option>`;
@@ -56,8 +59,15 @@ class ReadingViewer {
     updateChapterTitleText() {
         const current = this.chapterList.find(c => c.chapterId == this.chapterId);
         if (current) {
-            const chapterLabel = $('#mainWrapper').data('reader-chapter') || 'Chapter';
-            $('#txtChapterTitle').text(`${chapterLabel} ${current.chapterNumber}: ${current.title || ''}`);
+            // Nếu current.title đã chứa sẵn "Chapter 1:" hoặc "Chương 1:" từ API, hiển thị trực tiếp
+            if (current.title) {
+                $('#txtChapterTitle').text(current.title);
+            } else {
+                const isViMode = document.cookie.includes('c=vi-VN') || document.cookie.includes('uic=vi-VN');
+                const defaultLabel = isViMode ? 'Chương' : 'Chapter';
+                const chapterLabel = $('#mainWrapper').data('reader-chapter') || defaultLabel;
+                $('#txtChapterTitle').text(`${chapterLabel} ${current.chapterNumber}`);
+            }
         }
     }
 
@@ -237,8 +247,19 @@ class ReadingViewer {
     renderParagraphs() {
         const $container = $('#paragraphList');
 
+        // 1. Tự động xác định ngôn ngữ hiển thị theo văn cảnh giao diện
+        const isViMode = document.cookie.includes('c=vi-VN') ||
+            document.cookie.includes('uic=vi-VN') ||
+            $('html').attr('lang')?.toLowerCase().startsWith('vi');
+
+        const activeSrcLang = isViMode ? 'vietnamese' : 'english';
+        const activeTargetLang = isViMode ? 'english' : 'vietnamese';
+
+        // 2. Thông báo khi chương rỗng (Song ngữ)
         if (!this.rawParagraphData || this.rawParagraphData.length === 0) {
-            $container.html('<div class="text-center text-gray-400 py-20">This chapter has no content.</div>');
+            const noContentText = window.READER_LANG?.NoContent ||
+                (isViMode ? 'Nội dung chương đang được cập nhật...' : 'This chapter has no content.');
+            $container.html(`<div class="text-center text-gray-400 py-20 font-serif text-sm">${noContentText}</div>`);
             return;
         }
 
@@ -247,8 +268,9 @@ class ReadingViewer {
         let previousWasDialogue = false;
 
         this.rawParagraphData.forEach((p, index) => {
-            let rawSrc = this.getParagraphTextByLang(p, this.currentSrcLang) || '';
-            let rawTarget = this.getParagraphTextByLang(p, this.currentTargetLang) || '';
+            // Lấy nội dung theo đúng chiều ngôn ngữ được chọn
+            let rawSrc = this.getParagraphTextByLang(p, activeSrcLang) || '';
+            let rawTarget = this.getParagraphTextByLang(p, activeTargetLang) || '';
 
             let blockType = 1;
             if (p.blockType !== undefined && p.blockType !== null) {
@@ -259,14 +281,17 @@ class ReadingViewer {
                 blockType = 0;
             }
 
-            const order = (p.paragraphOrder !== undefined && p.paragraphOrder !== null) 
-                ? p.paragraphOrder 
+            const order = (p.paragraphOrder !== undefined && p.paragraphOrder !== null)
+                ? p.paragraphOrder
                 : ((p.ParagraphOrder !== undefined && p.ParagraphOrder !== null) ? p.ParagraphOrder : index);
 
             // Bóc tách Media từ ngôn ngữ nguồn hoặc fallback
             let srcMedia = this.extractMediaInfo(rawSrc);
             if (!srcMedia) {
-                const fallbackOrder = [p.english, p.vietnamese, p.chinese, p.japanese, p.french];
+                const fallbackOrder = isViMode
+                    ? [p.vietnamese, p.english, p.chinese, p.japanese, p.french]
+                    : [p.english, p.vietnamese, p.chinese, p.japanese, p.french];
+
                 for (let item of fallbackOrder) {
                     const info = this.extractMediaInfo(item);
                     if (info) {
@@ -287,13 +312,12 @@ class ReadingViewer {
                 const sliderId = `readerStripSlider_${order}`;
 
                 if (srcMedia.type === 'multistrip') {
-                    // Dạng 3 thanh với 3 ảnh độc lập riêng biệt
                     let panelsHtml = '';
                     srcMedia.urls.forEach(u => {
                         panelsHtml += `
-                            <div class="strip-panel-card shrink-0 h-[500px] rounded-2xl shadow-lg bg-cover bg-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]" 
-                                 style="width: calc((100% - 24px) / 3); background-image: url('${u}');">
-                            </div>`;
+                        <div class="strip-panel-card shrink-0 h-[500px] rounded-2xl shadow-lg bg-cover bg-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+                             style="width: calc((100% - 24px) / 3); background-image: url('${u}');">
+                        </div>`;
                     });
 
                     const captionHtml = srcCaption
@@ -301,24 +325,23 @@ class ReadingViewer {
                         : `<div class="story-illustration-caption text-center mt-2 text-xs text-gray-500 font-semibold hidden" id="caption-${order}"><i class="fa-solid fa-camera mr-1"></i> <span></span></div>`;
 
                     mediaAfterHtml = `
-                        <div class="strip-gallery-wrapper relative my-8 w-full">
-                            <div id="${sliderId}" class="strip-gallery-slider flex items-center gap-3 overflow-x-auto scroll-smooth no-scrollbar py-2" style="height: 520px;">
-                                ${panelsHtml}
-                            </div>
-                            ${captionHtml}
-                        </div>`;
+                    <div class="strip-gallery-wrapper relative my-8 w-full">
+                        <div id="${sliderId}" class="strip-gallery-slider flex items-center gap-3 overflow-x-auto scroll-smooth no-scrollbar py-2" style="height: 520px;">
+                            ${panelsHtml}
+                        </div>
+                        ${captionHtml}
+                    </div>`;
 
                 } else if (srcMedia.type === 'strip') {
-                    // Dạng Panorama 1 ảnh cắt thành nhiều thanh
                     const count = srcMedia.count || 3;
                     let panelsHtml = '';
 
                     for (let idx = 0; idx < count; idx++) {
                         const posX = count > 1 ? (idx / (count - 1)) * 100 : 50;
                         panelsHtml += `
-                            <div class="strip-panel-card shrink-0 h-[500px] rounded-2xl shadow-lg bg-no-repeat cursor-pointer transition-transform duration-300 hover:scale-[1.02]" 
-                                 style="width: calc((100% - 24px) / 3); background-image: url('${srcMedia.url}'); background-size: ${count * 100}% 100%; background-position: ${posX}% center;">
-                            </div>`;
+                        <div class="strip-panel-card shrink-0 h-[500px] rounded-2xl shadow-lg bg-no-repeat cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+                             style="width: calc((100% - 24px) / 3); background-image: url('${srcMedia.url}'); background-size: ${count * 100}% 100%; background-position: ${posX}% center;">
+                        </div>`;
                     }
 
                     const showNav = count > 3;
@@ -327,41 +350,39 @@ class ReadingViewer {
                         : `<div class="story-illustration-caption text-center mt-2 text-xs text-gray-500 font-semibold hidden" id="caption-${order}"><i class="fa-solid fa-camera mr-1"></i> <span></span></div>`;
 
                     mediaAfterHtml = `
-                        <div class="strip-gallery-wrapper relative my-8 w-full">
-                            ${showNav ? `<button type="button" class="strip-nav-btn prev absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/90 shadow-lg" onclick="window.readingViewer.scrollReaderStrip('${sliderId}', -1)"><i class="fa-solid fa-chevron-left"></i></button>` : ''}
-                            <div id="${sliderId}" class="strip-gallery-slider flex items-center gap-3 overflow-x-auto scroll-smooth no-scrollbar py-2" style="height: 520px;">
-                                ${panelsHtml}
-                            </div>
-                            ${showNav ? `<button type="button" class="strip-nav-btn next absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/90 shadow-lg" onclick="window.readingViewer.scrollReaderStrip('${sliderId}', 1)"><i class="fa-solid fa-chevron-right"></i></button>` : ''}
-                            ${captionHtml}
-                        </div>`;
+                    <div class="strip-gallery-wrapper relative my-8 w-full">
+                        ${showNav ? `<button type="button" class="strip-nav-btn prev absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/90 shadow-lg" onclick="window.readingViewer.scrollReaderStrip('${sliderId}', -1)"><i class="fa-solid fa-chevron-left"></i></button>` : ''}
+                        <div id="${sliderId}" class="strip-gallery-slider flex items-center gap-3 overflow-x-auto scroll-smooth no-scrollbar py-2" style="height: 520px;">
+                            ${panelsHtml}
+                        </div>
+                        ${showNav ? `<button type="button" class="strip-nav-btn next absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/90 shadow-lg" onclick="window.readingViewer.scrollReaderStrip('${sliderId}', 1)"><i class="fa-solid fa-chevron-right"></i></button>` : ''}
+                        ${captionHtml}
+                    </div>`;
 
                 } else {
-                    // Dạng ảnh đơn tiêu chuẩn
                     const captionHtml = srcCaption
                         ? `<div class="story-illustration-caption" id="caption-${order}"><i class="fa-solid fa-camera"></i> <span>${srcCaption}</span></div>`
                         : `<div class="story-illustration-caption hidden" id="caption-${order}"><i class="fa-solid fa-camera"></i> <span></span></div>`;
 
                     mediaAfterHtml = `
-                        <div class="story-illustration-block">
-                            <img src="${srcMedia.url}" alt="${srcCaption || 'Illustration #' + order}" onerror="this.src='/assets/image/placeholder.png';">
-                            ${captionHtml}
-                        </div>`;
+                    <div class="story-illustration-block">
+                        <img src="${srcMedia.url}" alt="${srcCaption || 'Illustration #' + order}" onerror="this.src='/assets/image/placeholder.png';">
+                        ${captionHtml}
+                    </div>`;
                 }
 
-                // Xóa thẻ ảnh trực tiếp bằng tag đã bóc tách được (chính xác tuyệt đối)
                 if (srcMedia.fullTag) {
                     rawSrc = rawSrc.replace(srcMedia.fullTag, '').trim();
                 }
             }
 
-            rawSrc = rawSrc.replace(/\[(img|strip|multistrip)[\s\S]*?\]/gi, '')
-               .replace(/<[^>]*>\[(img|strip|multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
-               .trim();
+            rawSrc = rawSrc.replace(/\[(img | strip | multistrip)[\s\S]*?\]/gi, '')
+                .replace(/<[^>]*>\[(img | strip | multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
+                .trim();
 
-            rawTarget = rawTarget.replace(/\[(img|strip|multistrip)[\s\S]*?\]/gi, '')
-                                 .replace(/<[^>]*>\[(img|strip|multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
-                                 .trim();
+            rawTarget = rawTarget.replace(/\[(img | strip | multistrip)[\s\S]*?\]/gi, '')
+                .replace(/<[^>]*>\[(img | strip | multistrip)[\s\S]*?\]<\/[^>]*>/gi, '')
+                .trim();
 
             let cleanSrc = this.stripBlockTags(rawSrc);
             let cleanTarget = this.stripBlockTags(rawTarget);
@@ -398,23 +419,27 @@ class ReadingViewer {
                 isBlockOpen = true;
             }
 
-            // In nội dung câu văn bản
+            // 3. In câu văn bản kèm tooltip song ngữ
             if (cleanSrc) {
-                html += `<span class="text-segment"
-                              data-order="${order}"
-                              data-lang="${this.currentSrcLang}"
-                              data-src="${this.escapeHtml(cleanSrc)}"
-                              data-target="${this.escapeHtml(cleanTarget)}"
-                              data-src-caption="${this.escapeHtml(srcCaption)}"
-                              data-target-caption="${this.escapeHtml(targetCaption)}"
-                              title="Double-click to translate sentence #${order}">
-                            ${cleanSrc}
-                         </span> `;
+                const tipText = isViMode
+                    ? `Nhấp đúp chuột để xem câu đối chiếu #${order}`
+                    : `Double-click to translate sentence #${order}`;
+
+                html += `
+                <span class="text-segment"
+                      data-order="${order}"
+                      data-lang="${activeSrcLang}"
+                      data-src="${this.escapeHtml(cleanSrc)}"
+                      data-target="${this.escapeHtml(cleanTarget)}"
+                      data-src-caption="${this.escapeHtml(srcCaption)}"
+                      data-target-caption="${this.escapeHtml(targetCaption)}"
+                      title="${tipText}">
+                    ${cleanSrc}
+                </span> `;
             }
 
             previousWasDialogue = (blockType === 4);
 
-            // Luôn đặt ảnh sau khối chữ
             if (mediaAfterHtml) {
                 if (isBlockOpen) {
                     html += '</div>';

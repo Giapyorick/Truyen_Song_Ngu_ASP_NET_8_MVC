@@ -17,10 +17,11 @@ $(document).ready(function () {
         });
     });
 
-    loadStoryFilter();
+    loadStoriesDropdown();
     loadStories();
 });
 
+// Hàm định dạng hiển thị dot màu và chữ gradient cho Select2
 function formatState(state) {
     if (!state.id) { return state.text; }
 
@@ -28,45 +29,67 @@ function formatState(state) {
 
     return $(
         '<span style="display: flex; align-items: center;">' +
-        '<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + gradient + '; margin-right:10px;"></span>' +
+        '<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + gradient + '; margin-right:10px; flex-shrink: 0;"></span>' +
         '<span style="background:' + gradient + '; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:700;">' + state.text + '</span>' +
         '</span>'
     );
 }
 
-function loadStoryFilter(selectedId = 'all') {
-    fetch('/Admin/tblChapters/GetStoriesForSelect')
+// Nạp danh sách truyện vào dropdown (hỗ trợ Select2 chuẩn trong modal & bộ lọc ngoài)
+function loadStoriesDropdown(selectedStoryId = null, filterSelector = null) {
+    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture().trim() : 'vi-VN';
+
+    fetch(`/Admin/tblChapters/GetStoriesForSelect?culture=${currentCulture}`)
         .then(res => res.json())
         .then(data => {
-            const $select = $('#filterStory');
-            $select.empty();
-            const allStoriesText = UI_LANG.FilterAllStories || 'Stories';
-            $select.append(`<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">${allStoriesText}</option>`);
+            if (filterSelector) {
+                // 1. Dropdown lọc ngoài thanh công cụ (#filterStory)
+                const $filter = $(filterSelector);
+                if ($filter.hasClass("select2-hidden-accessible")) {
+                    $filter.select2('destroy');
+                }
+                $filter.empty(); $filter.append(`<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">${L.FilterAllStories || 'All Stories'}</option>`);
 
-            data.forEach(c => {
-                $select.append(`
-                    <option data-color="linear-gradient(135deg, #667eea, #764ba2)" value="${c.id}">
-                        ${c.name}
-                    </option>
-                `);
-            });
+                data.forEach(s => {
+                    $filter.append(`<option data-color="linear-gradient(135deg, #667eea, #764ba2)" value="${s.id}">${s.name}</option>`);
+                });
 
-            if ($select.hasClass("select2-hidden-accessible")) {
-                $select.select2('destroy');
+                $filter.select2({
+                    width: '100%',
+                    minimumResultsForSearch: Infinity,
+                    templateResult: formatState,
+                    templateSelection: formatState
+                });
+
+                $filter.val(selectedStoryId || 'all').trigger('change');
+            } else {
+                // 2. Dropdown chọn truyện bên trong Modal (#chapterStoryId)
+                const $select = $('#chapterStoryId');
+                if ($select.hasClass("select2-hidden-accessible")) {
+                    $select.select2('destroy');
+                }
+                $select.empty(); $select.append(`<option value="">${L.SelectStoryPlaceholder || 'Select story...'}</option>`);
+
+                data.forEach(s => {
+                    const selected = (selectedStoryId && selectedStoryId == s.id) ? 'selected' : '';
+                    $select.append(`<option data-color="linear-gradient(135deg, #667eea, #764ba2)" value="${s.id}" ${selected}>${s.name}</option>`);
+                });
+
+                // Khởi tạo Select2 kèm dropdownParent và templateResult
+                $select.select2({
+                    width: '100%',
+                    dropdownParent: $('#modalOverlay'),
+                    placeholder: L.SelectStoryPlaceholder || 'Select story...',
+                    allowClear: false,
+                    minimumResultsForSearch: Infinity,
+                    templateResult: formatState,
+                    templateSelection: formatState
+                });
+
+                $select.val(selectedStoryId || '').trigger('change');
             }
-
-            $select.select2({
-                width: '100%',
-                minimumResultsForSearch: Infinity,
-                allowClear: false,
-                templateResult: formatState,
-                templateSelection: formatState
-            });
-
-            $select.val(selectedId).trigger('change');
         });
 }
-
 function loadStories(selectedId = null) {
     fetch('/Admin/tblChapters/GetStoriesForSelect')
         .then(res => res.json())

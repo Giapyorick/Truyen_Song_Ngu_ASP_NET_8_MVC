@@ -43,6 +43,5 @@ public partial class TblStory
     public virtual ICollection<TblUserLiking> TblUserLikings { get; set; } = new List<TblUserLiking>();
 
     public virtual ICollection<TblUserRating> TblUserRatings { get; set; } = new List<TblUserRating>();
-    public virtual DbSet<TblStoryTranslation> TblStoryTranslations { get; set; }
-
+    public virtual ICollection<TblStoryTranslation> TblStoryTranslations { get; set; } = new List<TblStoryTranslation>();
 }

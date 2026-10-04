@@ -1,13 +1,17 @@
 ﻿@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Localization
 @using WebTruyenTranh.ViewModels
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
 @{
     int currentUserId = Context.Session.GetInt32("UserId") ?? 0;
     string currentUserName = Context.Session.GetString("UserName") ?? "";
-    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
-    var currentCulture = requestCulture?.RequestCulture.UICulture.Name ?? "vi-VN";
-    var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : $"{Context.Request.Path.Value}{Context.Request.QueryString}";
+    var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCultureFeature?.RequestCulture.UICulture.Name ?? "vi-VN";
+    // Lấy URL hiện tại bao gồm cả Query String (ví dụ: /Stories/Detail?id=71)
+    var returnUrl = string.Concat(Context.Request.Path, Context.Request.QueryString);
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -137,79 +141,34 @@
                 </button>
             }
         </div>
-        <form asp-controller="Language" asp-action="SetLanguage" method="post" class="flex items-center bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-gray-200 dark:border-zinc-700">
+        <form asp-area="" asp-controller="Language" asp-action="SetLanguage" method="post"
+              class="flex items-center bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-gray-200 dark:border-zinc-700 shadow-inner">
+
             <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+            <!-- Nút Tiếng Việt -->
             <button type="submit" name="culture" value="vi-VN"
-                    class="px-2 py-1 text-xs font-semibold rounded-md transition-all @(currentCulture == "vi-VN" ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-800")">
-                VN
+                    title="Tiếng Việt"
+                    class="px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 @(currentCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+                                ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm"
+                                : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200")">
+                <span>🇻🇳</span>
+                <span>VN</span>
             </button>
+
+            <!-- Nút Tiếng Anh -->
             <button type="submit" name="culture" value="en-US"
-                    class="px-2 py-1 text-xs font-semibold rounded-md transition-all @(currentCulture == "en-US" ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-800")">
-                EN
+                    title="English"
+                    class="px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 @(currentCulture.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+                                ? "bg-white dark:bg-zinc-900 text-teal-600 shadow-sm"
+                                : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200")">
+                <span>🇺🇸</span>
+                <span>EN</span>
             </button>
         </form>
     </header>
 
-    <section class="hero-slideshow">
-        <div class="slides-container">
-            <!-- Slide 1 -->
-            <div class="slide active">
-                <div class="banner-overlay"></div>
-                <div class="banner-content">
-                    <span class="badge">Hot Trend</span>
-                    <h1 class="banner-title">Shadow Slave</h1>
-                    <p class="banner-desc">A grueling survival journey in a dreamlike world. Exclusive bilingual edition.</p>
-                    <div class="banner-actions">
-                        <a href="#" class="btn-grad">Read now</a>
-                        <a href="#" class="btn-grad-trans">Add to collection</a>
-                    </div>
-                </div>
-                <div class="banner-visual">
-                    <img src="\assets\image\Anime\aira-shiratori-5120x3400-24621.jpg" alt="Slide 1">
-                </div>
-            </div>
-
-            <!-- Slide 2 -->
-            <div class="slide">
-                <div class="banner-overlay"></div>
-                <div class="banner-content">
-                    <span class="badge">Recommended</span>
-                    <h1 class="banner-title">Omniscient Reader</h1>
-                    <p class="banner-desc">When the world you live in turns into the plot of a web novel.</p>
-                    <div class="banner-actions">
-                        <a href="#" class="btn-grad">Read now</a>
-                        <a href="#" class="btn-grad-trans">Add to collection</a>
-                    </div>
-                </div>
-                <div class="banner-visual">
-                    <img src="\assets\image\Anime\lumine-intertwined-3840x2160-26732.jpg" alt="Slide 2">
-                </div>
-            </div>
-
-            <!-- Slide 3 -->
-            <div class="slide">
-                <div class="banner-overlay"></div>
-                <div class="banner-content">
-                    <span class="badge">Recommended</span>
-                    <h1 class="banner-title">Omniscient Reader</h1>
-                    <p class="banner-desc">When the world you live in turns into the plot of a web novel.</p>
-                    <div class="banner-actions">
-                        <a href="#" class="btn-grad">Read now</a>
-                        <a href="#" class="btn-grad-trans">Add to collection</a>
-                    </div>
-                </div>
-                <div class="banner-visual">
-                    <img src="\assets\image\Anime\mylivewallpapers-com-Elementalist-Lux-Depth-Parallax-4K.jpg" alt="Slide 3">
-                </div>
-            </div>
-        </div>
-
-        <div class="slide-dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-        </div>
-    </section>
+    @await Component.InvokeAsync("HeroSlideshow")
 
     <main role="main" class="w-full main-container">
         <section class="primary-content">
@@ -217,7 +176,7 @@
         </section>
 
         <aside class="hot-sidebar">
-            <h3 class="sidebar-title">WEEKLY HOT MANGA</h3>
+            <h3 class="sidebar-title">@SharedLocalizer["Story_WeeklyHotManga"]</h3>
             <div class="hot-list">
                 @await Component.InvokeAsync("TopViewList")
             </div>
@@ -303,7 +262,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- SCRIPT CHUNG CHO TOÀN BỘ WEBSITE -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -313,233 +271,231 @@
     @RenderSection("Scripts", required: false)
 
     <script>
-            $(document).ready(function () {
-                let currentSlide = 0;
-                const slides = $('.slide');
-                const dots = $('.dot');
-                const slideInterval = 5000;
+    // ==========================================
+    // 1. CÁC HÀM TIỆN ÍCH TOÀN CỤC
+    // ==========================================
+    function showToast(message, type = 'success', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
 
-                function nextSlide() {
-                    slides.eq(currentSlide).removeClass('active');
-                    dots.eq(currentSlide).removeClass('active');
-                    currentSlide = (currentSlide + 1) % slides.length;
-                    slides.eq(currentSlide).addClass('active');
-                    dots.eq(currentSlide).addClass('active');
-                }
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
+        toast.innerHTML = `
+            <span class="toast-message">${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
 
-                let timer = setInterval(nextSlide, slideInterval);
+        container.appendChild(toast);
+        setTimeout(() => { toast.classList.add('show'); }, 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { toast.remove(); }, 500);
+        }, duration);
+    }
 
-                dots.click(function () {
-                    clearInterval(timer);
-                    const index = $(this).index();
-                    slides.eq(currentSlide).removeClass('active');
-                    dots.eq(currentSlide).removeClass('active');
-                    currentSlide = index;
-                    slides.eq(currentSlide).addClass('active');
-                    dots.eq(currentSlide).addClass('active');
-                    timer = setInterval(nextSlide, slideInterval);
-                });
-            });
+    // ==========================================
+    // 2. HERO SLIDESHOW (5 TRUYỆN MỚI NHẤT)
+    // ==========================================
+    let currentHeroIndex = 0;
+    let heroInterval = null;
 
-            function showToast(message, type = 'success', duration = 4000) {
-                const container = document.getElementById('toast-container');
-                if (!container) return;
+    function initHeroSlideshow() {
+        const $slides =$('.hero-slideshow .slide');
+        if ($slides.length <= 1) return;
 
-                const toast = document.createElement('div');
-                toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
-                toast.innerHTML = `
-                            <span class="toast-message">${message}</span>
-                            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-                        `;
+        heroInterval = setInterval(() => {
+            let next = (currentHeroIndex + 1) % $slides.length;
+            goToHeroSlide(next);
+        }, 5000);
+    }
 
-                container.appendChild(toast);
-                setTimeout(() => { toast.classList.add('show'); }, 10);
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => { toast.remove(); }, 500);
-                }, duration);
+    function goToHeroSlide(index) {
+        const $slides =$('.hero-slideshow .slide');
+        const $dots =$('.hero-dot, .slide-dots .dot');
+        if ($slides.length === 0) return;
+
+        currentHeroIndex = index;
+
+        $slides.stop(true, true).fadeOut(400).removeClass('active');$slides.eq(index).stop(true, true).fadeIn(400).addClass('active');
+
+        $dots.removeClass('bg-teal-400 w-8 active').addClass('bg-white/40');$dots.eq(index).removeClass('bg-white/40').addClass('bg-teal-400 w-8 active');
+    }
+
+    // Xử lý nút Follow trên Hero Banner
+    function toggleHeroFollow(storyId, btnElem) {
+        const $btn =$(btnElem);
+        const $icon =$btn.find('i');
+        const $text =$btn.find('.follow-text');
+
+        $.post('/Stories/ToggleFollow', { storyId: storyId }, function (res) {
+            if (res.requireLogin) {
+                showToast('@SharedLocalizer["Banner_PleaseLogin"]', 'warning');
+                return;
             }
-            $(document).ready(function () {
-                let searchDebounce = null;
-                const $input = $('#liveSearchInput');
-                const $btnClear = $('#btnClearSearch');
 
-                $input.on('input', function () {
-                    const keyword = $(this).val();
-
-                    if (keyword.trim().length > 0) {
-                        $btnClear.removeClass('hidden');
-                    } else {
-                        $btnClear.addClass('hidden');
-                    }
-
-                    clearTimeout(searchDebounce);
-                    // Đợi người dùng dừng gõ 300ms rồi mới gửi AJAX cập nhật danh sách
-                    searchDebounce = setTimeout(function () {
-                        performLiveSearch(keyword);
-                    }, 300);
-                });
-
-                $btnClear.on('click', function () {
-                    $input.val('').trigger('input').focus();
-                });
-
-                function performLiveSearch(keyword) {
-                    const $grid = $('#mainStoryGrid');
-                    if ($grid.length === 0) return; // Nếu đang không ở trang có danh sách truyện thì bỏ qua
-
-                    // Hiệu ứng mờ nhẹ danh sách trong khi tải
-                    $grid.addClass('opacity-50 pointer-events-none');
-
-                    $.ajax({
-                        url: '/Home/FilterStories',
-                        type: 'GET',
-                        data: { keyword: keyword },
-                        success: function (html) {
-                            if (html && html.trim().length > 0) {
-                                $grid.html(html); $('#noMoreData').addClass('hidden');
-                            } else {
-                                $grid.html(`
-                                    <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                        <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
-                                        <p class="text-sm font-semibold">${$('<div>').text('@SharedLocalizer["Story_NoSearchMatches"]').html()}</p>
-                                    </div>
-                                `);
-                            }
-
-                            // Cập nhật tiêu đề hiển thị
-                            const $title = $('.section-title');
-                            if (keyword.trim().length > 0) {
-                                $title.html(`${$('<div>').text('@SharedLocalizer["Story_SearchResultsFor"]').html()} <span class="text-teal-600">"${keyword}"</span>`);
-                                $('#infiniteScrollTrigger').addClass('hidden'); // Tạm ẩn trigger cuộn trang khi đang search
-                            } else {
-                                $title.text('@SharedLocalizer["Story_LatestStories"]'); $('#infiniteScrollTrigger').removeClass('hidden');
-                            }
-                        },
-                        error: function () {
-                            showToast('@SharedLocalizer["Story_SearchFailed"]', 'error');
-                        },
-                        complete: function () {
-                            $grid.removeClass('opacity-50 pointer-events-none');
-                        }
-                    });
+            if (res.success) {
+                if (res.isFollowed) {
+                    $btn.removeClass('bg-white/10 hover:bg-white/20 border-white/20')
+                        .addClass('bg-teal-600/90 border-teal-400');
+                    $icon.removeClass('fa-plus').addClass('fa-check');$text.text('@SharedLocalizer["Banner_Followed"]');
+                } else {
+                    $btn.removeClass('bg-teal-600/90 border-teal-400')
+                        .addClass('bg-white/10 hover:bg-white/20 border-white/20');
+                    $icon.removeClass('fa-check').addClass('fa-plus');$text.text('@SharedLocalizer["Banner_Follow"]');
                 }
+            }
+        }).fail(function () {
+            showToast('Error connecting to server!', 'error');
+        });
+    }
+
+    // ==========================================
+    // 3. KHỞI CHẠY CHÍNH KHI DOM SẴN SÀNG
+    // ==========================================
+    $(document).ready(function () {
+        // --- A. Khởi tạo Scroller cho Trang Chủ ---
+        if (typeof InfiniteScroller !== 'undefined' && !window.mainScroller) {
+            window.mainScroller = new InfiniteScroller({
+                gridSelector: '#mainStoryGrid',
+                triggerSelector: '#infiniteScrollTrigger',
+                spinnerSelector: '#scrollSpinner',
+                noMoreSelector: '#noMoreData',
+                endpoint: '/Stories/GetStoriesInfinite',
+                pageSize: 8,
+                params: { search: '' }
             });
-            $(document).ready(function () {
-                let searchDebounce = null;
-                const $btnOpen = $('#btnOpenSearch');
-                const $container = $('#searchBarContainer');
-                const $input = $('#liveSearchInput');
-                const $btnClose = $('#btnCloseSearch');
+        }
 
-                // 1. Nhấp vào kính lúp: ẩn icon, mở ô nhập văn bản
-                $btnOpen.on('click', function (e) {
-                    e.stopPropagation();
-                    $btnOpen.addClass('hidden'); $container.removeClass('hidden flex').addClass('flex');
+        // --- B. Khởi chạy Slideshow ---
+        initHeroSlideshow();
 
-                    requestAnimationFrame(() => {
-                        $container.removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100'); $input.focus();
-                    });
-                });
+        // Click vào các dot chuyển slide
+        $(document).on('click', '.slide-dots .dot, .hero-dot', function () {
+            clearInterval(heroInterval);
+            const index = $(this).index();
+            goToHeroSlide(index);
+            initHeroSlideshow();
+        });
 
-                // 2. Nhấp nút X: đóng thanh tìm kiếm và khôi phục danh sách truyện
-                $btnClose.on('click', function (e) {
-                    e.stopPropagation();
+        // --- C. Mở Modal Đăng nhập qua Query URL (?openLogin=1) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('openLogin') === 'true' || urlParams.get('openLogin') === '1') {
+            if (typeof openLoginModal === 'function') {
+                openLoginModal();
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // --- D. Xử lý Thanh Tìm Kiếm Thời Gian Thực (Live Search) ---
+        let searchDebounce = null;
+        const $btnOpen =$('#btnOpenSearch');
+        const $container =$('#searchBarContainer');
+        const $input =$('#liveSearchInput');
+        const $btnClose =$('#btnCloseSearch');
+        const $btnClear =$('#btnClearSearch');
+
+        // Mở thanh tìm kiếm
+        $btnOpen.on('click', function (e) {
+            e.stopPropagation();
+            $btnOpen.addClass('hidden');$container.removeClass('hidden flex').addClass('flex');
+            requestAnimationFrame(() => {
+                $container.removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100');$input.focus();
+            });
+        });
+
+        // Đóng thanh tìm kiếm
+        $btnClose.on('click', function (e) {
+            e.stopPropagation();
+            closeSearchBar();
+        });
+
+        // Nút xóa nhanh nội dung đang gõ
+        $btnClear.on('click', function () {$input.val('').trigger('input').focus();
+        });
+
+        // Click ra ngoài tự đóng nếu ô trống
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('#searchBarContainer, #btnOpenSearch').length) {
+                if ($input.val().trim().length === 0) {
                     closeSearchBar();
-                });
-
-                // 3. Nhấp chuột ra ngoài: tự đóng nếu không có nội dung tìm kiếm
-                $(document).on('click', function (e) {
-                    if (!$(e.target).closest('#searchBarContainer, #btnOpenSearch').length) {
-                        if ($input.val().trim().length === 0) {
-                            closeSearchBar();
-                        }
-                    }
-                });
-
-                // 4. Nhấn phím Escape: đóng thanh tìm kiếm
-                $(document).on('keydown', function (e) {
-                    if (e.key === 'Escape' && !$container.hasClass('hidden')) {
-                        closeSearchBar();
-                    }
-                });
-
-                function closeSearchBar() {
-                    if ($input.val().trim().length > 0) {
-                        $input.val('');
-                        performLiveSearch(''); // Khôi phục lại danh sách ban đầu
-                    }
-
-                    $container.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
-                    setTimeout(() => {
-                        $container.removeClass('flex').addClass('hidden'); $btnOpen.removeClass('hidden');
-                    }, 200);
                 }
+            }
+        });
 
-                // 5. Lắng nghe gõ phím và gọi AJAX lọc danh sách truyện (Debounce 300ms)
-                $input.on('input', function () {
-                    const keyword = $(this).val();
+        // Nhấn phím Escape để đóng
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && !$container.hasClass('hidden')) {
+                closeSearchBar();
+            }
+        });
 
-                    clearTimeout(searchDebounce);
-                    searchDebounce = setTimeout(function () {
-                        performLiveSearch(keyword);
-                    }, 300);
-                });
+        function closeSearchBar() {
+            if ($input.val().trim().length > 0) {$input.val('');
+                performLiveSearch('');
+            }
+            $btnClear.addClass('hidden');$container.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
+            setTimeout(() => {
+                $container.removeClass('flex').addClass('hidden');$btnOpen.removeClass('hidden');
+            }, 200);
+        }
 
-                function performLiveSearch(keyword) {
-                    const $grid = $('#mainStoryGrid');
-                    if ($grid.length === 0) return;
+        // Lắng nghe gõ phím với kỹ thuật Debounce 300ms
+        $input.on('input', function () {
+            const keyword = $(this).val();
 
-                    $grid.addClass('opacity-50 pointer-events-none');
+            if (keyword.trim().length > 0) {
+                $btnClear.removeClass('hidden');
+            } else {
+                $btnClear.addClass('hidden');
+            }
 
-                    $.ajax({
-                        url: '/Home/FilterStories',
-                        type: 'GET',
-                        data: { keyword: keyword },
-                        success: function (html) {
-                            if (html && html.trim().length > 0) {
-                                $grid.html(html); $('#noMoreData').addClass('hidden');
-                            } else {
-                                $grid.html(`
-                                    <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                        <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
-                                        <p class="text-sm font-semibold">${$('<div>').text('@SharedLocalizer["Story_NoSearchMatches"]').html()}</p>
-                                    </div>
-                                `);
-                            }
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(function () {
+                performLiveSearch(keyword);
+            }, 300);
+        });
 
-                            const $title = $('.section-title');
-                            if (keyword.trim().length > 0) {
-                                $title.html(`${$('<div>').text('@SharedLocalizer["Story_SearchResultsFor"]').html()} <span class="text-teal-600">"${keyword}"</span>`);
-                                $('#infiniteScrollTrigger').addClass('hidden');
-                            } else {
-                                $title.text('@SharedLocalizer["Story_LatestStories"]'); $('#infiniteScrollTrigger').removeClass('hidden');
-                            }
-                        },
-                        error: function () {
-                            if (typeof showToast === 'function') {
-                                showToast('@SharedLocalizer["Story_SearchFailed"]', 'error');
-                            }
-                        },
-                        complete: function () {
-                            $grid.removeClass('opacity-50 pointer-events-none');
-                        }
-                    });
+        function performLiveSearch(keyword) {
+            const $grid =$('#mainStoryGrid');
+            if ($grid.length === 0) return;
+
+            $grid.addClass('opacity-50 pointer-events-none');
+
+            $.ajax({
+                url: '/Home/FilterStories',
+                type: 'GET',
+                data: { keyword: keyword },
+                success: function (html) {
+                    if (html && html.trim().length > 0) {
+                        $grid.html(html);$('#noMoreData').addClass('hidden');
+                    } else {
+                        $grid.html(`
+                            <div class="col-span-full py-16 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-300"></i>
+                                <p class="text-sm font-semibold">${$('<div>').text('@SharedLocalizer["Story_NoSearchMatches"]').html()}</p>
+                            </div>
+                        `);
+                    }
+
+                    const $title =$('.section-title');
+                    if (keyword.trim().length > 0) {
+                        $title.html(`${$('<div>').text('@SharedLocalizer["Story_SearchResultsFor"]').html()} <span class="text-teal-600">"${keyword}"</span>`);
+                        $('#infiniteScrollTrigger').addClass('hidden');
+                    } else {
+                        $title.text('@SharedLocalizer["Story_LatestStories"]');
+                        $('#infiniteScrollTrigger').removeClass('hidden');
+                    }
+                },
+                error: function () {
+                    showToast('@SharedLocalizer["Story_SearchFailed"]', 'error');
+                },
+                complete: function () {
+                    $grid.removeClass('opacity-50 pointer-events-none');
                 }
             });
-    </script>
-    <script>
-            $(document).ready(function () {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('openLogin') === 'true' || urlParams.get('openLogin') === '1') {
-                    openLoginModal();
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-            });
-    </script>
-    @using Microsoft.Extensions.Localization
-@using WebTruyenTranh
-@inject IStringLocalizer<SharedResource> SharedLocalizer
+        }
+    });
+</script>
 
 <script>
     window.ADMIN_LANG = {

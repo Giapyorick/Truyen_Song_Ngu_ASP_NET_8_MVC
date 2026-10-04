@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.Services;
@@ -69,6 +71,12 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
+builder.Services.AddSingleton(HtmlEncoder.Create(allowedRanges: new[] {
+    UnicodeRanges.BasicLatin,
+    UnicodeRanges.LatinExtendedA,
+    UnicodeRanges.LatinExtendedB,
+    UnicodeRanges.LatinExtendedAdditional 
+}));
 // Cấu hình Hangfire (giữ nguyên)
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

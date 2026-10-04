@@ -88,30 +88,42 @@
 
     <!-- Inject từ điển ngôn ngữ cho Category JS Module an toàn bằng Json.Serialize -->
     <script>
-        window.ADMIN_LANG = window.ADMIN_LANG || {};
-        window.ADMIN_LANG.NotFoundCategories = @Json.Serialize(SharedLocalizer["Category_NotFound"].Value);
-        window.ADMIN_LANG.ErrLoadCategories = @Json.Serialize(SharedLocalizer["Category_ErrLoad"].Value);
-        window.ADMIN_LANG.TitleAddCategory = @Json.Serialize(SharedLocalizer["Category_TitleAdd"].Value);
-        window.ADMIN_LANG.TitleEditCategory = @Json.Serialize(SharedLocalizer["Category_TitleEdit"].Value);
-        window.ADMIN_LANG.ConfirmDeleteSingleCategoryTitle = @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleTitle"].Value);
-        window.ADMIN_LANG.ConfirmDeleteSingleCategoryMsg = @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleMsg"].Value);
-        window.ADMIN_LANG.ConfirmDeleteMultiCategoriesTitle = @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiTitle"].Value);
-        window.ADMIN_LANG.ConfirmDeleteMultiCategoriesMsg = @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiMsg"].Value);
-        window.ADMIN_LANG.SelectAtLeastOneCategory = @Json.Serialize(SharedLocalizer["Category_SelectAtLeastOne"].Value);
-        window.ADMIN_LANG.BlockedDeleteCategory = @Json.Serialize(SharedLocalizer["Category_BlockedDelete"].Value);
-        window.ADMIN_LANG.DeletedCategoriesSuccess = @Json.Serialize(SharedLocalizer["Category_DeletedSuccess"].Value);
-        window.ADMIN_LANG.DragDropExcelCategory = @Json.Serialize(SharedLocalizer["Category_DragDropExcel"].Value);
-        window.ADMIN_LANG.ChooseExcelFile = @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value);
-        window.ADMIN_LANG.ConfirmImport = @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value);
-        window.ADMIN_LANG.ErrImport = @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value);
-        window.ADMIN_LANG.ActionCannotUndo = @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value);
-        window.ADMIN_LANG.Processing = @Json.Serialize(SharedLocalizer["Admin_Processing"].Value);
-        window.ADMIN_LANG.SaveChanges = @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value);
-        window.ADMIN_LANG.BtnDeleteText = @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value);
-        window.ADMIN_LANG.StatusActive = @Json.Serialize(SharedLocalizer["Admin_StatusActive"].Value);
-        window.ADMIN_LANG.StatusInactive = @Json.Serialize(SharedLocalizer["Admin_StatusInactive"].Value);
-        window.ADMIN_LANG.ErrConnectDelete = @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value);
-        window.ADMIN_LANG.ErrConnectServer = @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value);
+        window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
+            // Tiêu đề & Thông báo Modal
+            TitleAddCategory: @Json.Serialize(SharedLocalizer["AdminCategories_TitleAddCategory"].Value),
+            TitleEditCategory: @Json.Serialize(SharedLocalizer["AdminCategories_TitleEditCategory"].Value),
+            NotFoundCategories: @Json.Serialize(SharedLocalizer["AdminCategories_NotFound"].Value),
+            ErrLoadCategories: @Json.Serialize(SharedLocalizer["AdminCategories_ErrLoad"].Value),
+            StatusActive: @Json.Serialize(SharedLocalizer["AdminCommon_Active"].Value),
+            StatusInactive: @Json.Serialize(SharedLocalizer["AdminCommon_Inactive"].Value),
+            SelectAtLeastOneCategory: @Json.Serialize(SharedLocalizer["AdminCategories_SelectAtLeastOne"].Value),
+            ReqCategoryName: @Json.Serialize(SharedLocalizer["AdminCategories_ReqCategoryName"].Value),
+
+            // Xác nhận xóa & kết quả xóa
+            ConfirmDeleteSingleCategoryTitle: @Json.Serialize(SharedLocalizer["AdminCategories_ConfirmDeleteTitle"].Value),
+            ConfirmDeleteSingleCategoryMsg: @Json.Serialize(SharedLocalizer["AdminCategories_ConfirmDeleteMsg"].Value),
+            ConfirmDeleteMultiCategoriesTitle: @Json.Serialize(SharedLocalizer["AdminCategories_ConfirmDeleteMultiTitle"].Value),
+            ConfirmDeleteMultiCategoriesMsg: @Json.Serialize(SharedLocalizer["AdminCategories_ConfirmDeleteMultiMsg"].Value),
+            BlockedDeleteCategory: @Json.Serialize(SharedLocalizer["AdminCategories_BlockedDelete"].Value),
+            DeletedCategoriesSuccess: @Json.Serialize(SharedLocalizer["AdminCategories_DeletedSuccess"].Value),
+            ActionCannotUndo: @Json.Serialize(SharedLocalizer["AdminCommon_ActionCannotUndo"].Value),
+            ErrConnectDelete: @Json.Serialize(SharedLocalizer["AdminCommon_ErrConnectDelete"].Value),
+
+            // AI Translation & Trạng thái dịch
+            ReqSourceBeforeTranslate: @Json.Serialize(SharedLocalizer["Category_ReqSourceBeforeTranslate"].Value),
+            AiTranslatingStatus: @Json.Serialize(SharedLocalizer["Category_AiTranslatingStatus"].Value),
+            AiTranslateCompleted: @Json.Serialize(SharedLocalizer["Category_AiTranslateCompleted"].Value),
+            BtnAiTranslating: @Json.Serialize(SharedLocalizer["Category_BtnAiTranslating"].Value),
+            BtnAiTranslateDefault: @Json.Serialize(SharedLocalizer["Category_BtnAiTranslateDefault"].Value),
+
+            // Thao tác chung & Kết nối
+            Processing: @Json.Serialize(SharedLocalizer["AdminCommon_Processing"].Value),
+            SaveChanges: @Json.Serialize(SharedLocalizer["AdminCommon_SaveChanges"].Value),
+            ErrConnectServer: @Json.Serialize(SharedLocalizer["AdminCommon_ErrConnectServer"].Value),
+            ChooseExcelFile: @Json.Serialize(SharedLocalizer["AdminCommon_ChooseExcelFile"].Value),
+            ConfirmImport: @Json.Serialize(SharedLocalizer["AdminCommon_ConfirmImport"].Value),
+            ErrImport: @Json.Serialize(SharedLocalizer["AdminCommon_ErrImport"].Value)
+        });
     </script>
 
     <!-- JS Module đã tách -->

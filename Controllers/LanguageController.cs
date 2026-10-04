@@ -19,11 +19,13 @@ namespace WebTruyenTranh.Controllers
                     {
                         Expires = DateTimeOffset.UtcNow.AddYears(1),
                         IsEssential = true,
-                        SameSite = SameSiteMode.Lax
+                        SameSite = SameSiteMode.Lax,
+                        Path = "/" // Bắt buộc để áp dụng cho toàn bộ domain và các area
                     }
                 );
             }
 
+            // Kiểm tra returnUrl hợp lệ (chống Open Redirect vulnerability)
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return LocalRedirect(returnUrl);

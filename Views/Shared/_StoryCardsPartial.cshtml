@@ -109,11 +109,16 @@
                         {
                             foreach (var ch in t.LatestChapters)
                             {
+                                var chapterLabel = SharedLocalizer["Story_Chapter"].Value;
+                                var displayTitle = string.IsNullOrWhiteSpace(ch.ChapterTitle)
+                                    ? $"{chapterLabel} {ch.ChapterNumber}"
+                                    : $"{chapterLabel} {ch.ChapterNumber}: {ch.ChapterTitle}";
+
                                 <a href="/Paragraphs/Content?chapterId=@ch.ChapterId"
                                    class="group/ch flex items-center justify-between px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-teal-50 border border-slate-200/60 hover:border-teal-300 transition-all duration-200 text-[11px] h-[28px] shrink-0"
-                                   title="@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? $"Chapter {ch.ChapterNumber}" : ch.ChapterTitle)">
+                                   title="@displayTitle">
                                     <span class="font-bold text-slate-700 group-hover/ch:text-teal-700 truncate">
-                                        @SharedLocalizer["Story_Chapter"] @ch.ChapterNumber@(string.IsNullOrWhiteSpace(ch.ChapterTitle) ? "" : $": {ch.ChapterTitle}")
+                                        @displayTitle
                                     </span>
                                     <i class="fa-solid fa-angle-right text-[9px] text-slate-400 group-hover/ch:text-teal-600 transition-transform group-hover/ch:translate-x-0.5"></i>
                                 </a>

@@ -78,6 +78,88 @@
 
 <!-- Nhúng Partial View chứa các Modal -->
 @await Html.PartialAsync("_ChapterModalsPartial")
+<style>
+    .select2-container--open {
+        z-index: 999999999 !important;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 2px solid #edf2f7 !important;
+        border-radius: 12px !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        background-color: #ffffff !important;
+        transition: all 0.3s ease !important;
+        outline: none !important;
+    }
+
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--open .select2-selection--single {
+            border-color: #764ba2 !important;
+            box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.12) !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: normal !important;
+            padding-left: 15px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            color: #374151 !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 48px !important;
+            right: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+    .status-dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #edf2f7 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+        overflow: hidden !important;
+        background-color: #ffffff !important;
+    }
+
+    .select2-results__option {
+        padding: 10px 15px !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        color: #4b5563 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #f3f0ff !important;
+        color: #764ba2 !important;
+        font-weight: 700 !important;
+    }
+
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+        background-color: #faf5ff !important;
+        color: #6b21a8 !important;
+        font-weight: 700 !important;
+    }
+</style>
 
 @section Scripts {
     <!-- Thư viện phụ trợ -->
@@ -87,32 +169,35 @@
 
     <!-- Inject từ điển ngôn ngữ cho Chapter JS Module an toàn bằng Json.Serialize -->
     <script>
-        window.ADMIN_LANG = window.ADMIN_LANG || {};
-        window.ADMIN_LANG.NotFoundChapters = @Json.Serialize(SharedLocalizer["Chapter_NotFound"].Value);
-        window.ADMIN_LANG.ErrLoadChapters = @Json.Serialize(SharedLocalizer["Chapter_ErrLoad"].Value);
-        window.ADMIN_LANG.TitleAddChapter = @Json.Serialize(SharedLocalizer["Chapter_TitleAdd"].Value);
-        window.ADMIN_LANG.TitleEditChapter = @Json.Serialize(SharedLocalizer["Chapter_TitleEdit"].Value);
-        window.ADMIN_LANG.ConfirmDeleteSingleChapterTitle = @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleTitle"].Value);
-        window.ADMIN_LANG.ConfirmDeleteSingleChapterMsg = @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleMsg"].Value);
-        window.ADMIN_LANG.ConfirmDeleteMultiChaptersTitle = @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiTitle"].Value);
-        window.ADMIN_LANG.ConfirmDeleteMultiChaptersMsg = @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiMsg"].Value);
-        window.ADMIN_LANG.SelectAtLeastOneChapter = @Json.Serialize(SharedLocalizer["Chapter_SelectAtLeastOne"].Value);
-        window.ADMIN_LANG.BlockedDeleteChapter = @Json.Serialize(SharedLocalizer["Chapter_BlockedDelete"].Value);
-        window.ADMIN_LANG.DeletedChaptersSuccess = @Json.Serialize(SharedLocalizer["Chapter_DeletedSuccess"].Value);
-        window.ADMIN_LANG.FilterAllStories = @Json.Serialize(SharedLocalizer["Chapter_FilterAllStories"].Value);
-        window.ADMIN_LANG.SelectStory = @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value);
-        window.ADMIN_LANG.DragDropExcelChapter = @Json.Serialize(SharedLocalizer["Chapter_DragDropExcel"].Value);
-        window.ADMIN_LANG.ChooseExcelFile = @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value);
-        window.ADMIN_LANG.ConfirmImport = @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value);
-        window.ADMIN_LANG.ErrImport = @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value);
-        window.ADMIN_LANG.ActionCannotUndo = @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value);
-        window.ADMIN_LANG.Processing = @Json.Serialize(SharedLocalizer["Admin_Processing"].Value);
-        window.ADMIN_LANG.SaveChanges = @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value);
-        window.ADMIN_LANG.BtnDeleteText = @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value);
-        window.ADMIN_LANG.ErrConnectDelete = @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value);
-        window.ADMIN_LANG.ErrConnectServer = @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value);
-        window.ADMIN_LANG.TitleEditAccount = @Json.Serialize(SharedLocalizer["Admin_TitleEditAccount"].Value);
-        window.ADMIN_LANG.TitleDeleteAccount = @Json.Serialize(SharedLocalizer["Admin_TitleDeleteAccount"].Value);
+
+
+        window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
+            TitleAddChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleAdd"].Value),
+            TitleEditChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleEdit"].Value),
+            NotFoundChapters: @Json.Serialize(SharedLocalizer["Chapter_NotFound"].Value),
+            ErrLoadChapters: @Json.Serialize(SharedLocalizer["Chapter_ErrLoad"].Value),
+            SelectStoryPlaceholder: @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value),
+            FilterAllStories: @Json.Serialize(SharedLocalizer["Chapter_FilterAllStories"].Value),
+            ReqChapterTitle: @Json.Serialize(SharedLocalizer["Chapter_ReqTitle"].Value),
+            ReqSourceBeforeTranslate: @Json.Serialize(SharedLocalizer["Category_ReqSourceBeforeTranslate"].Value),
+            AiTranslatingStatus: @Json.Serialize(SharedLocalizer["Category_AiTranslatingStatus"].Value),
+            AiTranslateCompleted: @Json.Serialize(SharedLocalizer["Category_AiTranslateCompleted"].Value),
+            BtnAiTranslating: @Json.Serialize(SharedLocalizer["Category_BtnAiTranslating"].Value),
+            BtnAiTranslateDefault: @Json.Serialize(SharedLocalizer["Category_BtnAiTranslateDefault"].Value),
+            ConfirmDeleteSingleChapterTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteTitle"].Value),
+            ConfirmDeleteSingleChapterMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMsg"].Value),
+            ConfirmDeleteMultiChaptersTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiTitle"].Value),
+            ConfirmDeleteMultiChaptersMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiMsg"].Value),
+            BlockedDeleteChapter: @Json.Serialize(SharedLocalizer["Chapter_BlockedDelete"].Value),
+            DeletedChaptersSuccess: @Json.Serialize(SharedLocalizer["Chapter_DeletedSuccess"].Value),
+            SelectAtLeastOneChapter: @Json.Serialize(SharedLocalizer["Chapter_SelectAtLeastOne"].Value),
+            ActionCannotUndo: @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value),
+            Processing: @Json.Serialize(SharedLocalizer["Admin_Processing"].Value),
+            SaveChanges: @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value),
+            BtnDeleteText: @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value),
+            ErrConnectDelete: @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value),
+            ErrConnectServer: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value)
+                });
     </script>
 
     <!-- JS Module đã tách -->

@@ -63,11 +63,14 @@ function loadAuthors(selectedId = null) {
         });
 }
 
+// 1. Tải bộ lọc dropdown Thể loại theo ngôn ngữ
 function loadCategoryFilter(selectedId = 'all') {
-    fetch('/Admin/tblStories/GetCategoriesForSelect')
+    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture() : (document.documentElement.lang || 'en-US');
+
+    fetch(`/Admin/tblStories/GetCategoriesForSelect?culture=${currentCulture}`)
         .then(res => res.json())
         .then(data => {
-            const $select = $('#filterCategory');
+            const $select =$('#filterCategory');
             $select.empty();
             const allCatText = UI_LANG.FilterAllCategories || 'Categories';
             $select.append(`<option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all">${allCatText}</option>`);
@@ -95,7 +98,6 @@ function loadCategoryFilter(selectedId = 'all') {
             $select.val(selectedId).trigger('change');
         });
 }
-
 function openCategoryModal() {
     const modal = document.getElementById('categoryModal');
     const content = document.getElementById('categoryModalContent');
@@ -121,7 +123,9 @@ function closeCategoryModal() {
 }
 
 function loadCategories() {
-    fetch('/Admin/tblStories/GetCategoriesForSelect')
+    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture() : (document.documentElement.lang || 'en-US');
+
+    fetch(`/Admin/tblStories/GetCategoriesForSelect?culture=${currentCulture}`)
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('categoryCheckboxList');

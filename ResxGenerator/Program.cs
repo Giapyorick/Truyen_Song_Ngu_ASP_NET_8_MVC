@@ -13,7 +13,7 @@ namespace WebTruyenTranh.ResxGenerator
         // CONFIGURATION
         // ============================================================
 
-        private const string ExcelFile = "C:\\Users\\HP\\Documents\\Resources_TSN.xlsx";
+        private const string ExcelFile = "C:/Users/HP/Downloads/Resources_TSN_Story_AI.xlsx";
 
 	private const string ResourceDirectory =
    	 @"D:\ASP.NET\WebTruyenTranh\Resources";

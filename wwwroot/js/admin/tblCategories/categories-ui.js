@@ -29,31 +29,59 @@ function formatState(state) {
 // Mở modal Thêm hoặc Sửa thể loại
 function openModal(mode, id = null) {
     const modal = $('#modalOverlay');
-    $('#userForm')[0].reset();
+    const $form =$('#userForm');
+    const isVi = checkIsViMode();
+
+    $form[0].reset();$('#categoryId').val('0');
+    categoryTranslations = {
+        en: { name: '', desc: '' },
+        vi: { name: '', desc: '' }
+    };
+    $('#primaryName, #primaryDesc, #refName, #refDesc, #targetName, #targetDesc').val('');
+    $('#secondaryLangPanel').addClass('hidden');
+    $('#categoryStatus').val('Active').trigger('change');
+    updateLanguageUIHeader();
+
+    modal.removeClass('hidden').addClass('flex');
 
     if (mode === 'add') {
-        $('#modalTitle').text(UI_LANG.TitleAddCategory || 'Add category');
-        $('#categoryId').val('0');
-        $('#categoryStatus').val('Active').trigger('change.select2');
+        $('#modalTitle').text(L.TitleAddCategory || 'Add Category');
     } else {
-        $('#modalTitle').text(UI_LANG.TitleEditCategory || 'Update category');
+        $('#modalTitle').text(L.TitleEditCategory || 'Update Category');
+
         $.get('/Admin/tblCategories/GetById/' + id, function (data) {
             $('#categoryId').val(data.categoryId);
-            $('#categoryName').val(data.name);
-            $('#categoryDescription').val(data.description);
-            $('#categoryStatus').val(data.status).trigger('change.select2');
+            $('#categoryStatus').val(data.status).trigger('change');
+
+            categoryTranslations.en = { name: data.nameEn || '', desc: data.descEn || '' };
+            categoryTranslations.vi = { name: data.nameVi || '', desc: data.descVi || '' };
+
+            if (isVi) {
+                $('#primaryName').val(categoryTranslations.vi.name);
+                $('#primaryDesc').val(categoryTranslations.vi.desc);
+                $('#refName').val(categoryTranslations.vi.name);
+                $('#refDesc').val(categoryTranslations.vi.desc);
+                $('#targetName').val(categoryTranslations.en.name);
+                $('#targetDesc').val(categoryTranslations.en.desc);
+            } else {
+                $('#primaryName').val(categoryTranslations.en.name);
+                $('#primaryDesc').val(categoryTranslations.en.desc);
+                $('#refName').val(categoryTranslations.en.name);
+                $('#refDesc').val(categoryTranslations.en.desc);
+                $('#targetName').val(categoryTranslations.vi.name);
+                $('#targetDesc').val(categoryTranslations.vi.desc);
+            }
         });
     }
 
-    modal.removeClass('hidden').addClass('flex');
-    setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);
+    setTimeout(() => {
+        $('#modalContent').addClass('translate-y-0 opacity-100');
+    }, 10);
 }
 
 function closeModal() {
     const content = $('#modalContent');
-    content.removeClass('translate-y-0 opacity-100 scale-100')
-        .addClass('translate-y-10 opacity-0 scale-95');
-
+    content.removeClass('translate-y-0 opacity-100 scale-100').addClass('translate-y-10 opacity-0 scale-95');
     setTimeout(() => {
         $('#modalOverlay').removeClass('flex').addClass('hidden');
     }, 300);

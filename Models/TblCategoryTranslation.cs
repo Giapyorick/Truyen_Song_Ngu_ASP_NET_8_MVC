@@ -7,5 +7,5 @@ public partial class TblCategoryTranslation
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
 
-    public virtual TblCategory Category { get; set; } = null!;
+    public virtual TblCategory? Category { get; set; } = null!;
 }

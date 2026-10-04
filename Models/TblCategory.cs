@@ -15,6 +15,5 @@ public partial class TblCategory
     public string? Status { get; set; }
 
     public virtual ICollection<TblCategoryOfStory> TblCategoryOfStories { get; set; } = new List<TblCategoryOfStory>();
-    public virtual DbSet<TblCategoryTranslation> TblCategoryTranslations { get; set; }
-
+    public virtual ICollection<TblCategoryTranslation> TblCategoryTranslations { get; set; } = new List<TblCategoryTranslation>();
 }

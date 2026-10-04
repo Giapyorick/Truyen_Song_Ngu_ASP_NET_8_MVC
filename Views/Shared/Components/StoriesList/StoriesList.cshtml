@@ -1,9 +1,13 @@
 @using WebTruyenTranh.ViewModels
 @model IList<StoryListViewModel>
 
-<div class="w-full space-y-6" data-story-no-search-matches="@SharedLocalizer["Story_NoSearchMatches"]" data-story-search-results-for="@SharedLocalizer["Story_SearchResultsFor"]" data-story-search-failed="@SharedLocalizer["Story_SearchFailed"]">
+<div class="w-full space-y-6"
+     data-story-no-search-matches="@Html.Raw(SharedLocalizer["Story_NoSearchMatches"].Value)"
+     data-story-search-results-for="@Html.Raw(SharedLocalizer["Story_SearchResultsFor"].Value)"
+     data-story-search-failed="@Html.Raw(SharedLocalizer["Story_SearchFailed"].Value)">
+
     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h2 class="section-title text-cus text-xl sm:text-2xl font-black uppercase tracking-tight">
+        <h2 class="section-title text-cus text-xl sm:text-2xl font-black uppercase tracking-tight" id="mainStoriesHeading">
             @SharedLocalizer["Story_LatestStories"]
         </h2>
         <span class="text-xs text-slate-400 font-medium">@SharedLocalizer["Story_ScrollToDiscover"]</span>

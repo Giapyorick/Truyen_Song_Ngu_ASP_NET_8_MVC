@@ -1,0 +1,53 @@
+﻿@using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@using WebTruyenTranh.ViewModels
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+@model IList<HeroBannerViewModel>
+
+@if (Model != null && Model.Any())
+{
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    string hotTrendText = isVi ? "Hot Trend" : "Hot Trend";
+    string readNowText = isVi ? "Đọc ngay" : "Read now";
+    string followText = isVi ? "Theo dõi" : "Follow";
+    string followingText = isVi ? "Đang theo dõi" : "Following";
+
+    <section class="hero-slideshow">
+        <div class="slides-container">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                var imgSrc = string.IsNullOrEmpty(item.Img) ? "/assets/image/placeholder.png" : (item.Img.StartsWith("/") ? item.Img : "/" + item.Img);
+
+                <div class="slide @(i == 0 ? "active" : "")">
+                    <div class="banner-overlay"></div>
+                    <div class="banner-content">
+                        <span class="badge">@hotTrendText</span>
+                        <h1 class="banner-title">@item.Title</h1>
+                        <p class="banner-desc" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                            @(!string.IsNullOrWhiteSpace(item.Description) ? item.Description : item.Title)
+                        </p>                        
+                        <div class="banner-actions">
+                            <a href="/Stories/Detail?id=@item.StoryId" class="btn-grad">@readNowText</a>
+                            <a href="javascript:void(0)" 
+                               onclick="toggleHeroFollow(@item.StoryId, this)" 
+                               class="btn-grad-trans hero-follow-btn">
+                                @(item.IsFollowed ? followingText : followText)
+                            </a>
+                        </div>
+                    </div>
+                    <div class="banner-visual">
+                        <img src="@imgSrc" alt="@item.Title" onerror="this.src='/assets/image/placeholder.png';" />
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="slide-dots">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <span class="dot @(i == 0 ? "active" : "")"></span>
+            }
+        </div>
+    </section>
+}

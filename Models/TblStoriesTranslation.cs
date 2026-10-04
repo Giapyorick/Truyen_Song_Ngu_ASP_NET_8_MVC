@@ -7,5 +7,5 @@ public partial class TblStoryTranslation
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
 
-    public virtual TblStory Story { get; set; } = null!;
+    public virtual TblStory? Story { get; set; } = null!;
 }

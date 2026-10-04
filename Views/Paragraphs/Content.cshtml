@@ -1,6 +1,10 @@
 @using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Localization
+@using WebTruyenTranh
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
 @{
-    ViewData["Title"] = "Reading Experience";
+    ViewData["Title"] = SharedLocalizer["Reading_ExperienceTitle"] ?? "Reading Experience";
     var chapterId = ViewBag.ChapterId;
     ViewBag.HideHotSidebar = true;
 }
@@ -19,8 +23,17 @@
 @section Scripts {
     <script>
         var currentChapterId = @chapterId;
+
+        // Cung cấp từ điển nhãn giao diện cho Reader Component
+        window.READER_LANG = {
+            Chapter: @Json.Serialize(SharedLocalizer["Story_Chapter"].Value),
+            PrevChapter: @Json.Serialize(SharedLocalizer["Reading_PrevChapter"]?.Value ?? "Chương trước"),
+            NextChapter: @Json.Serialize(SharedLocalizer["Reading_NextChapter"]?.Value ?? "Chương sau"),
+            ChapterList: @Json.Serialize(SharedLocalizer["Story_ChapterList"].Value),
+            NoContent: @Json.Serialize(SharedLocalizer["Reading_NoContent"]?.Value ?? "Nội dung chương đang được cập nhật..."),
+            BackToStory: @Json.Serialize(SharedLocalizer["Reading_BackToStory"]?.Value ?? "Quay lại trang truyện")
+                };
     </script>
-    <!-- asp-append-version giúp tự động xóa cache khi file JS có thay đổi -->
     <script src="~/js/reading-component.js" asp-append-version="true"></script>
     <script src="~/js/ai-chatbox.js" asp-append-version="true"></script>
 

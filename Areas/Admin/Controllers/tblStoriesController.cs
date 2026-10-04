@@ -37,42 +37,53 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var story = await _context.TblStories
-                .Include(s => s.TblCategoryOfStories)
-                    .ThenInclude(cs => cs.Category)
+                .Include(s => s.TblStoryTranslations)
+                .Include(s => s.TblCategoryOfStories).ThenInclude(cs => cs.Category)
                 .Where(s => s.StoryId == id)
-                .Select(s => new
-                {
-                    s.StoryId,
-                    s.Title,
-                    s.AuthorId,
-                    PublicationDate = s.PublicationDate.HasValue
-                        ? s.PublicationDate.Value.ToString("yyyy-MM-dd")
-                        : "",
-                    s.Img,
-                    s.Description,
-                    s.Status,
-                    s.Lang, // Bổ sung đọc Lang từ CSDL
-                    Categories = s.TblCategoryOfStories.Select(c => new
-                    {
-                        c.CategoryId,
-                        c.Category.Name
-                    })
-                })
                 .FirstOrDefaultAsync();
 
             if (story == null) return NotFound();
-            return Json(story);
+
+            var transVi = story.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode == "vi-VN");
+
+            return Json(new
+            {
+                story.StoryId,
+                TitleEn = story.Title ?? "",           // Lấy thẳng từ bảng gốc
+                DescEn = story.Description ?? "",      // Lấy thẳng từ bảng gốc
+                TitleVi = transVi?.Title ?? "",        // Lấy từ bảng dịch tiếng Việt
+                DescVi = transVi?.Description ?? "",
+                story.AuthorId,
+                PublicationDate = story.PublicationDate?.ToString("yyyy-MM-dd") ?? "",
+                story.Img,
+                story.Status,
+                story.Lang,
+                Categories = story.TblCategoryOfStories.Select(c => new { c.CategoryId, c.Category.Name })
+            });
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCategoriesForSelect()
+        public async Task<IActionResult> GetCategoriesForSelect(string? culture)
         {
-            return Json(await _context.TblCategories
+            var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                ? culture
+                : System.Globalization.CultureInfo.CurrentUICulture.Name;
+            var currentCulture = rawCulture.ToLower().StartsWith("vi") ? "vi-VN" : "en-US";
+
+            var categories = await _context.TblCategories
+                .AsNoTracking()
                 .Where(x => x.Status == "Active")
                 .Select(x => new {
                     id = x.CategoryId,
-                    name = x.Name
-                }).ToListAsync());
+                    name = x.TblCategoryTranslations
+                            .Where(t => t.LanguageCode == currentCulture)
+                            .Select(t => t.Name)
+                            .FirstOrDefault() ?? x.Name
+                })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Json(categories);
         }
 
         [HttpGet]
@@ -91,56 +102,104 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List(string? search, string? status, string? categoryId, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> List(string? search, string? status, string? categoryId, string? culture, int page = 1, int pageSize = 5)
         {
             try
             {
-                var query = _context.TblStories.AsQueryable().AsNoTracking();
+                // 1. Chuẩn hóa culture
+                var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                    ? culture.Trim()
+                    : System.Globalization.CultureInfo.CurrentUICulture.Name;
 
-                if (!string.IsNullOrEmpty(search))
-                {
-                    query = query.Where(u =>
-                        u.Title.Contains(search) ||
-                        (u.Author != null && u.Author.AuthorName.Contains(search)) ||
-                        (u.Description != null && u.Description.Contains(search)) ||
-                        (u.Lang != null && u.Lang.Contains(search)));
-                }
+                var currentCulture = rawCulture.ToLower().StartsWith("vi") ? "vi-VN" : "en-US";
+                bool isVi = currentCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
 
+                var query = _context.TblStories.AsNoTracking().AsQueryable();
+
+                // 2. Lọc theo Status
                 if (!string.IsNullOrEmpty(status) && status != "all")
                 {
                     query = query.Where(u => u.Status == status);
                 }
+
+                // 3. Lọc theo Category
                 if (!string.IsNullOrEmpty(categoryId) && categoryId != "all")
                 {
-                    int cateId = int.Parse(categoryId);
-                    query = query.Where(u => u.TblCategoryOfStories.Any(c => c.CategoryId == cateId));
+                    if (int.TryParse(categoryId, out int cateId))
+                    {
+                        query = query.Where(u => u.TblCategoryOfStories.Any(c => c.CategoryId == cateId));
+                    }
+                }
+
+                // 4. Lọc tìm kiếm theo Title (theo ngôn ngữ) hoặc Tác giả
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    search = search.Trim();
+                    if (isVi)
+                    {
+                        query = query.Where(u =>
+                            u.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi") && t.Title.Contains(search))
+                            || u.Title.Contains(search)
+                            || (u.Author != null && u.Author.AuthorName.Contains(search))
+                        );
+                    }
+                    else
+                    {
+                        query = query.Where(u =>
+                            u.Title.Contains(search)
+                            || (u.Author != null && u.Author.AuthorName.Contains(search))
+                        );
+                    }
                 }
 
                 int totalItems = await query.CountAsync();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                if (totalPages == 0) totalPages = 1;
 
+                // 5. Phân trang và chiếu dữ liệu (Projection an toàn chống văng lỗi Navigation)
                 var stories = await query
                     .OrderByDescending(u => u.StoryId)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(u => new
+                    .Select(s => new
                     {
-                        u.StoryId,
-                        u.Title,
-                        AuthorName = u.Author != null ? u.Author.AuthorName : "Unknow",
-                        PublicationDate = u.PublicationDate.HasValue
-                            ? u.PublicationDate.Value.ToString("yyyy-MM-dd")
-                            : "",
-                        u.Description,
-                        u.Img,
-                        u.Status,
-                        u.Lang, // Trả ra Lang để hiển thị badge
-                        u.Likes,
-                        u.Rate,
-                        u.CountRate,
-                        u.CountFolower,
-                        Categories = u.TblCategoryOfStories
-                            .Select(c => c.Category.Name)
+                        s.StoryId,
+
+                        // Tiêu đề: Nếu Tiếng Việt bốc từ TblStoryTranslations, nếu Tiếng Anh bốc thẳng cột gốc s.Title
+                        Title = isVi
+                            ? (s.TblStoryTranslations
+                                .Where(t => t.LanguageCode.StartsWith("vi"))
+                                .Select(t => t.Title)
+                                .FirstOrDefault() ?? s.Title)
+                            : s.Title,
+
+                        // Mô tả: Nếu Tiếng Việt bốc từ TblStoryTranslations, nếu Tiếng Anh bốc thẳng cột gốc s.Description
+                        Description = isVi
+                            ? (s.TblStoryTranslations
+                                .Where(t => t.LanguageCode.StartsWith("vi"))
+                                .Select(t => t.Description)
+                                .FirstOrDefault() ?? s.Description)
+                            : s.Description,
+
+                        AuthorName = s.Author != null ? s.Author.AuthorName : "Unknown",
+                        PublicationDate = s.PublicationDate.HasValue ? s.PublicationDate.Value.ToString("yyyy-MM-dd") : "",
+                        s.Img,
+                        s.Status,
+                        s.Lang,
+                        s.Likes,
+                        s.Rate,
+                        s.CountRate,
+                        s.CountFolower,
+
+                        // Lấy danh sách tên thể loại an toàn, xử lý null
+                        Categories = s.TblCategoryOfStories
+                            .Where(cs => cs.Category != null)
+                            .Select(cs => isVi
+                                ? (cs.Category.TblCategoryTranslations
+                                    .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                                    .Select(ct => ct.Name)
+                                    .FirstOrDefault() ?? cs.Category.Name)
+                                : cs.Category.Name)
                             .ToList()
                     })
                     .ToListAsync();
@@ -150,12 +209,14 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     stories,
                     currentPage = page,
                     totalPages,
-                    totalItems
+                    totalItems,
+                    debugCulture = currentCulture
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                System.Diagnostics.Debug.WriteLine($"[ERROR Stories List]: {ex.Message} \n {ex.StackTrace}");
+                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message });
             }
         }
 
@@ -408,18 +469,124 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetStoriesInfinite(string? search, string type = "likes", int? categoryId = null, int page = 1, int pageSize = 8)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            // 1. Nhận diện ngôn ngữ hiện tại
+            var rqCulture = HttpContext.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+            var currentCulture = rqCulture?.RequestCulture.UICulture.Name
+                                 ?? Request.Cookies[Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName]
+                                 ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
+            bool isVi = currentCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+
+            var query = _context.TblStories.AsNoTracking();
+
+            // 2. Lọc theo thể loại
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query = query.Where(s => s.TblCategoryOfStories.Any(cs => cs.CategoryId == categoryId.Value));
+            }
+
+            // 3. TÌM KIẾM THEO ĐÚNG CHUẨN CSDL:
+            // - EN: Tìm trực tiếp trong Title bảng gốc tblStory
+            // - VN: Tìm trong Title bảng tblStoryTranslation (vi-VN)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                if (isVi)
+                {
+                    query = query.Where(s =>
+                        s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi") && t.Title.Contains(search))
+                        || s.Title.Contains(search)
+                    );
+                }
+                else
+                {
+                    // Tiếng Anh: Chỉ tìm thẳng trên Title bảng gốc tblStory
+                    query = query.Where(s => s.Title.Contains(search));
+                }
+            }
+
+            // 4. Sắp xếp
+            query = (type?.ToLower()) switch
+            {
+                "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate).ThenByDescending(s => s.StoryId),
+                "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes).ThenByDescending(s => s.StoryId),
+                "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate).ThenByDescending(s => s.StoryId),
+                _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower).ThenByDescending(s => s.StoryId)
+            };
+
+            // 5. ÁNH XẠ DỮ LIỆU:
+            // - EN: Bốc thẳng s.Title và ch.Title từ bảng gốc
+            // - VN: Bốc từ TblStoryTranslations / TblChapterTranslations (LanguageCode == vi-VN)
+            var stories = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new
+                {
+                    Story = s,
+                    TranslatedStoryTitle = isVi
+                        ? (s.TblStoryTranslations
+                            .Where(st => st.LanguageCode.StartsWith("vi"))
+                            .Select(st => st.Title)
+                            .FirstOrDefault() ?? s.Title)
+                        : s.Title, // Tiếng Anh: Lấy thẳng bảng gốc tblStory
+
+                    Progress = _context.TblUserReadingProgresses
+                        .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
+                        .Select(p => new
+                        {
+                            p.LastChapterId,
+                            ChapterNumber = _context.TblChapters
+                                .Where(c => c.ChapterId == p.LastChapterId)
+                                .Select(c => (int?)c.ChapterNumber)
+                                .FirstOrDefault()
+                        })
+                        .FirstOrDefault(),
+
+                    LatestChapters = _context.TblChapters
+                        .Where(ch => ch.StoryId == s.StoryId)
+                        .OrderByDescending(ch => ch.ChapterNumber)
+                        .Take(3)
+                        .Select(ch => new LatestChapterItemViewModel
+                        {
+                            ChapterId = ch.ChapterId,
+                            ChapterNumber = ch.ChapterNumber,
+                            ChapterTitle = isVi
+                                ? (ch.TblChapterTranslations
+                                    .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                                    .Select(ct => ct.Title)
+                                    .FirstOrDefault() ?? ch.Title)
+                                : ch.Title // Tiếng Anh: Lấy thẳng bảng gốc tblChapter
+                        }).ToList()
+                })
+                .Select(x => new StoryListViewModel
+                {
+                    StoryID = x.Story.StoryId,
+                    Title = x.TranslatedStoryTitle ?? "Undefined",
+                    Img = x.Story.Img,
+                    Lang = x.Story.Lang,
+                    Rate = x.Story.Rate,
+                    Likes = x.Story.Likes,
+                    CountFolower = x.Story.CountFolower,
+                    CountRate = x.Story.CountRate,
+                    HasProgress = x.Progress != null,
+                    LastChapterId = x.Progress != null ? x.Progress.LastChapterId : null,
+                    LastChapterNumber = x.Progress != null ? x.Progress.ChapterNumber : null,
+                    LatestChapters = x.LatestChapters
+                })
+                .ToListAsync();
+
+            return PartialView("_StoryCardsPartial", stories);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ExportToExcel(string? search, string? status, string? categoryId)
         {
+            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
             var query = _context.TblStories.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(u =>
-                    u.Title.Contains(search) ||
-                    (u.Author != null && u.Author.AuthorName.Contains(search)) ||
-                    (u.Description != null && u.Description.Contains(search)) ||
-                    (u.Lang != null && u.Lang.Contains(search)));
-            }
 
             if (!string.IsNullOrEmpty(status) && status != "all")
             {
@@ -431,31 +598,41 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 query = query.Where(u => u.TblCategoryOfStories.Any(c => c.CategoryId == cateId));
             }
 
-            var data = await query
-                .OrderByDescending(s => s.StoryId)
-                .Select(s => new {
-                    s.StoryId,
-                    s.Title,
-                    s.Description,
-                    s.AuthorId,
-                    AuthorName = s.Author != null ? s.Author.AuthorName : "Unknow",
-                    PublicationDate = s.PublicationDate,
-                    s.Likes,
-                    s.Rate,
-                    s.CountFolower,
-                    s.CountRate,
-                    s.Status,
-                    s.Lang, // Export thêm cột Lang
-                    Categories = s.TblCategoryOfStories.Select(c => c.Category.Name).ToList()
-                })
-                .ToListAsync();
+            var projected = query.Select(s => new {
+                s.StoryId,
+                Title = s.TblStoryTranslations.Where(t => t.LanguageCode == currentCulture).Select(t => t.Title).FirstOrDefault()
+                        ?? s.TblStoryTranslations.Select(t => t.Title).FirstOrDefault()
+                        ?? s.Title,
+                Description = s.TblStoryTranslations.Where(t => t.LanguageCode == currentCulture).Select(t => t.Description).FirstOrDefault()
+                              ?? s.TblStoryTranslations.Select(t => t.Description).FirstOrDefault()
+                              ?? s.Description,
+                s.AuthorId,
+                AuthorName = s.Author != null ? s.Author.AuthorName : "Unknown",
+                PublicationDate = s.PublicationDate,
+                s.Likes,
+                s.Rate,
+                s.CountFolower,
+                s.CountRate,
+                s.Status,
+                s.Lang,
+                Categories = s.TblCategoryOfStories.Select(c => c.Category.Name).ToList()
+            });
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                projected = projected.Where(u =>
+                    u.Title.Contains(search) ||
+                    u.AuthorName.Contains(search) ||
+                    (u.Description != null && u.Description.Contains(search)));
+            }
+
+            var data = await projected.OrderByDescending(s => s.StoryId).ToListAsync();
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using var package = new ExcelPackage();
             var ws = package.Workbook.Worksheets.Add("Stories");
 
             int totalCols = 13;
-
             ws.Cells[1, 1].Value = "LIST OF STORIES";
             ws.Cells[1, 1, 1, totalCols].Merge = true;
             ws.Cells[1, 1].Style.Font.Size = 18;
@@ -470,22 +647,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             ws.Cells[3, 1, 3, totalCols].Merge = true;
             ws.Cells[3, 1].Style.Font.Bold = true;
 
-            string[] headers =
-            {
-                "StoryId",
-                "Title",
-                "Description",
-                "AuthorId",
-                "AuthorName",
-                "Languages", // Cột Ngôn ngữ
-                "PublicationDate",
-                "Likes",
-                "Rate",
-                "CountFollower",
-                "CountRate",
-                "Status",
-                "Categories"
-            };
+            string[] headers = { "StoryId", "Title", "Description", "AuthorId", "AuthorName", "Languages", "PublicationDate", "Likes", "Rate", "CountFollower", "CountRate", "Status", "Categories" };
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -512,20 +674,36 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 ws.Cells[row, 11].Value = s.CountRate;
                 ws.Cells[row, 12].Value = s.Status;
                 ws.Cells[row, 13].Value = s.Categories != null ? string.Join(", ", s.Categories) : string.Empty;
-
                 row++;
             }
 
             ws.Cells.AutoFitColumns();
-
             var fileBytes = await package.GetAsByteArrayAsync();
-            return File(
-                fileBytes,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"Stories_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-            );
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Stories_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> TranslateWithAi(string text, string fromLang, string toLang, [FromServices] IAiTranslationService aiService)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return Json(new { success = false, message = "The original content to be translated is empty!" });
+
+            try
+            {
+                var translated = await aiService.TranslateAsync(text, fromLang, toLang);
+
+                if (string.IsNullOrWhiteSpace(translated))
+                {
+                    return Json(new { success = false, message = "The AI ​​did not return a translation result!" });
+                }
+
+                return Json(new { success = true, result = translated });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
         [HttpPost]
         [AdminRoleAuthorize]
         public async Task<IActionResult> ImportFromExcel(IFormFile file)
@@ -624,8 +802,175 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
             return Json(new { success = true, message = "Excel imported successfully!" });
         }
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public async Task<IActionResult> SaveStory(
+    [FromForm] StoriesViewModel model,
+    [FromForm] string? TitleVi, [FromForm] string? DescVi,
+    [FromForm] string? TitleEn, [FromForm] string? DescEn,
+    [FromForm] List<int>? CategoryIds)
+        {
+            try
+            {
+                var isNew = model.StoryId <= 0;
+                TblStory story;
+                string? oldImgPath = null;
+                string? newImgRelativePath = null;
+
+                // 1. Chuẩn hóa chuỗi nhập
+                var cleanTitleEn = !string.IsNullOrWhiteSpace(TitleEn) ? TitleEn.Trim() : (!string.IsNullOrWhiteSpace(model.Title) ? model.Title.Trim() : "");
+                var cleanDescEn = !string.IsNullOrWhiteSpace(DescEn) ? DescEn.Trim() : (!string.IsNullOrWhiteSpace(model.Description) ? model.Description.Trim() : "");
+                var cleanTitleVi = !string.IsNullOrWhiteSpace(TitleVi) ? TitleVi.Trim() : "";
+                var cleanDescVi = !string.IsNullOrWhiteSpace(DescVi) ? DescVi.Trim() : "";
+
+                // Fallback: Nếu thiếu tiếng Anh thì lấy tiếng Việt bù vào để bảng gốc luôn có dữ liệu
+                if (string.IsNullOrWhiteSpace(cleanTitleEn)) cleanTitleEn = cleanTitleVi;
+                if (string.IsNullOrWhiteSpace(cleanDescEn)) cleanDescEn = cleanDescVi;
+
+                if (string.IsNullOrWhiteSpace(cleanTitleEn))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập tiêu đề truyện!" });
+                }
+
+                // 2. Upload ảnh bìa nếu có chọn file
+                if (model.formFile != null && model.formFile.Length > 0)
+                {
+                    string folder = Path.Combine(_webHostEnvironment.WebRootPath, "assets", "image", "stories");
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                    string fileName = $"Story_{Guid.NewGuid()}{Path.GetExtension(model.formFile.FileName)}";
+                    string fullPath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await model.formFile.CopyToAsync(stream);
+                    }
+                    newImgRelativePath = $"assets/image/stories/{fileName}";
+                }
+
+                string cleanLang = string.IsNullOrWhiteSpace(model.Lang) ? "Tiếng Anh, Tiếng Việt" : model.Lang.Trim();
+                int? authorId = (model.AuthorId.HasValue && model.AuthorId.Value > 0) ? model.AuthorId : null;
+                string cleanStatus = string.IsNullOrWhiteSpace(model.Status) ? "Completed" : model.Status.Trim();
+
+                // 3. Thêm mới hoặc Cập nhật bảng gốc tblStory
+                if (isNew)
+                {
+                    story = new TblStory
+                    {
+                        Title = cleanTitleEn,
+                        Description = cleanDescEn,
+                        AuthorId = authorId,
+                        PublicationDate = model.PublicationDate,
+                        Status = cleanStatus,
+                        Img = newImgRelativePath ?? "",
+                        Lang = cleanLang,
+                        Likes = 0,
+                        Rate = 0,
+                        CountRate = 0,
+                        CountFolower = 0
+                    };
+
+                    await _context.TblStories.AddAsync(story);
+                    await _context.SaveChangesAsync(); // Lưu để có StoryId
+                }
+                else
+                {
+                    story = await _context.TblStories
+                        .Include(s => s.TblCategoryOfStories)
+                        .Include(s => s.TblStoryTranslations)
+                        .FirstOrDefaultAsync(s => s.StoryId == model.StoryId);
+
+                    if (story == null)
+                    {
+                        return Json(new { success = false, message = "Không tìm thấy truyện cần sửa!" });
+                    }
+
+                    oldImgPath = story.Img;
+
+                    story.Title = cleanTitleEn;
+                    story.Description = cleanDescEn;
+                    story.AuthorId = authorId;
+                    story.PublicationDate = model.PublicationDate;
+                    story.Status = cleanStatus;
+                    story.Lang = cleanLang;
+
+                    if (!string.IsNullOrEmpty(newImgRelativePath))
+                    {
+                        story.Img = newImgRelativePath;
+                    }
+                }
+
+                // 4. CẬP NHẬT DANH MỤC THỂ LOẠI (AN TOÀN TUYỆT ĐỐI)
+                var selectedCates = CategoryIds ?? model.CategoryIds ?? new List<int>();
+                var validCateIds = selectedCates.Where(id => id > 0).Distinct().ToList();
+
+                // Xóa các liên kết thể loại cũ
+                var existingCategories = await _context.TblCategoryOfStories
+                    .Where(cs => cs.StoryId == story.StoryId)
+                    .ToListAsync();
+                if (existingCategories.Any())
+                {
+                    _context.TblCategoryOfStories.RemoveRange(existingCategories);
+                }
+
+                // Thêm liên kết thể loại mới
+                if (validCateIds.Any())
+                {
+                    var newMappings = validCateIds.Select(cid => new TblCategoryOfStory
+                    {
+                        StoryId = story.StoryId,
+                        CategoryId = cid
+                    });
+                    await _context.TblCategoryOfStories.AddRangeAsync(newMappings);
+                }
+
+                // 5. CẬP NHẬT BẢNG DỊCH TIẾNG VIỆT (tblStoryTranslation)
+                if (!string.IsNullOrWhiteSpace(cleanTitleVi))
+                {
+                    var transVi = await _context.TblStoryTranslations
+                        .FirstOrDefaultAsync(t => t.StoryId == story.StoryId && t.LanguageCode == "vi-VN");
+
+                    if (transVi == null)
+                    {
+                        _context.TblStoryTranslations.Add(new TblStoryTranslation
+                        {
+                            StoryId = story.StoryId,
+                            LanguageCode = "vi-VN",
+                            Title = cleanTitleVi,
+                            Description = cleanDescVi
+                        });
+                    }
+                    else
+                    {
+                        transVi.Title = cleanTitleVi;
+                        transVi.Description = cleanDescVi;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Xóa ảnh cũ trên ổ đĩa nếu đã upload ảnh mới
+                if (!string.IsNullOrEmpty(oldImgPath) && !string.IsNullOrEmpty(newImgRelativePath) && oldImgPath != newImgRelativePath)
+                {
+                    string oldDiskFile = Path.Combine(_webHostEnvironment.WebRootPath, oldImgPath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldDiskFile))
+                    {
+                        try { System.IO.File.Delete(oldDiskFile); } catch { }
+                    }
+                }
+
+                return Json(new { success = true, message = isNew ? "Thêm truyện thành công!" : "Cập nhật truyện thành công!" });
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[SAVE STORY ERROR]: {ex.Message} - {inner}");
+                return Json(new { success = false, message = "Lỗi lưu dữ liệu: " + inner });
+            }
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() => View("Error!");
     }
+
 }

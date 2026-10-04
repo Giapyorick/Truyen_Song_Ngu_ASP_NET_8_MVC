@@ -5,23 +5,28 @@
     int stt = 1; // Khởi tạo biến đếm cho số thứ tự
 }
 
-@foreach (var t in Model)
+@if (Model != null && Model.Any())
 {
-    <div class="hot-item">
-        <span class="rank">@(stt++)</span>
+    foreach (var t in Model)
+    {
+        <div class="hot-item">
+            <span class="rank">@(stt++)</span>
 
-        <div class="hot-item-img">
-            <a href="#">
-                <img src="~/@t.img" alt="@t.Title" />
-            </a>
+            <div class="hot-item-img">
+                <a href="/Stories/Detail?id=@t.StoryId">
+                    <img src="~/@t.img" alt="@t.Title" loading="lazy" onerror="this.src='/assets/image/placeholder.png';" />
+                </a>
+            </div>
+
+            <div class="hot-item-info">
+                <a href="/Stories/Detail?id=@t.StoryId" class="hot-item-title" title="@t.Title">
+                    @t.Title
+                </a>
+
+                <span class="hot-item-author">@SharedLocalizer["Story_Author"]: @t.author</span>
+
+                <span class="hot-item-view">@t.Likes @SharedLocalizer["Story_Likes"]</span>
+            </div>
         </div>
-
-        <div class="hot-item-info">
-            <a href="#" class="hot-item-title">@t.Title</a>
-
-            <span class="hot-item-author">@SharedLocalizer["Story_Author"]: @t.author</span>
-
-            <span class="hot-item-view">@t.Likes @SharedLocalizer["Story_Likes"]</span>
-        </div>
-    </div>
+    }
 }

@@ -21,6 +21,5 @@ public partial class TblChapter
     public virtual ICollection<TblChapterComment> TblChapterComments { get; set; } = new List<TblChapterComment>();
 
     public virtual ICollection<TblParagraph> TblParagraphs { get; set; } = new List<TblParagraph>();
-    public virtual DbSet<TblChapterTranslation> TblChapterTranslations { get; set; }
-
+    public virtual ICollection<TblChapterTranslation> TblChapterTranslations { get; set; } = new List<TblChapterTranslation>();
 }
