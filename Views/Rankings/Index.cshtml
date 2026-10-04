@@ -159,18 +159,19 @@
     <script src="~/js/infinite_scroll.js"></script>
 
     <script>
-        // Gán vào window.rankScroller
-        window.rankScroller = new InfiniteScroller({
-            gridSelector: '#mainStoryGrid',
-            triggerSelector: '#infiniteScrollTrigger',
-            spinnerSelector: '#scrollSpinner',
-            noMoreSelector: '#noMoreData',
-            endpoint: '/Stories/GetStoriesInfinite',
-            pageSize: 8,
-            params: { 
-                type: '@currentType',
-                search: ''
-            }
+        $(document).ready(function () {
+            window.rankScroller = new InfiniteScroller({
+                gridSelector: '#mainStoryGrid',
+                triggerSelector: '#infiniteScrollTrigger',
+                spinnerSelector: '#scrollSpinner',
+                noMoreSelector: '#noMoreData',
+                endpoint: '/Stories/GetStoriesInfinite',
+                pageSize: 8,
+                params: { 
+                    type: '@currentType',
+                    search: ''
+                }
+            });
         });
 
         function switchRank(type, title, desc, btnElem) {
@@ -183,8 +184,9 @@
             $('#currentRankTitle').text(title);
             $('#currentRankDesc').text(desc);
 
-            // Nạp lại theo loại xếp hạng mới
-            window.rankScroller.reset({ type: type, search: '' });
+            if (window.rankScroller) {
+                window.rankScroller.reset({ type: type, search: '' });
+            }
         }
     </script>
 }

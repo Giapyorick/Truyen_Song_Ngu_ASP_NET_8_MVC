@@ -245,17 +245,23 @@ class ReadingViewer {
 
     // Render toàn bộ nội dung đọc truyện
     renderParagraphs() {
-        const $container = $('#paragraphList');
+        const $container =$('#paragraphList');
 
-        // 1. Tự động xác định ngôn ngữ hiển thị theo văn cảnh giao diện
+        // 1. Chuẩn hóa mã 2 ký tự: 'vi' hoặc 'en'
         const isViMode = document.cookie.includes('c=vi-VN') ||
             document.cookie.includes('uic=vi-VN') ||
             $('html').attr('lang')?.toLowerCase().startsWith('vi');
 
-        const activeSrcLang = isViMode ? 'vietnamese' : 'english';
-        const activeTargetLang = isViMode ? 'english' : 'vietnamese';
+        // Đồng bộ với this.currentSrcLang và this.currentTargetLang
+        if (!this.currentSrcLang || !this.currentTargetLang) {
+            this.currentSrcLang = isViMode ? 'vi' : 'en';
+            this.currentTargetLang = isViMode ? 'en' : 'vi';
+        }
 
-        // 2. Thông báo khi chương rỗng (Song ngữ)
+        const activeSrcLang = this.currentSrcLang;
+        const activeTargetLang = this.currentTargetLang;
+
+        // 2. Thông báo khi chương rỗng
         if (!this.rawParagraphData || this.rawParagraphData.length === 0) {
             const noContentText = window.READER_LANG?.NoContent ||
                 (isViMode ? 'Nội dung chương đang được cập nhật...' : 'This chapter has no content.');
@@ -268,7 +274,7 @@ class ReadingViewer {
         let previousWasDialogue = false;
 
         this.rawParagraphData.forEach((p, index) => {
-            // Lấy nội dung theo đúng chiều ngôn ngữ được chọn
+            // Lấy nội dung theo đúng mã 2 ký tự ('en', 'vi', ...)
             let rawSrc = this.getParagraphTextByLang(p, activeSrcLang) || '';
             let rawTarget = this.getParagraphTextByLang(p, activeTargetLang) || '';
 
@@ -473,24 +479,25 @@ class ReadingViewer {
     }
 
     // Chuyển đổi ngôn ngữ của một câu khi nhấp đúp
-       toggleLanguage($el, targetLang = null) {
-        const currentLang = $el.attr('data-lang');
+      toggleLanguage($el, targetLang = null) {
+        const currentLang = $el.attr('data-lang') || this.currentSrcLang;
+        // Nếu không chỉ định targetLang, hoán đổi qua lại giữa Source và Target
         const nextLang = targetLang || (currentLang === this.currentSrcLang ? this.currentTargetLang : this.currentSrcLang);
+
         if (currentLang === nextLang) return;
 
-        let newContent = (nextLang === this.currentTargetLang) 
-            ? $el.attr('data-target') 
-            : $el.attr('data-src');
+        const isGoingToTarget = (nextLang === this.currentTargetLang);
+        const newContent = isGoingToTarget ? $el.attr('data-target') :$el.attr('data-src');
 
-        if (newContent !== undefined && newContent !== null) {
+        if (newContent !== undefined && newContent !== null && newContent !== '') {
             $el.html(newContent);$el.attr('data-lang', nextLang);
-            $el.data('lang', nextLang);$el.toggleClass('text-teal-700 font-medium', nextLang === this.currentTargetLang);
+            $el.data('lang', nextLang);$el.toggleClass('text-teal-700 font-medium', isGoingToTarget);
         }
 
         const order = $el.attr('data-order');
         const $caption =$(`#caption-${order}`);
         if ($caption.length > 0) {
-            const nextCaption = (nextLang === this.currentTargetLang) 
+            const nextCaption = isGoingToTarget 
                 ? $el.attr('data-target-caption') 
                 : $el.attr('data-src-caption');
             if (nextCaption) {
@@ -534,17 +541,15 @@ class ReadingViewer {
             }
         });
 
-        $(document).off('dblclick', '.text-segment').on('dblclick', '.text-segment', function () {
+        $(document).off('click', '.text-segment').on('click', '.text-segment', function () {
             const $el =$(this);
     
-            // Nếu đang ở Focus Mode, đồng bộ với thẻ gốc ngoài trang chính
             if (self.isFocusMode) {
                 const order = $el.attr('data-order');
                 const $original =$(`#paragraphList .text-segment[data-order="${order}"]`);
                 self.toggleLanguage($el);
                 self.toggleLanguage($original);
             } else {
-                // Ở chế độ đọc bình thường: Chỉ toggle đúng thẻ đang click
                 self.toggleLanguage($el);
             }
         });

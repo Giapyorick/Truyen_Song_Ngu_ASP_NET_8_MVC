@@ -199,7 +199,7 @@
     <value>Rating</value>
   </data>
   <data name="Story_ReadContinue" xml:space="preserve">
-    <value>Continue Reading</value>
+    <value>Continue</value>
   </data>
   <data name="Story_ReadFirst" xml:space="preserve">
     <value>Read First Chapter</value>

@@ -907,7 +907,7 @@
     <value>Tải lên tệp tiếng Anh để tự động dịch sang các ngôn ngữ được hỗ trợ</value>
   </data>
   <data name="AdminAI_SourceUsageDescription" xml:space="preserve">
-    <value>AI sử dụng tệp này làm nguồn chính để phân tích hội thoại và phân loại kiểu đoạn văn</value>
+    <value>AI sử dụng tệp này như nguồn chính để phân tích hội thoại và phân loại BlockTypes</value>
   </data>
   <data name="AdminAI_Stories" xml:space="preserve">
     <value>Truyện</value>

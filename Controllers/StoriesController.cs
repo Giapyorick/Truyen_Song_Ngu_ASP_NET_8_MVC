@@ -33,72 +33,41 @@ namespace WebTruyenTranh.Controllers
         {
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
-            // 1. Nhận diện ngôn ngữ
             var rqCulture = HttpContext.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
             var cultureName = rqCulture?.RequestCulture.UICulture.Name
                               ?? Request.Cookies[Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName]
                               ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
 
             bool isVi = cultureName.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
-            string targetPrefix = isVi ? "vi" : "en";
 
-            // ==================== IN DEBUG RA CONSOLE BACKEND ====================
-            Console.WriteLine("\n==================== [DEBUG SEARCH STORIES] ====================");
-            Console.WriteLine($"[1] Raw Culture: {cultureName} | isVi: {isVi} | targetPrefix: {targetPrefix}");
-            Console.WriteLine($"[2] Search Keyword nhận được: '{search}'");
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var hexBytes = string.Join(" ", System.Text.Encoding.UTF8.GetBytes(search).Select(b => b.ToString("X2")));
-                Console.WriteLine($"[3] Search Hex UTF-8: {hexBytes}");
-            }
-
-            var query = _context.TblStories.AsNoTracking();
+            var query = _context.TblStories.AsNoTracking().AsQueryable();
 
             if (categoryId.HasValue && categoryId.Value > 0)
             {
                 query = query.Where(s => s.TblCategoryOfStories.Any(cs => cs.CategoryId == categoryId.Value));
             }
 
-            // 2. LỌC TÌM KIẾM
+            // 1. Tối ưu tìm kiếm - Chỉ dùng Contains hoặc Like duy nhất 1 lần
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().Normalize(System.Text.NormalizationForm.FormC);
-                string searchPattern = $"%{search}%";
-
-                // In các tiêu đề hiện có trong bảng dịch vi-VN để đối chiếu
+                search = search.Trim();
                 if (isVi)
                 {
-                    var sampleViTitles = await _context.TblStoryTranslations
-                        .Where(t => t.LanguageCode.StartsWith("vi"))
-                        .Select(t => t.Title)
-                        .Take(5)
-                        .ToListAsync();
-                    Console.WriteLine($"[4] Mẫu tiêu đề vi-VN trong DB: {string.Join(" | ", sampleViTitles)}");
-
                     query = query.Where(s =>
-                        s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi") &&
-                            (EF.Functions.Like(t.Title, searchPattern) || t.Title.Contains(search)))
-                        || (!s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi")) &&
-                            (EF.Functions.Like(s.Title, searchPattern) || s.Title.Contains(search)))
+                        s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi") && t.Title.Contains(search))
+                        || (!s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi")) && s.Title.Contains(search))
                     );
                 }
                 else
                 {
                     query = query.Where(s =>
-                        EF.Functions.Like(s.Title, searchPattern)
-                        || s.Title.Contains(search)
-                        || s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("en") &&
-                            (EF.Functions.Like(t.Title, searchPattern) || t.Title.Contains(search)))
+                        s.Title.Contains(search)
+                        || s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("en") && t.Title.Contains(search))
                     );
                 }
-
-                // In số lượng truyện khớp điều kiện
-                int matchedCount = await query.CountAsync();
-                Console.WriteLine($"[5] Số lượng truyện tìm thấy khớp với từ khóa: {matchedCount}");
             }
-            Console.WriteLine("=================================================================\n");
 
-            // 3. Sắp xếp
+            // 2. Sắp xếp
             query = (type?.ToLower()) switch
             {
                 "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate).ThenByDescending(s => s.StoryId),
@@ -107,34 +76,27 @@ namespace WebTruyenTranh.Controllers
                 _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower).ThenByDescending(s => s.StoryId)
             };
 
-            // 4. Ánh xạ dữ liệu
+            // 3. Phân trang và Project trực tiếp bằng 1 Query duy nhất
             var stories = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(s => new
+                .Select(s => new StoryListViewModel
                 {
-                    Story = s,
-                    TranslatedStoryTitle = isVi
+                    StoryID = s.StoryId,
+                    Title = isVi
                         ? (s.TblStoryTranslations
                             .Where(st => st.LanguageCode.StartsWith("vi"))
                             .Select(st => st.Title)
                             .FirstOrDefault() ?? s.Title)
                         : s.Title,
-
-                    Progress = _context.TblUserReadingProgresses
-                        .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
-                        .Select(p => new
-                        {
-                            p.LastChapterId,
-                            ChapterNumber = _context.TblChapters
-                                .Where(c => c.ChapterId == p.LastChapterId)
-                                .Select(c => (int?)c.ChapterNumber)
-                                .FirstOrDefault()
-                        })
-                        .FirstOrDefault(),
-
-                    LatestChapters = _context.TblChapters
-                        .Where(ch => ch.StoryId == s.StoryId)
+                    Img = s.Img,
+                    Lang = s.Lang,
+                    Rate = s.Rate,
+                    Likes = s.Likes,
+                    CountFolower = s.CountFolower,
+                    CountRate = s.CountRate,
+                    HasProgress = false,
+                    LatestChapters = s.TblChapters
                         .OrderByDescending(ch => ch.ChapterNumber)
                         .Take(3)
                         .Select(ch => new LatestChapterItemViewModel
@@ -148,21 +110,6 @@ namespace WebTruyenTranh.Controllers
                                     .FirstOrDefault() ?? ch.Title)
                                 : ch.Title
                         }).ToList()
-                })
-                .Select(x => new StoryListViewModel
-                {
-                    StoryID = x.Story.StoryId,
-                    Title = x.TranslatedStoryTitle ?? "Undefined",
-                    Img = x.Story.Img,
-                    Lang = x.Story.Lang,
-                    Rate = x.Story.Rate,
-                    Likes = x.Story.Likes,
-                    CountFolower = x.Story.CountFolower,
-                    CountRate = x.Story.CountRate,
-                    HasProgress = x.Progress != null,
-                    LastChapterId = x.Progress != null ? x.Progress.LastChapterId : null,
-                    LastChapterNumber = x.Progress != null ? x.Progress.ChapterNumber : null,
-                    LatestChapters = x.LatestChapters
                 })
                 .ToListAsync();
 

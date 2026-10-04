@@ -353,13 +353,13 @@ function loadChapterList(page = null) {
             $body.html(html);
             renderPagination(currentPage, data.totalPages);
             updateDeleteButton();
-
+/*
             modal.removeClass('hidden').addClass('flex');
             setTimeout(() => {
                 $('#modalContent').addClass('translate-y-0 opacity-100');
-                // Ép Select2 tính toán lại chiều rộng 100% khi modal đã hiển thị
+                Ép Select2 tính toán lại chiều rộng 100% khi modal đã hiển thị
                 $('#chapterStoryId').trigger('change');
-            }, 50);
+            }, 50);*/
         },
         error: function () {
             const errLoad = L.ErrLoadChapters || 'Error loading data.';

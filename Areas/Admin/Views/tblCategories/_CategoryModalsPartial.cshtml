@@ -124,3 +124,51 @@
         </form>
     </div>
 </div>
+<!-- MODAL IMPORT EXCEL ĐỒNG BỘ CHO CHAPTER -->
+<div id="importModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
+    <div id="importContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-cus">
+                    @(SharedLocalizer["AdminAuthors_ImportHeading"]?.Value ?? SharedLocalizer["Btn_Import"].Value + " Chapter")
+                </h3>
+                <button type="button" onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Vùng kéo thả file -->
+            <div id="dropZone" class="relative border-2 border-dashed border-indigo-200 rounded-2xl p-10 flex flex-col items-center justify-center bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer group">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" class="absolute inset-0 opacity-0 cursor-pointer">
+                
+                <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-excel text-green-500 text-3xl"></i>
+                </div>
+                
+                <p class="text-gray-600 font-semibold text-center" id="fileStatus">
+                    @SharedLocalizer["AdminCommon_DropOrClickImport"]
+                </p>
+                <p class="text-xs text-gray-400 mt-2">
+                    @SharedLocalizer["AdminCommon_SupportedFormats"]
+                </p>
+            </div>
+
+            <!-- Link tải file mẫu Chapter -->
+            <div class="mt-4 flex items-center justify-between px-2">
+                <a href="/assets/template/Chapter_Template.xlsx" download class="text-sm text-cus text-indigo-600 font-medium hover:underline flex items-center gap-2">
+                    <i class="fas fa-download text-xs"></i> @SharedLocalizer["AdminCommon_DownloadTemplate"]
+                </a>
+            </div>
+
+            <!-- Nút hành động -->
+            <div class="flex gap-4 mt-8">
+                <button type="button" onclick="closeImportModal()" class="flex-1 py-3 btn-grad-cancel font-bold text-white rounded-xl shadow-md active:scale-95 transition-all">
+                    @SharedLocalizer["AdminCommon_Cancel"]
+                </button>
+                <button type="button" id="btnDoImport" onclick="executeImport()" class="flex-1 py-3 btn-grad rounded-xl font-bold text-white shadow-lg active:scale-95 transition-all">
+                    @SharedLocalizer["AdminCommon_ConfirmImport"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
