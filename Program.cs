@@ -14,12 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Connection string & Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
     options.UseSqlServer(connectionString));
+
 // 2. CẤU HÌNH LOCALIZATION
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
 builder.Services.AddControllersWithViews()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
@@ -45,14 +44,21 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     };
 });
 
-// ... Các Services ngoài (giữ nguyên)
+// Các Services ngoài
 builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>();
 builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
-// Quản lý Session
-builder.Services.AddDistributedMemoryCache();
+// =========================================================================
+// 4. LƯU SESSION VÀO SQL SERVER (BẢNG TblSessionCache)
+// =========================================================================
+builder.Services.AddDistributedSqlServerCache(options =>
+{
+    options.ConnectionString = connectionString;
+    options.SchemaName = "dbo";
+    options.TableName = "TblSessionCache";
+});
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -63,21 +69,20 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = ".WebTruyenTranh.Session";
-    options.IdleTimeout = TimeSpan.FromHours(4);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddSingleton(HtmlEncoder.Create(allowedRanges: new[] {
     UnicodeRanges.BasicLatin,
     UnicodeRanges.LatinExtendedA,
     UnicodeRanges.LatinExtendedB,
-    UnicodeRanges.LatinExtendedAdditional 
+    UnicodeRanges.LatinExtendedAdditional
 }));
-// Cấu hình Hangfire (giữ nguyên)
+
+// Cấu hình Hangfire
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -100,7 +105,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// 4. BẬT MIDDLEWARE LOCALIZATION TRƯỚC USE ROUTING
+// Middleware Localization
 var locOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value;
 app.UseRequestLocalization(locOptions);
 

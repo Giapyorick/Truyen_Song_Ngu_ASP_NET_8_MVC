@@ -382,18 +382,20 @@
 
         // --- D. Xử lý Thanh Tìm Kiếm Thời Gian Thực (Live Search) ---
         let searchDebounce = null;
-        const $btnOpen =$('#btnOpenSearch');
-        const $container =$('#searchBarContainer');
-        const $input =$('#liveSearchInput');
-        const $btnClose =$('#btnCloseSearch');
-        const $btnClear =$('#btnClearSearch');
+        const $btnOpen = $('#btnOpenSearch');
+        const $container = $('#searchBarContainer');
+        const $input = $('#liveSearchInput');
+        const $btnClose = $('#btnCloseSearch');
+        const $btnClear = $('#btnClearSearch');
 
         // Mở thanh tìm kiếm
         $btnOpen.on('click', function (e) {
             e.stopPropagation();
-            $btnOpen.addClass('hidden');$container.removeClass('hidden flex').addClass('flex');
+            $btnOpen.addClass('hidden');
+            $container.removeClass('hidden flex').addClass('flex');
             requestAnimationFrame(() => {
-                $container.removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100');$input.focus();
+                $container.removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100');
+                $input.focus();
             });
         });
 
@@ -403,8 +405,14 @@
             closeSearchBar();
         });
 
-        // Nút xóa nhanh nội dung đang gõ
-        $btnClear.on('click', function () {$input.val('').trigger('input').focus();
+        // Nút xóa nhanh nội dung đang gõ (chỉ reset qua Scroller một nguồn duy nhất)
+        $btnClear.on('click', function () {
+            $input.val('');
+            $btnClear.addClass('hidden');
+            if (typeof onSearchStory === 'function') {
+                onSearchStory('');
+            }
+            $input.focus();
         });
 
         // Click ra ngoài tự đóng nếu ô trống
@@ -424,16 +432,21 @@
         });
 
         function closeSearchBar() {
-            if ($input.val().trim().length > 0) {$input.val('');
-                performLiveSearch('');
+            if ($input.val().trim().length > 0) {
+                $input.val('');
+                if (typeof onSearchStory === 'function') {
+                    onSearchStory('');
+                }
             }
-            $btnClear.addClass('hidden');$container.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
+            $btnClear.addClass('hidden');
+            $container.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
             setTimeout(() => {
-                $container.removeClass('flex').addClass('hidden');$btnOpen.removeClass('hidden');
+                $container.removeClass('flex').addClass('hidden');
+                $btnOpen.removeClass('hidden');
             }, 200);
         }
 
-        // Lắng nghe gõ phím với kỹ thuật Debounce 300ms
+        // Lắng nghe gõ phím và chỉ gọi qua onSearchStory (Scroller sẽ tự quản lý phân trang và hủy request cũ)
         $input.on('input', function () {
             const keyword = $(this).val();
 
@@ -445,7 +458,9 @@
 
             clearTimeout(searchDebounce);
             searchDebounce = setTimeout(function () {
-                performLiveSearch(keyword);
+                if (typeof onSearchStory === 'function') {
+                    onSearchStory(keyword);
+                }
             }, 300);
         });
 

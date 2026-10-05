@@ -56,7 +56,7 @@ if (typeof window.InfiniteScroller === 'undefined') {
             this.observer.observe(this.trigger);
         }
 
-        loadNext() {
+        loadNext(isReset = false) {
             if (this.isLoading || !this.hasMore) return;
 
             this.isLoading = true;
@@ -78,6 +78,11 @@ if (typeof window.InfiniteScroller === 'undefined') {
                 data: queryData,
                 success: (html) => {
                     this.currentPage = targetPage;
+
+                    // Nếu là lượt reset sau tìm kiếm thì lúc này mới làm sạch lưới cũ
+                    if (isReset) {
+                        this.grid.empty();
+                    }
 
                     if (!html || !html.trim()) {
                         this.stopScrolling();
@@ -105,7 +110,6 @@ if (typeof window.InfiniteScroller === 'undefined') {
                         this.grid.append(elementsToAdd);
                     }
 
-                    // Nếu số lượng truyện trả về ít hơn pageSize -> Đã hết
                     if ($cards.length < this.pageSize) {
                         this.stopScrolling();
                     }
@@ -117,6 +121,7 @@ if (typeof window.InfiniteScroller === 'undefined') {
                 },
                 complete: () => {
                     this.spinner.addClass('hidden');
+                    this.grid.removeClass('opacity-50'); // Khôi phục lại độ rõ
                     setTimeout(() => { this.isLoading = false; }, 100);
                 }
             });
@@ -130,7 +135,7 @@ if (typeof window.InfiniteScroller === 'undefined') {
         }
 
         reset(newParams) {
-            // Hủy request AJAX cũ nếu đang chạy dở
+            // 1. Hủy ngay request AJAX cũ nếu đang chạy dở để tránh giật kết quả cũ chèn vào mới
             if (this.currentXhr && this.currentXhr.readyState !== 4) {
                 this.currentXhr.abort();
             }
@@ -143,14 +148,18 @@ if (typeof window.InfiniteScroller === 'undefined') {
 
             this.noMore.addClass('hidden');
             this.spinner.removeClass('hidden');
-            this.grid.empty();
+
+            // 2. KHÔNG DÙNG this.grid.empty() NGAY (tránh giật trắng màn hình)
+            // Thay vào đó, chỉ làm mờ nhẹ lưới để báo cho người dùng biết đang tải
+            this.grid.addClass('opacity-50 transition-opacity duration-200');
 
             if (this.trigger && this.observer) {
                 this.observer.disconnect();
                 this.observer.observe(this.trigger);
             }
 
-            this.loadNext();
+            // Gọi tải trang mới
+            this.loadNext(true); // Truyền cờ isReset = true
         }
     };
 }
@@ -163,12 +172,31 @@ $(document).ready(function () {
     });
 });
 
+let globalSearchDebounceTimer = null;
+
 function onSearchStory(keyword) {
     if (!keyword) keyword = '';
     const cleanSearch = keyword.trim().normalize('NFC');
-    // Ưu tiên scroller của trang đang mở
-    const activeScroller = window.storyScroller || window.rankScroller || window.mainScroller;
-    if (activeScroller) {
-        activeScroller.reset({ search: cleanSearch });
-    }
+
+    // Xóa bộ hẹn giờ trước đó nếu người dùng vẫn đang gõ phím tiếp
+    clearTimeout(globalSearchDebounceTimer);
+
+    // Chờ 800ms (gần 1 giây) sau khi người dùng dừng gõ hẳn thì mới kích hoạt tìm kiếm
+    globalSearchDebounceTimer = setTimeout(() => {
+        const activeScroller = window.storyScroller || window.rankScroller || window.mainScroller;
+
+        // Cập nhật tiêu đề mục kết quả nếu có
+        const $title = $('.section-title');
+        if ($title.length > 0) {
+            if (cleanSearch.length > 0) {
+                $title.html(`Kết quả tìm kiếm cho: <span class="text-teal-600">"${cleanSearch}"</span>`);
+            } else {
+                $title.text('Truyện mới cập nhật');
+            }
+        }
+
+        if (activeScroller) {
+            activeScroller.reset({ search: cleanSearch });
+        }
+    }, 10000); // <-- 800ms là khoảng thời gian lý tưởng nhất để tránh giật lag mà không bị trễ quá lâu
 }

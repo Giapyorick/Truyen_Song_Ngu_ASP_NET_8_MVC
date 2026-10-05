@@ -13,15 +13,21 @@ const LANGUAGE_DEFINITIONS = [
     { key: 'french', name: 'French 🇫🇷', flag: '🇫🇷', fixed: false }
 ];
 
-function initImportSelect2() {
-    const $modal =$('#importParagraphModal');
+function getImportCulture() {
+    return (typeof getCurrentCulture === 'function') ? getCurrentCulture().trim() : 'vi-VN';
+}
 
-    // Chỉ khởi tạo Select2 nếu chưa từng được khởi tạo
+function initImportSelect2() {
+    const $modal = $('#importParagraphModal');
+    const isVi = getImportCulture().toLowerCase().startsWith('vi');
+    const storyPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectStoryPlaceholder) || (isVi ? '-- Chọn truyện --' : '-- Select story --');
+    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+
     if (!$('#storySelect').hasClass("select2-hidden-accessible")) {
         $('#storySelect').select2({
             dropdownParent: $modal,
             width: '100%',
-            placeholder: '-- Select story --',
+            placeholder: storyPlaceholder,
             allowClear: false,
             minimumResultsForSearch: Infinity
         });
@@ -31,7 +37,7 @@ function initImportSelect2() {
         $('#chapterSelect').select2({
             dropdownParent: $modal,
             width: '100%',
-            placeholder: '-- Select chapter --',
+            placeholder: chapterPlaceholder,
             allowClear: false,
             minimumResultsForSearch: Infinity
         });
@@ -39,9 +45,9 @@ function initImportSelect2() {
 }
 
 function openParagraphModal() {
-    const $modal =$('#importParagraphModal');
-    const $content =$('#importContent');
-    
+    const $modal = $('#importParagraphModal');
+    const $content = $('#importContent');
+
     if ($modal.length === 0) {
         console.error("Không tìm thấy modal #importParagraphModal trong DOM!");
         return;
@@ -57,8 +63,8 @@ function openParagraphModal() {
 }
 
 function closeParagraphModal() {
-    const $modal =$('#importParagraphModal');
-    const $content =$('#importContent');
+    const $modal = $('#importParagraphModal');
+    const $content = $('#importContent');
 
     $content.removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
     setTimeout(() => {
@@ -67,63 +73,86 @@ function closeParagraphModal() {
     }, 250);
 }
 
-// 1. Nạp danh sách truyện vào select của Modal (Chỉ nạp khi mở modal)
+// 1. Nạp danh sách truyện vào select của Modal (Hỗ trợ song ngữ)
 function loadModalStories() {
-    const $storySelect =$('#storySelect');
-    const $chapterSelect =$('#chapterSelect');
+    const $storySelect = $('#storySelect');
+    const $chapterSelect = $('#chapterSelect');
+    const currentCulture = getImportCulture();
+    const isVi = currentCulture.toLowerCase().startsWith('vi');
+    const storyPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectStoryPlaceholder) || (isVi ? '-- Chọn truyện --' : '-- Select story --');
+    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
 
-    isInternalReset = true; // Bật cờ để không kích hoạt handleStoryChange khi reset dữ liệu
-    $storySelect.empty().append('<option value="">-- Select story --</option>');
-    $chapterSelect.empty().append('<option value="">-- Select chapter --</option>');
+    isInternalReset = true;
+    $storySelect.empty().append(`<option value="">${storyPlaceholder}</option>`);
+    $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
     $('#dynamicExtraLanguagesContainer').empty();
 
-    $.get('/Admin/tblParagraphs/GetStoriesForSelect', function (data) {
+    $.get('/Admin/tblParagraphs/GetStoriesForSelect', { culture: currentCulture }, function (data) {
         if (data && data.length > 0) {
             data.forEach(x => {
                 $storySelect.append(new Option(x.name, x.id, false, false));
             });
         }
-        $storySelect.val('').trigger('change.select2');$chapterSelect.val('').trigger('change.select2');
-        isInternalReset = false; // Tắt cờ sau khi hoàn tất nạp danh sách
+        $storySelect.val('').trigger('change.select2'); $chapterSelect.val('').trigger('change.select2');
+        isInternalReset = false;
     }).fail(function () {
         isInternalReset = false;
         showToast(L.ErrConnectServer || 'Cannot load stories for modal!', 'error');
     });
 }
 
-// 2. Xử lý khi chọn một truyện: KHÔNG ĐƯỢC chạm vào $storySelect ở đây
-function handleStoryChange(storyId) {
-    const $chapterSelect =$('#chapterSelect');
-    const $extraContainer =$('#dynamicExtraLanguagesContainer');
+// 2. Xử lý khi chọn một truyện -> Nạp chương tương ứng
+let currentChapterXhr = null; 
 
-    $chapterSelect.empty().append('<option value="">-- Select chapter --</option>');
+function handleStoryChange(storyId) {
+    const $chapterSelect = $('#chapterSelect');
+    const $extraContainer = $('#dynamicExtraLanguagesContainer');
+    const currentCulture = getImportCulture();
+    const isVi = currentCulture.toLowerCase().startsWith('vi');
+    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+
+    // Luôn dọn sạch danh sách cũ trước
+    $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
     $extraContainer.empty();
 
     activeTargetLanguages = ['vietnamese'];
     selectedAiLanguages.clear();
 
-    const $vnBtn =$('#btnAi_vietnamese');
+    const $vnBtn = $('#btnAi_vietnamese');
     $vnBtn.data('active', false)
         .removeClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600 shadow-md')
         .addClass('from-[#50C9C3] to-[#96DEDA]');
     $vnBtn.find('.ai-label').text(L.AiTranslateFromEn || 'AI Translate from English');
 
-    if (!storyId || storyId <= 0 || storyId === "") {
+    if (!storyId || storyId <= 0 || storyId === "" || storyId === "all") {
         $chapterSelect.val('').trigger('change.select2');
         return;
     }
 
+    // Nếu có request cũ đang tải dở thì hủy ngay
+    if (currentChapterXhr && currentChapterXhr.readyState !== 4) {
+        currentChapterXhr.abort();
+    }
+
     // A. Nạp danh sách chương
-    $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId }, function (data) {
-        if (data && data.length > 0) {
+    currentChapterXhr = $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId, culture: currentCulture }, function (data) {
+        // Làm sạch lại 1 lần nữa trước khi append để đảm bảo không bị trùng dữ liệu
+        $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
+
+        if (data && Array.isArray(data) && data.length > 0) {
             data.forEach(x => {
                 $chapterSelect.append(new Option(x.name, x.id, false, false));
             });
         }
         $chapterSelect.val('').trigger('change.select2');
+    }).fail(function (xhr) {
+        if (xhr.statusText !== 'abort') {
+            $chapterSelect.val('').trigger('change.select2');
+            showToast(L.ErrConnectServer || 'Không thể tải danh sách chương!', 'error');
+        }
     });
 
-    // B. Nạp danh sách ngôn ngữ tương ứng với truyện
+    // B. Nạp danh sách ngôn ngữ tương ứng với truyện (giữ nguyên logic bên dưới)
     $.get('/Admin/tblParagraphs/GetLanguagesByStory', { storyId: storyId }, function (res) {
         if (!res) return;
 
@@ -133,7 +162,7 @@ function handleStoryChange(storyId) {
         } else if (res.lang) {
             rawLangString = res.lang;
         } else if (res.languages) {
-            rawLangString = Array.isArray(res.languages) 
+            rawLangString = Array.isArray(res.languages)
                 ? res.languages.map(x => (typeof x === 'string' ? x : (x.code || x.name || ''))).join(',')
                 : String(res.languages);
         } else if (Array.isArray(res)) {
@@ -214,13 +243,15 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-// Đăng ký các sự kiện 1 lần duy nhất trong $(document).ready
+// Đăng ký các sự kiện khi trang sẵn sàng
 $(document).ready(function () {
-    // Chỉ kích hoạt xử lý khi người dùng thực sự chọn từ giao diện Select2
-    $(document).on('select2:select', '#storySelect', function (e) {
+    // Lắng nghe sự kiện chọn truyện của Select2
+    $(document).on('change', '#storySelect', function () {
         if (!isInternalReset) {
-            const selectedVal = e.params.data.id;
-            handleStoryChange(selectedVal);
+            const selectedVal = $(this).val();
+            if (selectedVal !== undefined && selectedVal !== null) {
+                handleStoryChange(selectedVal);
+            }
         }
     });
 
@@ -243,13 +274,16 @@ $(document).ready(function () {
     $(document).on('change', '.target-lang-file', function () {
         const file = this.files && this.files[0];
         const langKey = $(this).data('lang-key');
-        const $status =$(`#fileStatus_${langKey}`);
-        const $aiBtn =$(`#btnAi_${langKey}`);
+        const $status = $(`#fileStatus_${langKey}`);
+        const $aiBtn = $(`#btnAi_${langKey}`);
 
         if (file) {
             $status.text(file.name);
             if ($aiBtn.data('active') === true) {
-                toggleAutoAiTranslate(langKey, $aiBtn[0]);             }         } else {$status.text(`Choose or drop file...`);
+                toggleAutoAiTranslate(langKey, $aiBtn[0]);
+            }
+        } else {
+            $status.text(`Choose or drop file...`);
         }
         validateLanguageCard(langKey);
     });
@@ -308,7 +342,7 @@ $(document).ready(function () {
         });
 
         const enqueuingText = L.EnqueuingStatus || 'Enqueuing...';
-        const $btn =$(this).prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-2"></i> ${enqueuingText}`);
+        const $btn = $(this).prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-2"></i> ${enqueuingText}`);
 
         $.ajax({
             url: '/Admin/tblParagraphs/EnqueueImportAi',
@@ -346,7 +380,7 @@ function validateLanguageCard(langKey) {
 }
 
 function toggleAutoAiTranslate(targetLang, btn) {
-    const $btn =$(btn);
+    const $btn = $(btn);
     const isActive = $btn.data('active') === true;
 
     if (isActive) {
@@ -371,8 +405,8 @@ function toggleAutoAiTranslate(targetLang, btn) {
 }
 
 function pollHangfireJob(jobId, storyId, chapId) {
-    const $overlay =$('#aiProcessingOverlay');
-    const $msg =$('#aiProcessingMessage');
+    const $overlay = $('#aiProcessingOverlay');
+    const $msg = $('#aiProcessingMessage');
 
     $overlay.removeClass('hidden');
     setTimeout(() => $overlay.removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100'), 50);
@@ -402,9 +436,10 @@ function pollHangfireJob(jobId, storyId, chapId) {
                     showToast(L.ImportJobSuccessMsg || 'Translated and imported whole chapter successfully!', 'success');
                     $('#filterStory').val(storyId).trigger('change.select2');
 
-                    $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId }, function (data) {
+                    const currentCulture = getImportCulture();
+                    $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId, culture: currentCulture }, function (data) {
                         const allChapText = L.FilterAllChapters || 'Chapter';
-                        const $chapter =$('#filterChapter').html(`<option value="all">${allChapText}</option>`);
+                        const $chapter = $('#filterChapter').html(`<option value="all">${allChapText}</option>`);
                         data.forEach(c => $chapter.append(`<option value="${c.id}">${c.name}</option>`));
                         $chapter.val(chapId).trigger('change.select2');
                         currentPage = 1;

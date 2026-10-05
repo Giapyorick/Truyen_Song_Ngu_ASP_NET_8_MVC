@@ -123,31 +123,39 @@ function closeCategoryModal() {
 }
 
 function loadCategories() {
-    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture() : (document.documentElement.lang || 'en-US');
+    const currentCulture = (typeof getCurrentCulture === 'function') ? getCurrentCulture().trim() : 'vi-VN';
 
-    fetch(`/Admin/tblStories/GetCategoriesForSelect?culture=${currentCulture}`)
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('categoryCheckboxList');
-            if (!container) return;
-            container.innerHTML = '';
+    $.get('/Admin/tblStories/GetCategoriesForSelect?culture=' + currentCulture, function (data) {
+        if (!data || !Array.isArray(data)) return;
 
-            data.forEach(c => {
-                const checked = selectedCategoryIds.has(String(c.id)) ? 'checked' : '';
+        let html = '';
+        data.forEach(cat => {
+            const isChecked = (typeof selectedCategoryIds !== 'undefined' && selectedCategoryIds.has(String(cat.id))) ? 'checked' : '';
+            const activeClass = isChecked ? 'border-teal-500 bg-teal-50/60 text-teal-800 shadow-sm ring-1 ring-teal-400' : 'border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-slate-50';
 
-                container.innerHTML += `
-                    <label class="flex items-center gap-3 p-3 rounded-xl
-                                border hover:border-indigo-500 cursor-pointer">
-                        <input type="checkbox"
-                            class="category-checkbox accent-indigo-600"
-                            value="${c.id}"
-                            data-name="${c.name}"
-                            ${checked}>
-                        <span class="font-semibold text-gray-700">${c.name}</span>
-                    </label>
-                `;
-            });
+            html += `
+                <label class="group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none ${activeClass}">
+                    <div class="relative flex items-center justify-center">
+                        <input type="checkbox" 
+                               class="cat-checkbox peer w-4 h-4 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500/30 focus:ring-2 cursor-pointer transition-all" 
+                               value="${cat.id}" 
+                               data-name="${cat.name}" 
+                               ${isChecked} 
+                               onchange="onCategoryChange(this)">
+                    </div>
+                    <span class="text-sm font-semibold tracking-tight transition-colors group-hover:text-teal-700">
+                        ${cat.name}
+                    </span>
+                </label>
+            `;
         });
+
+        // Bọc vào khung lưới 2 hoặc 3 cột tùy kích thước modal
+        $('#categoryCheckboxList')
+            .removeClass('space-y-1')
+            .addClass('grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1 pr-2')
+            .html(html);
+    });
 }
 
 function applyCategories() {

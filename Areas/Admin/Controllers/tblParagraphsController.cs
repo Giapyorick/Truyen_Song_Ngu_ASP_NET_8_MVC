@@ -33,23 +33,70 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         public IActionResult Paragraphs() => View();
 
         [HttpGet]
-        public async Task<IActionResult> GetStoriesForSelect()
+        public async Task<IActionResult> GetStoriesForSelect(string? culture)
         {
+            var rqCulture = HttpContext.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+            var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                ? culture.Trim()
+                : (rqCulture?.RequestCulture.UICulture.Name
+                   ?? Request.Cookies[Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName]
+                   ?? System.Globalization.CultureInfo.CurrentUICulture.Name);
+
+            bool isVi = rawCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+
             var list = await _context.TblStories
                 .AsNoTracking()
-                .Select(x => new { id = x.StoryId, name = x.Title })
+                .Select(x => new
+                {
+                    id = x.StoryId,
+                    name = isVi
+                        ? (x.TblStoryTranslations
+                            .Where(t => t.LanguageCode.StartsWith("vi"))
+                            .Select(t => t.Title)
+                            .FirstOrDefault() ?? x.Title)
+                        : x.Title
+                })
+                .OrderBy(x => x.name)
                 .ToListAsync();
+
             return Json(list);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetChaptersForSelect(int id)
+        public async Task<IActionResult> GetChaptersForSelect(int? id, int? storyId, string? culture)
         {
+            int targetStoryId = id ?? storyId ?? 0;
+            if (targetStoryId <= 0)
+            {
+                return Json(new List<object>());
+            }
+
+            var rqCulture = HttpContext.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+            var rawCulture = !string.IsNullOrWhiteSpace(culture)
+                ? culture.Trim()
+                : (rqCulture?.RequestCulture.UICulture.Name
+                   ?? Request.Cookies[Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName]
+                   ?? System.Globalization.CultureInfo.CurrentUICulture.Name);
+
+            bool isVi = rawCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+
             var list = await _context.TblChapters
                 .AsNoTracking()
-                .Where(x => x.StoryId == id)
-                .Select(x => new { id = x.ChapterId, name = x.Title })
+                .Where(x => x.StoryId == targetStoryId)
+                .OrderBy(x => x.ChapterNumber)
+                .Select(x => new
+                {
+                    id = x.ChapterId,
+                    name = isVi
+                        ? (x.TblChapterTranslations
+                            .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                            .Select(ct => ct.Title)
+                            .FirstOrDefault() ?? x.Title)
+                        : x.Title,
+                    chapterNumber = x.ChapterNumber
+                })
                 .ToListAsync();
+
             return Json(list);
         }
 

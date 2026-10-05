@@ -2052,4 +2052,10 @@
   <data name="Cat_AllCaughtUp" xml:space="preserve">
     <value>You've viewed all stories in this category!</value>
   </data>
+  <data name="Para_SelectStoryPlaceHolder" xml:space="preserve">
+    <value>-- Select story --</value>
+  </data>
+  <data name="Para_SelectChapterPlaceHolder" xml:space="preserve">
+    <value>-- Select chapter -- </value>
+  </data>
 </root>

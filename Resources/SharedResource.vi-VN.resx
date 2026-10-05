@@ -2052,4 +2052,10 @@
   <data name="Cat_AllCaughtUp" xml:space="preserve">
     <value>Bạn đã xem hết truyện trong thể loại này!</value>
   </data>
+  <data name="Para_SelectStoryPlaceHolder" xml:space="preserve">
+    <value>-- Chọn truyện --</value>
+  </data>
+  <data name="Para_SelectChapterPlaceHolder" xml:space="preserve">
+    <value>-- Chọn chương -- </value>
+  </data>
 </root>

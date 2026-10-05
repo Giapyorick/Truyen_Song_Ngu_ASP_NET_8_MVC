@@ -36,15 +36,25 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
+            // 1. Nhận diện ngôn ngữ hiện tại của request (vi-VN hoặc en-US)
+            var rqCulture = HttpContext.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+            var rawCulture = rqCulture?.RequestCulture.UICulture.Name
+                             ?? Request.Cookies[Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName]
+                             ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
+
+            bool isVi = rawCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+
             var story = await _context.TblStories
                 .Include(s => s.TblStoryTranslations)
-                .Include(s => s.TblCategoryOfStories).ThenInclude(cs => cs.Category)
+                .Include(s => s.TblCategoryOfStories)
+                    .ThenInclude(cs => cs.Category)
+                        .ThenInclude(c => c.TblCategoryTranslations) // BẮT BUỘC INCLUDE BẢNG DỊCH THỂ LOẠI
                 .Where(s => s.StoryId == id)
                 .FirstOrDefaultAsync();
 
             if (story == null) return NotFound();
 
-            var transVi = story.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode == "vi-VN");
+            var transVi = story.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode.StartsWith("vi"));
 
             return Json(new
             {
@@ -58,7 +68,20 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 story.Img,
                 story.Status,
                 story.Lang,
-                Categories = story.TblCategoryOfStories.Select(c => new { c.CategoryId, c.Category.Name })
+
+                // 2. Map tên thể loại theo đúng ngôn ngữ đang mở modal:
+                Categories = story.TblCategoryOfStories
+                    .Where(cs => cs.Category != null)
+                    .Select(cs => new
+                    {
+                        cs.CategoryId,
+                        Name = isVi
+                            ? (cs.Category.TblCategoryTranslations
+                                .Where(ct => ct.LanguageCode.StartsWith("vi"))
+                                .Select(ct => ct.Name)
+                                .FirstOrDefault() ?? cs.Category.Name)
+                            : cs.Category.Name
+                    })
             });
         }
 

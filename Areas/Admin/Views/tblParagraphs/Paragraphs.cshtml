@@ -96,6 +96,12 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+    <script>
+        window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
+            FilterAllStories: @Json.Serialize(SharedLocalizer["Para_FilterAllStories"].Value),
+            FilterAllChapters: @Json.Serialize(SharedLocalizer["Para_FilterAllChapters"].Value),
+        });
+    </script>
 
     <!-- Modular Script Files -->
     <script src="~/js/admin/tblParagraphs/paragraphs-crud.js" asp-append-version="true"></script>
