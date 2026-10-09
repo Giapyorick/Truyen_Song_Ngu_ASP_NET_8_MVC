@@ -47,6 +47,14 @@ public partial class TruyenSongNguContext : DbContext
     public virtual DbSet<TblStoryTranslation> TblStoryTranslations { get; set; } = null!;
     public virtual DbSet<TblCategoryTranslation> TblCategoryTranslations { get; set; } = null!;
     public virtual DbSet<TblChapterTranslation> TblChapterTranslations { get; set; } = null!;
+    public virtual DbSet<TblUserVocabulary> TblUserVocabularies { get; set; }
+    public virtual DbSet<TblPost> TblPosts { get; set; }
+    public virtual DbSet<TblPostLike> TblPostLikes { get; set; }
+    public virtual DbSet<TblPostComment> TblPostComments { get; set; }
+
+
+
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -56,7 +64,65 @@ public partial class TruyenSongNguContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblPostLike>()
+            .HasIndex(x => new
+            {
+                x.PostId,
+                x.UserId
+            })
+            .IsUnique();
+
+        modelBuilder.Entity<TblPostComment>()
+            .HasOne(x => x.ParentComment)
+            .WithMany(x => x.Replies)
+            .HasForeignKey(x => x.ParentCommentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TblPost>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TblPost>()
+            .HasOne(x => x.Story)
+            .WithMany()
+            .HasForeignKey(x => x.StoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<TblPost>()
+            .HasOne(x => x.Chapter)
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<TblPostLike>()
+            .HasOne(x => x.Post)
+            .WithMany(x => x.PostLikes)
+            .HasForeignKey(x => x.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TblPostComment>()
+            .HasOne(x => x.Post)
+            .WithMany(x => x.PostComments)
+            .HasForeignKey(x => x.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<TblUserVocabulary>(entity =>
+        {
+            entity.HasKey(e => e.VocabId);
+            entity.ToTable("tblUserVocabularies");
+
+            entity.Property(e => e.WordOrPhrase)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(e => e.Explanation)
+                .IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())");
+        });
 
         modelBuilder.Entity<TblCategoryTranslation>(entity =>
         {

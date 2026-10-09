@@ -23,13 +23,39 @@
                        placeholder="@SharedLocalizer["AdminAdmins_UsernamePlaceholder"]" required autocomplete="off">
             </div>
 
+            <!-- Mật khẩu mới -->
             <div class="space-y-1">
                 <label class="text-[11px] font-bold text-cus uppercase ml-1">
-                    @SharedLocalizer["AdminCommon_Password"] <span id="pwdNotice" class="text-[10px] text-gray-400 lowercase font-normal">@SharedLocalizer["AdminCommon_RequiredForNewAccount"]</span>
+                    @SharedLocalizer["AdminCommon_Password"]
+                    <span id="pwdNotice" class="text-[10px] text-gray-400 lowercase font-normal">
+                        @SharedLocalizer["AdminCommon_RequiredForNewAccount"]
+                    </span>
                 </label>
                 <input type="password" name="Password" id="adminPassword"
                        class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
                        placeholder="@SharedLocalizer["AdminCommon_EnterNewPassword"]" autocomplete="new-password">
+            </div>
+
+            <!-- Ô Nhập lại mật khẩu mới (Chống gõ nhầm) -->
+            <div id="boxConfirmNewPassword" class="space-y-1 hidden">
+                <label class="text-[11px] font-bold text-cus uppercase ml-1 flex items-center gap-1">
+                    <span>Xác nhận mật khẩu mới</span> <span class="text-red-500">*</span>
+                </label>
+                <input type="password" id="adminConfirmPassword"
+                       class="w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all"
+                       autocomplete="new-password">
+            </div>
+
+            <!-- Ô Xác thực mật khẩu của người đang đăng nhập -->
+            <div id="boxConfirmAdminPassword" class="space-y-1 hidden">
+                <label class="text-[11px] font-bold text-rose-600 uppercase ml-1 flex items-center gap-1">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>@SharedLocalizer["AdminCommon_YourPasswordVerify"]</span> <span class="text-rose-500">*</span>
+                </label>
+                <input type="password" id="currentAdminPassword"
+                       class="w-full px-4 py-2.5 bg-rose-50/50 border-2 border-rose-200 focus:border-rose-400 rounded-xl outline-none transition-all"
+                       autocomplete="current-password">
+                <p class="text-[10px] text-slate-400 ml-1">@SharedLocalizer["AdminCommon_VerifyPasswordHint"]</p>
             </div>
 
             <div class="space-y-1">
@@ -44,6 +70,8 @@
                     <label class="text-[11px] font-bold text-cus uppercase ml-1">@SharedLocalizer["AdminCommon_Role"]</label>
                     <select name="Role" id="adminRole"
                             class="select2-custom w-full px-4 py-2.5 bg-gray-100 border-2 border-transparent focus:border-purple-200 rounded-xl outline-none transition-all">
+                        <!-- Thêm Option Super Admin -->
+                        <option id="optSuperAdmin" data-color="linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)" value="Super Admin">Super Admin</option>
                         <option data-color="linear-gradient(135deg, #0250c5 0%, #d43f8d 100%)" value="Admin">@SharedLocalizer["AdminCommon_AdminRole"]</option>
                         <option data-color="linear-gradient(135deg, #FF8008, #FFC837)" value="Viewer" selected>@SharedLocalizer["AdminCommon_ViewerRole"]</option>
                     </select>

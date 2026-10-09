@@ -25,7 +25,24 @@ function formatState(state) {
         '</span>'
     );
 }
+$(document).on('input', '#adminPassword', function () {
+    const adminId = parseInt($('#adminId').val()) || 0;
+    const hasPassword = $(this).val().trim().length > 0;
 
+    if (hasPassword) {
+        $('#boxConfirmNewPassword').removeClass('hidden');
+        if (adminId > 0) {
+            $('#boxConfirmAdminPassword').removeClass('hidden');
+        }
+    } else {
+        $('#boxConfirmNewPassword').addClass('hidden');
+        $('#boxConfirmAdminPassword').addClass('hidden');
+        $('#adminConfirmPassword').val('');
+        $('#currentAdminPassword').val('');
+    }
+});
+
+// Mở modal Thêm hoặc Sửa Admin
 // Mở modal Thêm hoặc Sửa Admin
 function openModal(mode, id = null) {
     if (window.IS_VIEWER_MODE) {
@@ -35,18 +52,42 @@ function openModal(mode, id = null) {
 
     const modal = $('#modalOverlay');
     $('#userForm')[0].reset();
+    $('#boxConfirmNewPassword').addClass('hidden');
+    $('#boxConfirmAdminPassword').addClass('hidden');
+    $('#adminConfirmPassword').val('');
+    $('#currentAdminPassword').val('');
+
+    const isSuperAdmin = window.IS_SUPER_ADMIN === true;
+
+    // KIỂM SOÁT TÙY CHỌN SUPER ADMIN:
+    // Chỉ Super Admin mới được thấy và chọn vai trò Super Admin
+    if (!isSuperAdmin) {
+        $('#optSuperAdmin').prop('disabled', true).hide();
+    } else {
+        $('#optSuperAdmin').prop('disabled', false).show();
+    }
 
     if (mode === 'add') {
         $('#modalTitle').text(UI_LANG.ModalTitleAdd || 'Add Account');
         $('#adminId').val('0');
         $('#adminPassword').prop('required', true);
         $('#pwdNotice').text(UI_LANG.PwdNoticeAdd || '(required for new account)');
+
+        // Bật lại các trường
+        $('#adminRole, #adminStatus').prop('disabled', false);
         $('#adminRole').val('Viewer').trigger('change.select2');
         $('#adminStatus').val('true').trigger('change.select2');
     } else {
         $('#modalTitle').text(UI_LANG.ModalTitleEdit || 'Update Account');
         $('#adminPassword').prop('required', false);
         $('#pwdNotice').text(UI_LANG.PwdNoticeEdit || '(leave blank to keep current password)');
+
+        // Nếu Admin thường đang sửa chính mình -> Khóa Role và Status để không tự đổi vai trò
+        if (!isSuperAdmin) {
+            $('#adminRole, #adminStatus').prop('disabled', true);
+        } else {
+            $('#adminRole, #adminStatus').prop('disabled', false);
+        }
 
         $.get('/Admin/tblAdmins/GetById/' + id, function (res) {
             if (res.success) {
@@ -61,6 +102,14 @@ function openModal(mode, id = null) {
             }
         });
     }
+
+    // Refresh Select2 sau khi thay đổi trạng thái ẩn/hiện option
+    $('#adminRole').select2({
+        width: '100%',
+        minimumResultsForSearch: Infinity,
+        templateResult: formatState,
+        templateSelection: formatState
+    });
 
     modal.removeClass('hidden').addClass('flex');
     setTimeout(() => $('#modalContent').addClass('translate-y-0 opacity-100'), 10);

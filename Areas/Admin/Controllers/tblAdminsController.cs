@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using WebTruyenTranh.Areas.Admin.ViewModels;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
-
+using Microsoft.Extensions.Localization; 
 namespace WebTruyenTranh.Areas.Admin.Controllers
 {
     [Area("Admin")]
@@ -15,16 +15,29 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
     public class tblAdminsController : Controller
     {
         private readonly TruyenSongNguContext _context;
+        private readonly IStringLocalizer<SharedResource> _localizer; 
 
-        public tblAdminsController(TruyenSongNguContext context)
+        public tblAdminsController(TruyenSongNguContext context, IStringLocalizer<SharedResource> localizer)
         {
             _context = context;
+            _localizer = localizer;
         }
 
         // GET: /Admin/tblAdmins/Admins
         [HttpGet]
-        public IActionResult Admins()
+        public async Task<IActionResult> Admins()
         {
+            int currentLoggedInAdminId = HttpContext.Session.GetInt32("AdminId") ?? 0;
+            var currentAdmin = await _context.TblAdmins.FindAsync(currentLoggedInAdminId);
+
+            bool isSuperAdmin = currentAdmin != null && (
+                string.Equals(currentAdmin.Role?.Trim(), "Super Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(currentAdmin.Role?.Trim(), "SuperAdmin", StringComparison.OrdinalIgnoreCase)
+            );
+
+            ViewBag.IsSuperAdmin = isSuperAdmin;
+            ViewBag.CurrentAdminId = currentLoggedInAdminId;
+
             return View();
         }
 
@@ -104,27 +117,41 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
         // POST: /Admin/tblAdmins/Add
         [HttpPost]
-        [AdminRoleAuthorize] // ❌ Chặn Viewer
+        [AdminRoleAuthorize] // Chặn Viewer
         public async Task<IActionResult> Add([FromBody] AdminUserViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Password))
             {
-                return Json(new { success = false, message = "Password cannot be empty when creating a new account!" });
+                return Json(new { success = false, message = _localizer["AdminCommon_RequiredForNewAccount"].Value });
+            }
+
+            int currentLoggedInAdminId = HttpContext.Session.GetInt32("AdminId") ?? 0;
+            var currentAdmin = await _context.TblAdmins.FindAsync(currentLoggedInAdminId);
+            bool isSuperAdmin = currentAdmin != null && (
+                string.Equals(currentAdmin.Role?.Trim(), "Super Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(currentAdmin.Role?.Trim(), "SuperAdmin", StringComparison.OrdinalIgnoreCase)
+            );
+
+            // BẢO VỆ: Chỉ Super Admin mới được tạo tài khoản có Role Super Admin
+            string targetRole = model.Role?.Trim() ?? "Viewer";
+            if (targetRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase) && !isSuperAdmin)
+            {
+                targetRole = "Admin"; // Hạ về Admin nếu không phải Super Admin
             }
 
             var exists = await _context.TblAdmins.AnyAsync(x => x.Username.ToLower() == model.Username.Trim().ToLower());
             if (exists)
             {
-                return Json(new { success = false, message = "Username is already taken!" });
+                return Json(new { success = false, message = _localizer["AdminAdmins_UsernameExists"].Value });
             }
 
             var entity = new TblAdmin
             {
                 Username = model.Username.Trim(),
-                PasswordHash = PasswordHasher.Hash(model.Password), // Mã hóa Argon2
+                PasswordHash = PasswordHasher.Hash(model.Password),
                 FullName = model.FullName?.Trim(),
-                Role = model.Role,
-                IsActive = model.IsActive,
+                Role = targetRole,
+                IsActive = isSuperAdmin ? model.IsActive : true,
                 CreatedAt = DateTime.Now
             };
 
@@ -134,33 +161,113 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             return Json(new { success = true, message = "Account created successfully!" });
         }
 
-        // POST: /Admin/tblAdmins/Update
         [HttpPost]
-        [AdminRoleAuthorize] // ❌ Chặn Viewer
+        [AdminRoleAuthorize]
         public async Task<IActionResult> Update([FromBody] AdminUserViewModel model)
         {
-            var entity = await _context.TblAdmins.FindAsync(model.AdminId);
-            if (entity == null) return Json(new { success = false, message = "Account not found!" });
+            int currentLoggedInAdminId = HttpContext.Session.GetInt32("AdminId") ?? 0;
+            string currentRole = HttpContext.Session.GetString("AdminRole") ?? "";
 
+            // 1. Lấy thông tin tài khoản đang đăng nhập trong database để kiểm tra quyền thực tế
+            var currentAdmin = await _context.TblAdmins.FindAsync(currentLoggedInAdminId);
+            if (currentAdmin == null)
+            {
+                return Json(new { success = false, message = _localizer["AdminAdmins_AccountNotFound"].Value });
+            }
+
+            bool isSuperAdmin = string.Equals(currentAdmin.Role?.Trim(), "Super Admin", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(currentAdmin.Role?.Trim(), "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+
+            // 2. KIỂM TRA PHÂN QUYỀN SỬA: Nếu không phải Super Admin thì CHỈ ĐƯỢC PHÉP SỬA CHÍNH MÌNH
+            if (!isSuperAdmin && model.AdminId != currentLoggedInAdminId)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = _localizer["AdminAdmins_NoPermissionEditOthers"].Value
+                });
+            }
+
+            // 3. Tìm tài khoản mục tiêu cần cập nhật
+            var entity = await _context.TblAdmins.FindAsync(model.AdminId);
+            if (entity == null)
+            {
+                return Json(new { success = false, message = _localizer["AdminAdmins_AccountNotFound"].Value });
+            }
+
+            // Kiểm tra trùng username
             var exists = await _context.TblAdmins.AnyAsync(x => x.AdminId != model.AdminId && x.Username.ToLower() == model.Username.Trim().ToLower());
             if (exists)
             {
-                return Json(new { success = false, message = "Username already exists!" });
+                return Json(new { success = false, message = _localizer["AdminAdmins_UsernameExists"].Value });
             }
 
+            bool isPasswordChanged = !string.IsNullOrWhiteSpace(model.Password);
+
+            // 4. XỬ LÝ ĐỔI MẬT KHẨU
+            if (isPasswordChanged)
+            {
+                string newPassword = model.Password!.Trim();
+                string confirmPassword = model.ConfirmPassword?.Trim() ?? "";
+
+                // Kiểm tra nhập lại mật khẩu
+                if (string.IsNullOrWhiteSpace(confirmPassword))
+                {
+                    return Json(new { success = false, message = _localizer["AdminAdmins_ConfirmPasswordRequired"].Value });
+                }
+
+                if (newPassword != confirmPassword)
+                {
+                    return Json(new { success = false, message = _localizer["AdminAdmins_PasswordMismatch"].Value });
+                }
+
+                // Bắt buộc nhập mật khẩu của người đang thao tác để xác thực
+                if (string.IsNullOrWhiteSpace(model.CurrentAdminPassword))
+                {
+                    return Json(new { success = false, message = _localizer["AdminAdmins_ReqVerifyPassword"].Value });
+                }
+
+                // Kiểm tra mật khẩu tài khoản người đang đăng nhập
+                if (!PasswordHasher.Verify(currentAdmin.PasswordHash, model.CurrentAdminPassword))
+                {
+                    return Json(new { success = false, message = _localizer["AdminAdmins_VerifyPasswordFailed"].Value });
+                }
+
+                // Cập nhật mật khẩu mã hóa Argon2
+                entity.PasswordHash = PasswordHasher.Hash(newPassword);
+            }
+
+            // Cập nhật thông tin cơ bản
             entity.Username = model.Username.Trim();
             entity.FullName = model.FullName?.Trim();
-            entity.Role = model.Role;
-            entity.IsActive = model.IsActive;
 
-            // Nếu có nhập mật khẩu mới thì cập nhật hash
-            if (!string.IsNullOrWhiteSpace(model.Password))
+            // Chỉ Super Admin mới được quyền đổi vai trò (Role) và trạng thái (IsActive) của tài khoản
+            if (isSuperAdmin)
             {
-                entity.PasswordHash = PasswordHasher.Hash(model.Password); // Mã hóa Argon2
+                entity.Role = model.Role;
+                entity.IsActive = model.IsActive;
             }
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Update account successfully!" });
+
+            // 5. Nếu tự đổi mật khẩu của chính mình -> Hủy phiên đăng nhập và bắt login lại
+            if (isPasswordChanged && currentLoggedInAdminId == entity.AdminId)
+            {
+                HttpContext.Session.Clear(); // Xóa sạch Session đăng nhập
+                return Json(new
+                {
+                    success = true,
+                    requireRelogin = true,
+                    message = _localizer["AdminAdmins_PasswordChangedRelogin"].Value
+                });
+            }
+
+            return Json(new
+            {
+                success = true,
+                requireRelogin = false,
+                message = _localizer["AdminAdmins_UpdateAccountSuccess"].Value
+            });
         }
 
         // POST: /Admin/tblAdmins/Delete

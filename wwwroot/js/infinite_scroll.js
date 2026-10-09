@@ -165,28 +165,28 @@ if (typeof window.InfiniteScroller === 'undefined') {
 }
 
 // Bắt sự kiện ô tìm kiếm chung
-$(document).ready(function () {
-    $(document).on('input keyup', 'input[type="search"], input[name="search"], #txtSearch, #searchInput, #topSearchInput, #liveSearchInput', function () {
+$(document).ready(function () {$(document).on('input keyup', 'input[type="search"], input[name="search"], #txtSearch, #searchInput, #topSearchInput, #liveSearchInput', function () {
         const val = $(this).val();
         onSearchStory(val);
     });
 });
 
-let globalSearchDebounceTimer = null;
+// KHẮC PHỤC LỖI: Gắn biến vào window thay vì dùng let toàn cục
+window.globalSearchDebounceTimer = window.globalSearchDebounceTimer || null;
 
 function onSearchStory(keyword) {
     if (!keyword) keyword = '';
     const cleanSearch = keyword.trim().normalize('NFC');
 
-    // Xóa bộ hẹn giờ trước đó nếu người dùng vẫn đang gõ phím tiếp
-    clearTimeout(globalSearchDebounceTimer);
+    // Xóa bộ hẹn giờ trước đó
+    clearTimeout(window.globalSearchDebounceTimer);
 
-    // Chờ 800ms (gần 1 giây) sau khi người dùng dừng gõ hẳn thì mới kích hoạt tìm kiếm
-    globalSearchDebounceTimer = setTimeout(() => {
+    // Chờ 800ms sau khi người dùng dừng gõ hẳn thì mới kích hoạt tìm kiếm
+    window.globalSearchDebounceTimer = setTimeout(() => {
         const activeScroller = window.storyScroller || window.rankScroller || window.mainScroller;
 
         // Cập nhật tiêu đề mục kết quả nếu có
-        const $title = $('.section-title');
+        const $title =$('.section-title');
         if ($title.length > 0) {
             if (cleanSearch.length > 0) {
                 $title.html(`Kết quả tìm kiếm cho: <span class="text-teal-600">"${cleanSearch}"</span>`);
@@ -198,5 +198,5 @@ function onSearchStory(keyword) {
         if (activeScroller) {
             activeScroller.reset({ search: cleanSearch });
         }
-    }, 10000); // <-- 800ms là khoảng thời gian lý tưởng nhất để tránh giật lag mà không bị trễ quá lâu
+    }, 800); // SỬA LẠI: Thay 10000 thành 800 (800ms = 0.8 giây)
 }

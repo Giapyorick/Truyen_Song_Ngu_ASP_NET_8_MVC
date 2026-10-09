@@ -48,14 +48,14 @@
         </div>
     </a>
 
-    <!-- CỤM THANH ĐIỀU HƯỚNG TRUNG TÂM -->
+<!-- CỤM THANH ĐIỀU HƯỚNG TRUNG TÂM -->
     <nav class="main-nav">
         @{
             string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
         }
         <ul class="flex items-center gap-1">
             <!-- 1. Trang chủ -->
-            <li>
+            <li class="nav-menu-item transition-all duration-200">
                 <a asp-controller="Home" asp-action="Index"
                    class="nav-link @(currentController.Equals("Home", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                     <i class="fa-solid fa-house"></i>
@@ -63,28 +63,29 @@
                 </a>
             </li>
 
-            <!-- 2. Nút tìm kiếm mở rộng -->
             <li class="relative flex items-center">
                 <button type="button"
                         id="btnOpenSearch"
                         class="nav-link flex items-center justify-center p-2 text-slate-600 hover:text-teal-700 transition"
                         title="@SharedLocalizer["Nav_SearchTooltip"]">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    <i class="fa-solid fa-magnifying-glass text-base"></i>
                 </button>
 
                 <div id="searchBarContainer"
                      class="hidden opacity-0 scale-95 transition-all duration-300 origin-right items-center pl-1 pr-2">
-                    <div class="relative flex items-center">
+                    <div class="relative flex items-center w-full">
+                        <!-- Tăng kích thước ô input: w-72 sm:w-96 md:w-[450px], py-2, text-sm -->
                         <input type="text"
                                id="liveSearchInput"
                                autocomplete="off"
                                placeholder="@SharedLocalizer["Nav_SearchPlaceholder"]"
-                               class="w-48 sm:w-64 pl-8 pr-7 py-1 text-xs rounded-full border border-teal-300/60 bg-white/90 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-200 outline-none transition text-slate-700 shadow-sm" />
-                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-teal-600 text-[11px] pointer-events-none"></i>
+                               class="w-72 sm:w-96 md:w-[450px] pl-9 pr-8 py-2 text-sm rounded-full border border-teal-400 bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition text-slate-800 shadow-md font-medium" />
+                        
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 text-teal-600 text-xs pointer-events-none"></i>
 
                         <button type="button"
                                 id="btnCloseSearch"
-                                class="absolute right-2 text-slate-400 hover:text-rose-500 text-xs transition">
+                                class="absolute right-3 text-slate-400 hover:text-rose-500 text-sm transition">
                             <i class="fa-solid fa-circle-xmark"></i>
                         </button>
                     </div>
@@ -92,7 +93,7 @@
             </li>
 
             <!-- 3. Song ngữ Novel -->
-            <li>
+            <li class="nav-menu-item transition-all duration-200">
                 <a href="#" class="nav-link">
                     <i class="fa-solid fa-language"></i>
                     <span>@SharedLocalizer["Nav_Bilingual"]</span>
@@ -101,7 +102,7 @@
             </li>
 
             <!-- 4. Thể loại -->
-            <li>
+            <li class="nav-menu-item transition-all duration-200">
                 <a asp-controller="Categories" asp-action="Index"
                    class="nav-link @(currentController.Equals("Categories", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                     <i class="fa-solid fa-layer-group"></i>
@@ -110,7 +111,7 @@
             </li>
 
             <!-- 5. Xếp hạng -->
-            <li>
+            <li class="nav-menu-item transition-all duration-200">
                 <a asp-controller="Rankings" asp-action="Index"
                    class="nav-link @(currentController.Equals("Rankings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                     <i class="fa-solid fa-chart-simple"></i>
@@ -118,8 +119,17 @@
                 </a>
             </li>
 
-            <!-- 6. NÚT ĐỔI NGÔN NGỮ (TÍCH HỢP TRONG CỤM MENU, ĐỒNG BỘ GIAO DIỆN) -->
-            <li class="flex items-center pl-2 ml-1 border-l border-slate-200">
+            <!-- 6. Cộng đồng -->
+            <li class="nav-menu-item transition-all duration-200">
+                <a asp-controller="Community" asp-action="Index"
+                   class="nav-link @(currentController.Equals("Community", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                    <i class="fa-solid fa-users"></i>
+                    <span>@SharedLocalizer["Nav_Community"]</span>
+                </a>
+            </li>
+
+            <!-- 7. NÚT ĐỔI NGÔN NGỮ -->
+            <li class="nav-menu-item transition-all duration-200 flex items-center pl-2 ml-1 border-l border-slate-200">
                 <form asp-area="" asp-controller="Language" asp-action="SetLanguage" method="post"
                       class="flex items-center bg-slate-100/80 p-0.5 rounded-full border border-slate-200 shadow-inner">
                     <input type="hidden" name="returnUrl" value="@returnUrl" />
@@ -268,6 +278,11 @@
     </footer>
 
     <div id="toast-container"></div>
+    <div id="ai-selection-tooltip"
+         class="fixed hidden z-[1020] bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-xl cursor-pointer hover:bg-teal-600 transition-all duration-200 transform -translate-x-1/2 -translate-y-full flex items-center gap-1.5 select-none animate-bounce">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+        <span>@SharedLocalizer["SharedChat_AskAiTooltip"]</span>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -380,7 +395,7 @@
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // --- D. Xử lý Thanh Tìm Kiếm Thời Gian Thực (Live Search) ---
+       // --- D. Xử lý Thanh Tìm Kiếm Thời Gian Thực (Live Search) ---
         let searchDebounce = null;
         const $btnOpen = $('#btnOpenSearch');
         const $container = $('#searchBarContainer');
@@ -388,9 +403,13 @@
         const $btnClose = $('#btnCloseSearch');
         const $btnClear = $('#btnClearSearch');
 
-        // Mở thanh tìm kiếm
+        // Mở thanh tìm kiếm: Chỉ ẩn các item menu xung quanh (.nav-menu-item)
         $btnOpen.on('click', function (e) {
             e.stopPropagation();
+
+            // Ẩn mượt tất cả các menu item khác
+            $('.nav-menu-item').addClass('hidden');
+
             $btnOpen.addClass('hidden');
             $container.removeClass('hidden flex').addClass('flex');
             requestAnimationFrame(() => {
@@ -405,7 +424,7 @@
             closeSearchBar();
         });
 
-        // Nút xóa nhanh nội dung đang gõ (chỉ reset qua Scroller một nguồn duy nhất)
+        // Nút xóa nhanh nội dung
         $btnClear.on('click', function () {
             $input.val('');
             $btnClear.addClass('hidden');
@@ -443,10 +462,13 @@
             setTimeout(() => {
                 $container.removeClass('flex').addClass('hidden');
                 $btnOpen.removeClass('hidden');
+
+                // Hiện lại tất cả menu item
+                $('.nav-menu-item').removeClass('hidden');
             }, 200);
         }
 
-        // Lắng nghe gõ phím và chỉ gọi qua onSearchStory (Scroller sẽ tự quản lý phân trang và hủy request cũ)
+        // Lắng nghe gõ phím
         $input.on('input', function () {
             const keyword = $(this).val();
 
@@ -542,7 +564,8 @@
         ModalTitleAdd: "@Html.Raw(SharedLocalizer["Admin_ModalTitleAdd"])",
         ModalTitleEdit: "@Html.Raw(SharedLocalizer["Admin_ModalTitleEdit"])",
         PwdNoticeAdd: "@Html.Raw(SharedLocalizer["Admin_PwdNoticeAdd"])",
-        PwdNoticeEdit: "@Html.Raw(SharedLocalizer["Admin_PwdNoticeEdit"])"
+        PwdNoticeEdit: "@Html.Raw(SharedLocalizer["Admin_PwdNoticeEdit"])",
+        ReqVerifyPassword: "@Html.Raw(SharedLocalizer["AdminAdmins_ReqVerifyPassword"])"
     };
 </script>
 

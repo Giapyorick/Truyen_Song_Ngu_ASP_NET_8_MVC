@@ -11,24 +11,7 @@ namespace WebTruyenTranh.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "tblAdmin",
-                columns: table => new
-                {
-                    AdminID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Email = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: true, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: true, defaultValueSql: "(getdate())")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__tblAdmin__719FE4E843CF3D0E", x => x.AdminID);
-                });
-
+            
             migrationBuilder.CreateTable(
                 name: "tblAuthor",
                 columns: table => new
@@ -331,12 +314,7 @@ namespace WebTruyenTranh.Migrations
                         principalColumn: "ChapterID");
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "UQ__tblAdmin__536C85E44AFAD200",
-                table: "tblAdmin",
-                column: "Username",
-                unique: true);
-
+            
             migrationBuilder.CreateIndex(
                 name: "IX_tblCategoryOfStory_StoryID",
                 table: "tblCategoryOfStory",
@@ -403,9 +381,7 @@ namespace WebTruyenTranh.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "tblAdmin");
-
+            
             migrationBuilder.DropTable(
                 name: "tblCategoryOfStory");
 

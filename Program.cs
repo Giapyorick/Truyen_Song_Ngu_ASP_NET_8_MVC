@@ -7,8 +7,10 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using WebTruyenTranh.Helpers;
+using WebTruyenTranh.Hubs;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.Services;
+using WebTruyenTranh.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ builder.Services.AddControllersWithViews()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 
 // 3. Khai báo danh sách ngôn ngữ hỗ trợ
 var supportedCultures = new[]
@@ -100,6 +103,7 @@ builder.Services.AddHangfireServer(options => { options.WorkerCount = 1; });
 
 var app = builder.Build();
 
+
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -135,4 +139,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapHub<CommunityHub>("/communityHub");
 app.Run();

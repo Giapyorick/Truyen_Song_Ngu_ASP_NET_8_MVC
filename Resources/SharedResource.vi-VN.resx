@@ -268,7 +268,7 @@
     <value>Thể loại</value>
   </data>
   <data name="Nav_Rankings" xml:space="preserve">
-    <value>Bảng xếp hạng</value>
+    <value>Xếp hạng</value>
   </data>
   <data name="Nav_Logout" xml:space="preserve">
     <value>Đăng xuất</value>
@@ -472,7 +472,7 @@
     <value>Tủ truyện</value>
   </data>
   <data name="Footer_Rankings" xml:space="preserve">
-    <value>Bảng xếp hạng</value>
+    <value>Xếp hạng</value>
   </data>
   <data name="Footer_Policies" xml:space="preserve">
     <value>Chính sách</value>
@@ -2057,5 +2057,56 @@
   </data>
   <data name="Para_SelectChapterPlaceHolder" xml:space="preserve">
     <value>-- Chọn chương -- </value>
+  </data>
+  <data name="AdminAdmins_AccountNotFound" xml:space="preserve">
+    <value>Không tìm thấy tài khoản!</value>
+  </data>
+  <data name="AdminAdmins_UsernameExists" xml:space="preserve">
+    <value>Tên đăng nhập đã tồn tại!</value>
+  </data>
+  <data name="AdminAdmins_ReqVerifyPassword" xml:space="preserve">
+    <value>Vui lòng nhập mật khẩu của bạn để xác thực thay đổi mật khẩu!</value>
+  </data>
+  <data name="AdminAdmins_VerifyPasswordFailed" xml:space="preserve">
+    <value>Mật khẩu xác thực tài khoản của bạn không chính xác!</value>
+  </data>
+  <data name="AdminAdmins_PasswordChangedRelogin" xml:space="preserve">
+    <value>Đổi mật khẩu thành công! Vui lòng đăng nhập lại.</value>
+  </data>
+  <data name="AdminAdmins_UpdateAccountSuccess" xml:space="preserve">
+    <value>Cập nhật tài khoản thành công!</value>
+  </data>
+  <data name="AdminAdmins_ReqVerifyPasswordClient" xml:space="preserve">
+    <value>Vui lòng nhập mật khẩu tài khoản của bạn để xác thực thay đổi!</value>
+  </data>
+  <data name="AdminCommon_YourPasswordVerify" xml:space="preserve">
+    <value>Mật khẩu của bạn (Xác thực)</value>
+  </data>
+  <data name="AdminCommon_VerifyPasswordHint" xml:space="preserve">
+    <value>Bắt buộc xác thực mật khẩu tài khoản của bạn để áp dụng mật khẩu mới.</value>
+  </data>
+  <data name="Admin_PwdNoticeEdit" xml:space="preserve">
+    <value>(để trống nếu không muốn đổi mật khẩu)</value>
+  </data>
+  <data name="AdminAdmins_NoPermissionEditOthers" xml:space="preserve">
+    <value>Bạn chỉ có quyền chỉnh sửa thông tin tài khoản của chính mình!</value>
+  </data>
+  <data name="AdminAdmins_PasswordMismatch" xml:space="preserve">
+    <value>Mật khẩu mới và mật khẩu nhập lại không khớp nhau!</value>
+  </data>
+  <data name="AdminAdmins_ConfirmPasswordRequired" xml:space="preserve">
+    <value>Vui lòng nhập lại mật khẩu mới để xác nhận!</value>
+  </data>
+  <data name="SharedChat_AskAiTooltip" xml:space="preserve">
+    <value>Hỏi AI</value>
+  </data>
+  <data name="SharedChat_Grammar" xml:space="preserve">
+    <value>Ngữ pháp</value>
+  </data>
+  <data name="SharedChat_Vocab" xml:space="preserve">
+    <value>Từ vựng</value>
+  </data>
+  <data name="Nav_Community" xml:space="preserve">
+    <value>Cộng đồng</value>
   </data>
 </root>

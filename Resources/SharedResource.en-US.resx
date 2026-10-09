@@ -2058,4 +2058,55 @@
   <data name="Para_SelectChapterPlaceHolder" xml:space="preserve">
     <value>-- Select chapter -- </value>
   </data>
+  <data name="AdminAdmins_AccountNotFound" xml:space="preserve">
+    <value>Account not found!</value>
+  </data>
+  <data name="AdminAdmins_UsernameExists" xml:space="preserve">
+    <value>Username already exists!</value>
+  </data>
+  <data name="AdminAdmins_ReqVerifyPassword" xml:space="preserve">
+    <value>Please enter your current password to verify changes!</value>
+  </data>
+  <data name="AdminAdmins_VerifyPasswordFailed" xml:space="preserve">
+    <value>Your verification password is incorrect!</value>
+  </data>
+  <data name="AdminAdmins_PasswordChangedRelogin" xml:space="preserve">
+    <value>Password changed successfully! Please log in again.</value>
+  </data>
+  <data name="AdminAdmins_UpdateAccountSuccess" xml:space="preserve">
+    <value>Account updated successfully!</value>
+  </data>
+  <data name="AdminAdmins_ReqVerifyPasswordClient" xml:space="preserve">
+    <value>Please enter your account password to verify changes!</value>
+  </data>
+  <data name="AdminCommon_YourPasswordVerify" xml:space="preserve">
+    <value>Your Password (Verify)</value>
+  </data>
+  <data name="AdminCommon_VerifyPasswordHint" xml:space="preserve">
+    <value>Verification of your current password is required to apply the new password.</value>
+  </data>
+  <data name="Admin_PwdNoticeEdit" xml:space="preserve">
+    <value>(leave blank to keep current password)</value>
+  </data>
+  <data name="AdminAdmins_NoPermissionEditOthers" xml:space="preserve">
+    <value>You can only edit your own account information!</value>
+  </data>
+  <data name="AdminAdmins_PasswordMismatch" xml:space="preserve">
+    <value>The new password and confirmation password do not match!</value>
+  </data>
+  <data name="AdminAdmins_ConfirmPasswordRequired" xml:space="preserve">
+    <value>Please re-enter the new password to confirm!</value>
+  </data>
+  <data name="SharedChat_AskAiTooltip" xml:space="preserve">
+    <value>Ask AI</value>
+  </data>
+  <data name="SharedChat_Grammar" xml:space="preserve">
+    <value>Grammar</value>
+  </data>
+  <data name="SharedChat_Vocab" xml:space="preserve">
+    <value>Vocab</value>
+  </data>
+  <data name="Nav_Community" xml:space="preserve">
+    <value>Community</value>
+  </data>
 </root>

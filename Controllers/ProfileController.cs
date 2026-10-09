@@ -132,7 +132,7 @@ namespace WebTruyenTranh.Controllers
                 })
                 .ToListAsync();
 
-            // 3. BỔ SUNG: Truy vấn truyện đã đọc (Lấy từ TblUserReadingProgress)
+            // 3. Truy vấn truyện đã đọc
             var readStories = await _context.TblUserReadingProgresses
                 .AsNoTracking()
                 .Where(rp => rp.UserId == userId)
@@ -172,10 +172,33 @@ namespace WebTruyenTranh.Controllers
                     Rate = x.Story.Rate,
                     Likes = x.Story.Likes,
                     CountFolower = x.Story.CountFolower,
-                    HasProgress = true, // Truyện trong ReadingProgress chắc chắn đã có tiến độ đọc
+                    HasProgress = true,
                     LastChapterId = x.Progress.LastChapterId,
                     LastChapterNumber = x.Progress.ChapterNumber,
                     LatestChapters = x.LatestChapters
+                })
+                .ToListAsync();
+
+            // 4. Truy vấn danh sách từ vựng cá nhân từ tblUserVocabularies
+            var vocabularies = await _context.TblUserVocabularies
+                .AsNoTracking()
+                .Where(v => v.UserId == userId)
+                .OrderByDescending(v => v.CreatedAt)
+                .Select(v => new UserVocabItemViewModel
+                {
+                    VocabId = v.VocabId,
+                    WordOrPhrase = v.WordOrPhrase,
+                    Explanation = v.Explanation,
+                    ContextSentence = v.ContextSentence,
+                    StoryTitle = _context.TblChapters
+                        .Where(c => c.ChapterId == v.ChapterId)
+                        .Select(c => c.Story.Title)
+                        .FirstOrDefault(),
+                    ChapterNumber = _context.TblChapters
+                        .Where(c => c.ChapterId == v.ChapterId)
+                        .Select(c => (int?)c.ChapterNumber)
+                        .FirstOrDefault(),
+                    CreatedAt = v.CreatedAt
                 })
                 .ToListAsync();
 
@@ -184,7 +207,8 @@ namespace WebTruyenTranh.Controllers
                 User = user,
                 FollowedStories = followedStories,
                 LikedStories = likedStories,
-                ReadStories = readStories
+                ReadStories = readStories,
+                Vocabularies = vocabularies
             };
 
             return View(viewModel);
@@ -267,5 +291,28 @@ namespace WebTruyenTranh.Controllers
 
             return Json(new { success = true, message = "Profile updated successfully!" });
         }
+        [HttpPost]
+        public async Task<IActionResult> DeleteVocabulary(int id)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId <= 0)
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập để thao tác!" });
+            }
+
+            var vocab = await _context.TblUserVocabularies
+                .FirstOrDefaultAsync(v => v.VocabId == id && v.UserId == userId);
+
+            if (vocab == null)
+            {
+                return Json(new { success = false, message = "Từ vựng không tồn tại hoặc đã bị xóa!" });
+            }
+
+            _context.TblUserVocabularies.Remove(vocab);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã xóa từ vựng khỏi sổ tay!" });
+        }
+
     }
 }

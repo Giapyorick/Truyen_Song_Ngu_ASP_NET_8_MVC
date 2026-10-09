@@ -541,12 +541,18 @@ class ReadingViewer {
             }
         });
 
-        $(document).off('click', '.text-segment').on('click', '.text-segment', function () {
-            const $el =$(this);
-    
+        $(document).off('dblclick', '.text-segment').on('dblclick', '.text-segment', function (e) {
+            e.preventDefault();
+
+            if (window.getSelection) {
+                window.getSelection().removeAllRanges();
+            }
+
+            const $el = $(this);
+
             if (self.isFocusMode) {
                 const order = $el.attr('data-order');
-                const $original =$(`#paragraphList .text-segment[data-order="${order}"]`);
+                const $original = $(`#paragraphList .text-segment[data-order="${order}"]`);
                 self.toggleLanguage($el);
                 self.toggleLanguage($original);
             } else {

@@ -1,127 +1,129 @@
-    :root {
-        --bg-color: #fcfaf7; /* Màu giấy nhẹ cho đỡ mỏi mắt */
-        --text-color: #1a202c;
-        --accent-color: #3b82f6;
-        --highlight-color: #ebf2ff;
-    }
+@import url('content.css');
+:root {
+	--bg-color: #fcfaf7; /* Màu giấy nhẹ cho đỡ mỏi mắt */
+	--text-color: #1a202c;
+	--accent-color: #3b82f6;
+	--highlight-color: #ebf2ff;
+}
 
-    body {
-        background-color: #f3f4f6;
-    }
+body {
+	background-color: #f3f4f6;
+}
 
-    .reading-wrapper {
-        max-width: 800px;
-        margin: 40px auto;
-        background: var(--bg-color);
-        padding: 50px 60px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        min-height: 80vh;
-    }
+/* ==========================================================================
+   1. GIAO DIỆN ĐỌC TRUYỆN (READING WRAPPER & TEXT SEGMENTS)
+   ========================================================================== */
+.reading-wrapper {
+	max-width: 800px;
+	margin: 40px auto;
+	background: var(--bg-color);
+	padding: 50px 60px;
+	border-radius: 16px;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+	min-height: 80vh;
+}
 
-    .reading-header {
-        border-bottom: 1px solid #e5e7eb;
-        margin-bottom: 30px;
-        padding-bottom: 10px;
-        display: flex;
-        justify-content: center;
-    }
+.reading-header {
+	border-bottom: 1px solid #e5e7eb;
+	margin-bottom: 30px;
+	padding-bottom: 10px;
+	display: flex;
+	justify-content: center;
+}
 
-    .hint {
-        font-size: 0.85rem;
-        color: #9ca3af;
-        font-style: italic;
-    }
+.hint {
+	font-size: 0.85rem;
+	color: #9ca3af;
+	font-style: italic;
+}
 
-    .reading-content {
-		font-family: 'Lora', serif;
-        font-size: 1.25rem;
-        line-height: 2;
-        color: var(--text-color);
-        text-align: justify;
-    }
+.reading-content {
+	font-family: 'Lora', serif;
+	font-size: 1.25rem;
+	line-height: 2;
+	color: var(--text-color);
+	text-align: justify;
+}
 
-    .text-segment {
-        cursor: pointer;
-        padding: 2px 4px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-        display: inline; 
-    }
+.text-segment {
+	padding: 2px 4px;
+	border-radius: 4px;
+	display: inline;
+	user-select: text;
+	-webkit-user-select: text;
+	cursor: text;
+	transition: color 0.2s ease, background-color 0.2s ease;
+}
 
-    .text-segment:hover {
-        background-color: var(--highlight-color);
-        color: var(--accent-color);
-    }
-
-    .text-segment.is-translated {
-        color: #059669;
-        background-color: #ecfdf5;
-        font-family: 'Lora', serif; 
-        font-size: 1.25rem;
-    }
-
-    .text-segment:active {
-        transform: scale(0.98);
-    }
-	.toolbar {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-    }
-
-    .btn-modern {
-        background: #fff;
-        border: 1px solid #d1d5db;
-        padding: 8px 20px;
-        border-radius: 99px;
-        font-weight: 600;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .btn-modern:hover {
-        background: #f9fafb;
-        border-color: #3b82f6;
-        color: #3b82f6;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .btn-modern:active {
-        transform: translateY(0);
-    }
-
-    .text-segment {
-        transition: color 0.3s ease, background-color 0.3s ease;
-    }
-	.btn-fixed {
-		position: fixed;
-		bottom: 30px;
-		right: 30px;
-		z-index: 1000;
-		
-		background: #3b82f6; 
-		color: white;
-		border: none;
-		padding: 12px 24px;
-		border-radius: 50px; 
-		font-weight: 600;
-		cursor: pointer;
-		
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	.text-segment:hover {
+		background-color: var(--highlight-color);
+		color: var(--accent-color);
 	}
+
+	.text-segment.is-translated {
+		color: #059669;
+		background-color: #ecfdf5;
+		font-family: 'Lora', serif;
+		font-size: 1.25rem;
+	}
+
+	.text-segment:active {
+		transform: scale(0.98);
+	}
+
+.toolbar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+
+.btn-modern {
+	background: #fff;
+	border: 1px solid #d1d5db;
+	padding: 8px 20px;
+	border-radius: 99px;
+	font-weight: 600;
+	color: #374151;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+	.btn-modern:hover {
+		background: #f9fafb;
+		border-color: #3b82f6;
+		color: #3b82f6;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+	}
+
+	.btn-modern:active {
+		transform: translateY(0);
+	}
+
+.btn-fixed {
+	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	z-index: 1000;
+	background: #3b82f6;
+	color: white;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 50px;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 	.btn-fixed:hover {
 		background: #2563eb;
@@ -134,64 +136,68 @@
 	}
 
 	.btn-fixed.active {
-		background: #10b981; 
-	}
-	.ai-chatbox {
-		position: fixed;
-		bottom: 20px;
-		right: 20px;
-		width: 300px;
-		font-family: system-ui, sans-serif;
-		z-index: 2000;
+		background: #10b981;
 	}
 
-	.ai-chat-header {
-		background: #2563eb;
-		color: #fff;
-		padding: 10px;
-		border-radius: 10px 10px 0 0;
-		cursor: pointer;
-		font-weight: 600;
-	}
+/* ==========================================================================
+   2. KHUNG CHAT AI CŨ (FALLBACK NẾU CÓ DÙNG)
+   ========================================================================== */
+.ai-chatbox {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	width: 300px;
+	font-family: system-ui, sans-serif;
+	z-index: 2000;
+}
 
-	.ai-chat-body {
-		background: #fff;
-		border: 1px solid #ddd;
-		border-top: none;
-		border-radius: 0 0 10px 10px;
-		display: flex;
-		flex-direction: column;
-		height: 320px;
-	}
+.ai-chat-header {
+	background: #2563eb;
+	color: #fff;
+	padding: 10px;
+	border-radius: 10px 10px 0 0;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.ai-chat-body {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-top: none;
+	border-radius: 0 0 10px 10px;
+	display: flex;
+	flex-direction: column;
+	height: 320px;
+}
 
 	.ai-chat-body.hidden {
 		display: none;
 	}
 
-	.ai-chat-messages {
-		flex: 1;
-		padding: 10px;
-		overflow-y: auto;
-		font-size: 13px;
-	}
+.ai-chat-messages {
+	flex: 1;
+	padding: 10px;
+	overflow-y: auto;
+	font-size: 13px;
+}
 
-	.ai-msg-user {
-		text-align: right;
-		margin-bottom: 8px;
-	}
+.ai-msg-user {
+	text-align: right;
+	margin-bottom: 8px;
+}
 
-	.ai-msg-ai {
-		text-align: left;
-		margin-bottom: 8px;
-		background: #f1f5f9;
-		padding: 6px 8px;
-		border-radius: 6px;
-	}
+.ai-msg-ai {
+	text-align: left;
+	margin-bottom: 8px;
+	background: #f1f5f9;
+	padding: 6px 8px;
+	border-radius: 6px;
+}
 
-	.ai-chat-input {
-		display: flex;
-		border-top: 1px solid #eee;
-	}
+.ai-chat-input {
+	display: flex;
+	border-top: 1px solid #eee;
+}
 
 	.ai-chat-input input {
 		flex: 1;
@@ -208,7 +214,257 @@
 		cursor: pointer;
 	}
 
-/* --- CSS CHO DẢI ẢNH STRIP TRÊN TRANG READING --- */
+/* ==========================================================================
+   3. TYPOGRAPHY TIN NHẮN STREAMING AI (TỐI ƯU KHOẢNG CÁCH SÁT NHAU)
+   ========================================================================== */
+@keyframes fadeInMsg {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fadeInMsg 0.25s ease-out forwards;
+}
+
+.ai-content {
+	font-size: 13px !important;
+	line-height: 1.5 !important;
+	color: #334155 !important;
+}
+
+	/* Tiêu đề mục chứa badge */
+	.ai-content h3 {
+		margin-top: 8px !important;
+		margin-bottom: 4px !important;
+		padding: 0 !important;
+		border-bottom: none !important;
+		line-height: 1.2 !important;
+	}
+
+		.ai-content h3:first-child {
+			margin-top: 0 !important;
+		}
+
+	/* Đoạn văn bản */
+	.ai-content p {
+		margin-top: 0 !important;
+		margin-bottom: 6px !important;
+	}
+
+		.ai-content p:last-child {
+			margin-bottom: 0 !important;
+		}
+
+	/* Danh sách gạch đầu dòng sát lại liền mạch */
+	.ai-content ul {
+		list-style-type: none !important;
+		padding-left: 0 !important;
+		margin-top: 4px !important;
+		margin-bottom: 6px !important;
+	}
+
+	.ai-content li {
+		position: relative;
+		padding-left: 14px !important;
+		margin-top: 2px !important;
+		margin-bottom: 3px !important; /* Khoảng cách sát lại tự nhiên */
+		line-height: 1.45 !important;
+	}
+
+		.ai-content li::before {
+			content: "•";
+			position: absolute;
+			left: 2px;
+			top: 0;
+			color: #14b8a6;
+			font-size: 13px;
+			font-weight: bold;
+		}
+
+	.ai-content strong {
+		color: #0d9488 !important;
+		font-weight: 700 !important;
+	}
+
+	.ai-content blockquote {
+		border-left: 3px solid #50C9C3;
+		padding-left: 10px;
+		margin: 6px 0;
+		font-style: italic;
+		color: #64748b;
+		background-color: #f8fafc;
+		border-radius: 0 8px 8px 0;
+	}
+
+	/* Bảng dữ liệu từ vựng trong Chatbox */
+	.ai-content table {
+		width: 100% !important;
+		max-width: 100% !important;
+		border-collapse: separate !important;
+		border-spacing: 0 !important;
+		margin: 8px 0 !important;
+		font-size: 11.5px !important;
+		border: 1px solid #e2e8f0 !important;
+		border-radius: 12px !important;
+		overflow: hidden !important;
+		background-color: #ffffff !important;
+	}
+
+	.ai-content th {
+		background: #f8fafc !important;
+		color: #0f766e !important;
+		font-weight: 700 !important;
+		padding: 6px 10px !important;
+		border-bottom: 1px solid #e2e8f0 !important;
+		text-align: left !important;
+	}
+
+	.ai-content td {
+		padding: 6px 10px !important;
+		border-bottom: 1px solid #f1f5f9 !important;
+		color: #334155 !important;
+		line-height: 1.45 !important;
+		vertical-align: top !important;
+		word-break: break-word !important;
+	}
+
+	.ai-content tr:last-child td {
+		border-bottom: none !important;
+	}
+
+/* ==========================================================================
+   4. NỀN GRADIENT XÁM BẠC CHO TIN NHẮN AI (.btn-grad-gray)
+   ========================================================================== */
+.btn-grad-gray {
+	background-image: linear-gradient(to right, #f8f9fa 0%, #e9ecef 51%, #f8f9fa 100%);
+	background-size: 200% auto;
+	color: #334155;
+	transition: all 0.5s ease;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+	.btn-grad-gray:hover {
+		background-position: right center;
+		color: #1e293b;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+		border-color: #cbd5e1;
+		text-decoration: none;
+	}
+
+/* ==========================================================================
+   5. HỆ THỐNG PILL-BADGE CHUẨN (BO TRÒN, NỀN GRADIENT, CHỮ & ICON TRẮNG)
+   ========================================================================== */
+.badge-pill {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 5px !important;
+	padding: 4px 11px !important;
+	border-radius: 9999px !important;
+	font-size: 11px !important;
+	font-weight: 800 !important;
+	color: #ffffff !important;
+	line-height: 1 !important;
+	letter-spacing: -0.01em !important;
+	border: none !important;
+	user-select: none !important;
+	transition: all 0.3s ease !important;
+	margin: 4px 0 2px 0 !important;
+}
+
+	.badge-pill i {
+		color: #ffffff !important;
+		font-size: 10px !important;
+	}
+
+	.badge-pill.bg-main {
+		background: linear-gradient(to right, #50C9C3 0%, #96DEDA 100%) !important;
+		box-shadow: 0 3px 10px rgba(80, 201, 195, 0.35) !important;
+	}
+
+	.badge-pill.bg-cus {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+		box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3) !important;
+	}
+
+	.badge-pill.bg-info {
+		background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important;
+		box-shadow: 0 3px 10px rgba(0, 198, 255, 0.3) !important;
+	}
+
+	.badge-pill.bg-wait {
+		background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%) !important;
+		box-shadow: 0 3px 10px rgba(255, 128, 8, 0.3) !important;
+	}
+
+	.badge-pill.bg-accepted {
+		background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+		box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3) !important;
+	}
+
+	.badge-pill.bg-deny {
+		background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%) !important;
+		box-shadow: 0 3px 10px rgba(235, 51, 73, 0.3) !important;
+	}
+
+/* ==========================================================================
+   6. NÚT CHIPS CHỌN CHẾ ĐỘ & THANH CUỘN CHATBOX
+   ========================================================================== */
+.ai-action-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border-radius: 9999px;
+	font-size: 11.5px;
+	font-weight: 700;
+	color: #475569;
+	background: #f1f5f9;
+	border: 1px solid #e2e8f0;
+	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+	.ai-action-chip:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+
+.ai-chip.active {
+	background-color: #f0fdfa !important;
+	color: #0f766e !important;
+	border-color: #99f6e4 !important;
+	box-shadow: 0 2px 6px -1px rgba(15, 118, 110, 0.15) !important;
+}
+
+#chat-history::-webkit-scrollbar {
+	width: 5px;
+}
+
+#chat-history::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+#chat-history::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 10px;
+}
+
+	#chat-history::-webkit-scrollbar-thumb:hover {
+		background: #94a3b8;
+	}
+
+/* ==========================================================================
+   7. DẢI ẢNH STRIP TRÊN TRANG READING
+   ========================================================================== */
 .strip-gallery-wrapper {
 	position: relative;
 	width: 100%;
@@ -218,24 +474,19 @@
 .strip-gallery-slider {
 	display: flex;
 	gap: 12px;
-	height: 520px; /* Chiều cao cố định của các thanh */
+	height: 520px;
 	width: 100%;
 	overflow-x: auto;
 	scroll-behavior: smooth;
 	padding: 6px 0;
-}
-
-	/* Ẩn thanh cuộn mặc định */
-	.strip-gallery-slider::-webkit-scrollbar {
-		display: none;
-	}
-
-.strip-gallery-slider {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
 
-/* Từng thanh panel trong dải */
+	.strip-gallery-slider::-webkit-scrollbar {
+		display: none;
+	}
+
 .strip-panel-card {
 	height: 100%;
 	border-radius: 1.25rem;
@@ -250,7 +501,6 @@
 		box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.35);
 	}
 
-/* Nút điều hướng dịch chuyển */
 .strip-nav-btn {
 	position: absolute;
 	top: 50%;
@@ -283,7 +533,6 @@
 		right: 12px;
 	}
 
-/* Responsive trên điện thoại */
 @media (max-width: 640px) {
 	.strip-gallery-slider {
 		height: 380px !important;

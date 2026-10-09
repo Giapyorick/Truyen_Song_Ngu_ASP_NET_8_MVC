@@ -44,19 +44,30 @@ function loadAdminList(page = null) {
             }
 
             data.admins.forEach(item => {
-                const isRoleAdmin = (item.role || '').toLowerCase() === 'admin';
-                const roleClass = isRoleAdmin ? 'text-field' : 'text-wait';
-                
-                // Đồng bộ đa ngôn ngữ cho Role hiển thị
-                const roleText = isRoleAdmin 
-                    ? (L.RoleAdmin || (window.ADMIN_LANG && window.ADMIN_LANG.RoleAdmin) || 'Admin')
-                    : (L.RoleViewer || (window.ADMIN_LANG && window.ADMIN_LANG.RoleViewer) || 'Viewer');
+                const rawRole = (item.role || '').toLowerCase().trim();
+                let roleBadgeHtml = '';
+
+                if (rawRole.includes('super')) {
+                    roleBadgeHtml = `
+                        <span class="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-black text-white bg-gradient-to-r from-[#8A2387] via-[#E94057] to-[#F27121] shadow-sm uppercase tracking-wider">
+                            Super Admin
+                        </span>`;
+                } else if (rawRole === 'admin') {
+                    roleBadgeHtml = `
+                        <span class="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-sm uppercase tracking-wider">
+                            Admin
+                        </span>`;
+                } else {
+                    roleBadgeHtml = `
+                        <span class="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-sm uppercase tracking-wider">
+                            Viewer
+                        </span>`;
+                }
 
                 const statusClass = item.isActive ? 'active' : 'inactive';
                 const statusText = item.isActive ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
                 const displayName = item.fullName || (L.NoDisplayName || 'No display name');
                 const lastLoginText = item.lastLogin || (L.Never || 'Never');
-
                 const avatarChar = item.username ? item.username.charAt(0).toUpperCase() : 'A';
 
                 html += `
@@ -76,9 +87,7 @@ function loadAdminList(page = null) {
                         </div>
                     </td>
                     <td class="px-6 py-5 text-center">
-                        <span class="font-bold px-3 py-1.5 ${roleClass} rounded-xl text-[10px] uppercase tracking-wider">
-                            ${roleText}
-                        </span>
+                        ${roleBadgeHtml}
                     </td>
                     <td class="px-6 py-5 text-center">
                         <span class="font-bold px-3 py-1.5 ${statusClass} rounded-xl text-[10px] uppercase tracking-wider">
@@ -167,22 +176,38 @@ async function deleteAdmin(id) {
 $('#userForm').on('submit', function (e) {
     e.preventDefault();
 
-    if (window.IS_VIEWER_MODE) {
-        showToast(L.ViewerNoPermissionSave || 'Viewer account has view-only permissions. Cannot save changes!', 'error');
-        return;
-    }
-
-    localStorage.setItem('adminPage', currentPage);
-
     const submitBtn = $(this).find('button[type="submit"]');
     const adminId = parseInt($('#adminId').val()) || 0;
     const isAdding = (adminId === 0);
-    const url = isAdding ? '/Admin/tblAdmins/Add' : '/Admin/tblAdmins/Update';
+    const newPassword = $('#adminPassword').val().trim();
+    const confirmPassword = $('#adminConfirmPassword').val().trim();
+    const currentAdminPassword = $('#currentAdminPassword').val().trim();
+
+    // 1. Kiểm tra khớp mật khẩu
+    if (newPassword.length > 0) {
+        if (confirmPassword.length === 0) {
+            showToast('Vui lòng nhập lại mật khẩu mới để xác nhận!', 'error');
+            $('#adminConfirmPassword').focus();
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showToast('Mật khẩu mới và mật khẩu nhập lại không khớp nhau!', 'error');
+            $('#adminConfirmPassword').focus();
+            return;
+        }
+        if (!isAdding && currentAdminPassword.length === 0) {
+            showToast('Vui lòng nhập mật khẩu tài khoản của bạn để xác thực!', 'error');
+            $('#currentAdminPassword').focus();
+            return;
+        }
+    }
 
     const payload = {
         adminId: adminId,
         username: $('#adminUsername').val().trim(),
-        password: $('#adminPassword').val(),
+        password: newPassword,
+        confirmPassword: confirmPassword,
+        currentAdminPassword: currentAdminPassword,
         fullName: $('#adminFullName').val().trim(),
         role: $('#adminRole').val(),
         isActive: $('#adminStatus').val() === 'true'
@@ -191,7 +216,7 @@ $('#userForm').on('submit', function (e) {
     submitBtn.prop('disabled', true).html(`<i class="fas fa-spinner animate-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
-        url: url,
+        url: isAdding ? '/Admin/tblAdmins/Add' : '/Admin/tblAdmins/Update',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(payload),
@@ -200,26 +225,27 @@ $('#userForm').on('submit', function (e) {
                 showToast(response.message, 'success');
                 closeModal();
 
-                if (isAdding) {
-                    loadAdminList(1);
-                } else {
-                    const savedPage = localStorage.getItem('adminPage');
-                    const targetPage = savedPage ? parseInt(savedPage) : currentPage;
-                    loadAdminList(targetPage);
+                // Bắt buộc login lại nếu tự đổi mật khẩu bản thân
+                if (response.requireRelogin) {
+                    setTimeout(() => {
+                        window.location.href = '/Login?openLogin=1';
+                    }, 1200);
+                    return;
                 }
+
+                loadAdminList(currentPage);
             } else {
-                showToast("Error: " + response.message, 'error');
+                showToast(response.message, 'error');
             }
         },
         error: function () {
-            showToast(L.ErrConnectServer || 'Cannot connect to the server.', 'error');
+            showToast(L.ErrConnectServer || 'Cannot connect to server.', 'error');
         },
         complete: function () {
             submitBtn.prop('disabled', false).html(L.SaveChanges || 'Save Changes');
         }
     });
 });
-
 // Render các nút bấm phân trang
 function renderPagination(currentPage, totalPages) {
     const container = $('#pagination-container');

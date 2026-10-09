@@ -21,7 +21,6 @@
             <!-- Chi tiết User -->
             <div class="flex-1 text-center sm:text-left space-y-3">
                 <div>
-                    <!-- Hàng ngang chứa Tên và Nút Edit Profile -->
                     <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
                         <h1 class="text-2xl sm:text-3xl font-black text-main tracking-tight">
                             @(Model.User.Name ?? SharedLocalizer["Profile_NameNotUpdated"].Value)
@@ -36,7 +35,6 @@
                         </button>
                     </div>
 
-                    <!-- Ngày tham gia nằm ngay dưới -->
                     <p class="text-xs text-slate-400 mt-1">
                         @SharedLocalizer["Profile_MemberSince"] @(Model.User.CreateAd?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_JoinedDateUnknown"].Value)
                     </p>
@@ -63,7 +61,6 @@
                         <span>@(Model.User.DoB?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_DateNotUpdated"].Value)</span>
                     </span>
                 </div>
-                
             </div>
 
             <!-- Thống kê -->
@@ -79,6 +76,12 @@
                 <div class="stat-badge-grad stat-grad-amber">
                     <span class="block text-xl font-black">@Model.ReadStories.Count</span>
                     <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">@SharedLocalizer["Profile_Read"]</span>
+                </div>
+                <div class="stat-badge-grad stat-grad-indigo">
+                    <span class="block text-xl font-black" id="totalVocabCount">@Model.Vocabularies.Count</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">
+                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Sổ trích dẫn" : "Lorebook")
+                    </span>
                 </div>
             </div>
         </div>
@@ -99,6 +102,10 @@
                 <button type="button" onclick="switchProfileTab('read', this)" class="profile-tab-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
                     <i class="fa-solid fa-book-open-reader text-wait"></i>
                     <span>@SharedLocalizer["Profile_ReadStories"] (@Model.ReadStories.Count)</span>
+                </button>
+                <button type="button" onclick="switchProfileTab('vocab', this)" class="profile-tab-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-book-bookmark text-indigo-500"></i>
+                    <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Sổ trích dẫn & Cốt truyện" : "Quotes & Lorebook") (@Model.Vocabularies.Count)</span>
                 </button>
             </div>
         </div>
@@ -139,7 +146,7 @@
             }
         </div>
 
-        <!-- 5. DANH SÁCH TRUYỆN ĐÃ ĐỌC (BỔ SUNG) -->
+        <!-- 5. DANH SÁCH TRUYỆN ĐÃ ĐỌC -->
         <div id="tabReadSection" class="profile-tab-content hidden">
             @if (Model.ReadStories.Any())
             {
@@ -156,9 +163,94 @@
                 </div>
             }
         </div>
+
+        <!-- 6. SỔ TAY TỪ VỰNG CÁ NHÂN (PILL BADGE GRADIENT & THU GỌN GIAO DIỆN) -->
+        <div id="tabVocabSection" class="profile-tab-content hidden">
+            @if (Model.Vocabularies.Any())
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach (var item in Model.Vocabularies)
+                    {
+                        <div id="vocab-card-@item.VocabId" class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-3 relative group">
+
+                            <!-- 1. HÀNG TIÊU ĐỀ: TỪ VỰNG DẠNG PILL BADGE & NÚT XÓA -->
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="btn-grad-vocab bg-main text-xs sm:text-sm">
+                                        
+                                        <span>@item.WordOrPhrase</span>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(item.StoryTitle))
+                                    {
+                                        <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
+                                            <i class="fa-solid fa-book-open text-main"></i>
+                                            <span>@item.StoryTitle @(item.ChapterNumber.HasValue ? $"- Chương {item.ChapterNumber}" : "")</span>
+                                        </p>
+                                    }
+                                </div>
+
+                                <button type="button"
+                                        onclick="deleteVocabItem(@item.VocabId)"
+                                        class="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition active:scale-95"
+                                        title="Xóa từ này">
+                                    <i class="fa-solid fa-trash-can text-deny text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- 2. NGỮ CẢNH GỐC TRONG TRUYỆN -->
+                            @if (!string.IsNullOrEmpty(item.ContextSentence))
+                            {
+                                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 italic">
+                                    <span class="font-bold not-italic text-slate-400 text-[10px] block uppercase tracking-wider mb-0.5">
+                                        <i class="fa-solid fa-quote-left text-teal-500 mr-1"></i> Ngữ cảnh gốc:
+                                    </span>
+                                    "@item.ContextSentence"
+                                </div>
+                            }
+
+                            <!-- 3. NÚT BẬT / TẮT XEM GIẢI NGHĨA -->
+                            <div class="pt-0.5">
+                                <button type="button"
+                                        onclick="toggleVocabDetail(@item.VocabId, this)"
+                                        class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 transition">
+                                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+                                    <span class="btn-toggle-label">Xem giải nghĩa</span>
+                                </button>
+                            </div>
+
+                            <!-- 4. KHỐI NỘI DUNG ẨN: RENDER NGUYÊN VẸN HTML ĐÃ LƯU BẰNG Html.Raw -->
+                            <div id="vocab-detail-@item.VocabId" class="hidden space-y-2.5 pt-2 border-t border-slate-100">
+                                <div class="btn-grad-gray ai-content p-3.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed text-slate-800">
+                                    @Html.Raw(item.Explanation)
+                                </div>
+
+                                <div class="text-[10px] text-slate-400 text-right font-medium">
+                                    <i class="fa-regular fa-clock mr-1"></i> Đã lưu: @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 space-y-2">
+                    <i class="fa-solid fa-book-bookmark text-3xl text-slate-300"></i>
+                    <p class="text-sm font-bold text-slate-600">
+                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Chưa có trích dẫn hoặc ghi chú nào" : "No saved quotes or lore notes yet")
+                    </p>
+                    <p class="text-xs text-slate-400">
+                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Khi đọc truyện, hãy bôi đen đoạn tâm đắc và bấm \"Hỏi AI\" rồi chọn \"Lưu trích dẫn\" nhé!" : "Highlight compelling lines while reading, ask AI, and save them to your lorebook!")
+                    </p>
+                </div>
+            }
+        </div>
     </div>
 </div>
 
+<!-- MODAL XEM ẢNH AVATAR -->
 <div id="imageModal"
      class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center z-[999] transition-all duration-300">
 
@@ -175,7 +267,8 @@
         </button>
     </div>
 </div>
-@* MODAL EDIT PROFILE *@
+
+<!-- MODAL EDIT PROFILE -->
 <div id="editProfileModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[999] transition-all duration-300">
     <div id="editProfileModalContent" class="bg-white w-full max-w-xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300">
         <div class="p-6 border-b border-gray-100 relative bg-gradient-to-r from-gray-50 to-white text-center">
@@ -276,7 +369,7 @@ box-shadow: 0 4px 12px rgba(80, 201, 195, 0.3);
 .profile-tab-btn.active-tab i {
 color: #ffffff !important;
 }
-/* Khung cơ bản mô phỏng hoàn toàn thuộc tính của .btn-grad */
+
 .stat-badge-grad {
 min-width: 90px;
 padding: 10px 18px;
@@ -289,13 +382,11 @@ user-select: none;
 cursor: default;
 }
 
-/* Hiệu ứng trượt dải màu và nổi khối khi hover giống hệt .btn-grad:hover */
 .stat-badge-grad:hover {
 background-position: right center;
 transform: translateY(-2px);
 }
 
-/* 1. Dải màu Teal (Theo dõi) - Chuẩn màu dải gradient gốc của bạn */
 .stat-grad-teal {
 background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
 box-shadow: 0 4px 15px rgba(80, 201, 195, 0.35);
@@ -305,7 +396,6 @@ box-shadow: 0 4px 15px rgba(80, 201, 195, 0.35);
 box-shadow: 0 6px 20px rgba(80, 201, 195, 0.5);
 }
 
-/* 2. Dải màu Rose (Đã thích) */
 .stat-grad-rose {
 background-image: linear-gradient(to right, #ff416c 0%, #ff4b2b 51%, #ff416c 100%);
 box-shadow: 0 4px 15px rgba(255, 65, 108, 0.35);
@@ -315,7 +405,6 @@ box-shadow: 0 4px 15px rgba(255, 65, 108, 0.35);
 box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
 }
 
-/* 3. Dải màu Amber (Đã đọc) */
 .stat-grad-amber {
 background-image: linear-gradient(to right, #f7971e 0%, #ffd200 51%, #f7971e 100%);
 box-shadow: 0 4px 15px rgba(247, 151, 30, 0.35);
@@ -323,6 +412,132 @@ box-shadow: 0 4px 15px rgba(247, 151, 30, 0.35);
 
 .stat-grad-amber:hover {
 box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
+}
+
+.stat-grad-indigo {
+background-image: linear-gradient(to right, #667eea 0%, #764ba2 51%, #667eea 100%);
+box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+}
+
+.stat-grad-indigo:hover {
+box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+/* ==========================================================================
+BỔ SUNG CSS CHO BADGE TỪ VỰNG TRÊN TRANG PROFILE
+========================================================================== */
+.badge-pill {
+display: inline-flex !important;
+align-items: center !important;
+gap: 5px !important;
+padding: 4px 11px !important;
+border-radius: 20px !important;
+font-size: 14px !important;
+font-weight: 800 !important;
+color: #ffffff !important;
+line-height: 2 !important;
+letter-spacing: -0.01em !important;
+border: none !important;
+user-select: none !important;
+margin: 6px 0 3px 0 !important;
+}
+
+.badge-pill i {
+color: #ffffff !important;
+font-size: 12px !important;
+}
+
+/* Các dải màu gradient nền */
+.badge-pill.bg-main {
+background: linear-gradient(to right, #50C9C3 0%, #96DEDA 100%) !important;
+box-shadow: 0 3px 10px rgba(80, 201, 195, 0.35) !important;
+}
+
+.badge-pill.bg-cus {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3) !important;
+}
+
+.badge-pill.bg-info {
+background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important;
+box-shadow: 0 3px 10px rgba(0, 198, 255, 0.3) !important;
+}
+
+.badge-pill.bg-wait {
+background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%) !important;
+box-shadow: 0 3px 10px rgba(255, 128, 8, 0.3) !important;
+}
+
+.badge-pill.bg-accepted {
+background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3) !important;
+}
+
+.badge-pill.bg-deny {
+background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%) !important;
+box-shadow: 0 3px 10px rgba(235, 51, 73, 0.3) !important;
+}
+
+/* Tối ưu danh sách gạch đầu dòng từ vựng hiển thị trong thẻ card */
+.ai-content ul {
+list-style-type: none !important;
+padding-left: 0 !important;
+margin: 4px 0 6px 0 !important;
+}
+
+.ai-content li {
+position: relative;
+padding-left: 14px !important;
+margin-bottom: 3px !important;
+line-height: 1.45 !important;
+}
+
+.ai-content li::before {
+content: "•";
+position: absolute;
+left: 2px;
+top: 0;
+color: #14b8a6;
+font-size: 13px;
+font-weight: bold;
+}
+
+.ai-content strong {
+color: #0d9488 !important;
+font-weight: 700 !important;
+}
+/* Thẻ btn-grad riêng chuyên dụng cho từ/cụm từ vựng */
+.btn-grad-vocab {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 6px 14px;
+border-radius: 20px; /* Bo tròn hoàn toàn dạng pill */
+font-weight: 800;
+color: #ffffff !important;
+line-height: 2;
+letter-spacing: -0.01em;
+user-select: none;
+border: none;
+text-decoration: none;
+cursor: default;
+/* Dải màu gradient Teal chuẩn của btn-grad */
+background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+background-size: 200% auto;
+box-shadow: 0 4px 12px rgba(80, 201, 195, 0.35);
+transition: all 0.5s ease;
+}
+
+/* Hiệu ứng hover trượt màu và nổi nhẹ */
+.btn-grad-vocab:hover {
+background-position: right center;
+transform: translateY(-1px);
+box-shadow: 0 6px 16px rgba(80, 201, 195, 0.45);
+color: #ffffff !important;
+}
+
+.btn-grad-vocab i {
+color: #ffffff;
+font-size: 11px;
 }
 </style>
 
@@ -332,16 +547,16 @@ box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
             $('.profile-tab-btn').removeClass('active-tab');
             $(btnElem).addClass('active-tab');
 
-            // Ẩn tất cả tab
-            $('#tabFollowedSection, #tabLikedSection, #tabReadSection').addClass('hidden');
+            $('#tabFollowedSection, #tabLikedSection, #tabReadSection, #tabVocabSection').addClass('hidden');
 
-            // Mở đúng tab được bấm
             if (tabName === 'followed') {
                 $('#tabFollowedSection').removeClass('hidden');
             } else if (tabName === 'liked') {
                 $('#tabLikedSection').removeClass('hidden');
             } else if (tabName === 'read') {
                 $('#tabReadSection').removeClass('hidden');
+            } else if (tabName === 'vocab') {
+                $('#tabVocabSection').removeClass('hidden');
             }
         }
 
@@ -366,6 +581,7 @@ box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
                 closeImagePreview();
             }
         });
+
         function openEditProfileModal() {
             const $overlay = $('#editProfileModalOverlay');
             const $content = $('#editProfileModalContent');
@@ -388,6 +604,33 @@ box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
                 };
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        function deleteVocabItem(vocabId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa từ này khỏi sổ tay?')) return;
+
+            $.ajax({
+                url: '/Profile/DeleteVocabulary',
+                type: 'POST',
+                data: { id: vocabId },
+                success: function (res) {
+                    if (res.success) {
+                        $(`#vocab-card-${vocabId}`).fadeOut(300, function () {
+                            $(this).remove();
+                            const countEl = $('#totalVocabCount');
+                            if (countEl.length) {
+                                countEl.text(Math.max(0, parseInt(countEl.text()) - 1));
+                            }
+                        });
+                        showToast(res.message, 'success');
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                },
+                error: function () {
+                    showToast('Lỗi máy chủ khi xóa từ vựng!', 'error');
+                }
+            });
         }
 
         $('#editProfileForm').on('submit', function (e) {
@@ -419,5 +662,21 @@ box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
                 }
             });
         });
+
+        function toggleVocabDetail(vocabId, btnElem) {
+            const $detail = $(`#vocab-detail-${vocabId}`);
+            const $icon = $(btnElem).find('i');
+            const $label = $(btnElem).find('.btn-toggle-label');
+
+            if ($detail.hasClass('hidden')) {
+                $detail.removeClass('hidden').hide().slideDown(200);
+                $icon.addClass('rotate-180'); $label.text('Thu gọn');
+            } else {
+                $detail.slideUp(200, function () {
+                    $detail.addClass('hidden');
+                });
+                $icon.removeClass('rotate-180'); $label.text('Xem giải nghĩa');
+            }
+        }
     </script>
 }

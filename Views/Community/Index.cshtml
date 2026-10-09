@@ -1,0 +1,972 @@
+﻿@using WebTruyenTranh.Models
+@using System.Globalization
+@model IEnumerable<TblPost>
+
+@{
+    var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
+    bool isEn = !string.IsNullOrEmpty(cultureCookie) && cultureCookie.Contains("en");
+    string currentLang = isEn ? "en" : "vi";
+
+    ViewData["Title"] = isEn ? "Community" : "Cộng đồng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int currentUserId = ViewBag.CurrentUserId ?? 0;
+    var stories = ViewBag.Stories as List<TblStory> ?? new List<TblStory>();
+}
+
+<style>
+    /* Spoiler: Nền trắng xuyên thấu mờ, giữ chữ rõ nét phía dưới */
+    .spoiler-container {
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        background-color: #ffffff;
+    }
+    .spoiler-overlay-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        background-color: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        transition: all 0.25s ease;
+    }
+</style>
+
+<script>
+    const CURRENT_USER_ID = @currentUserId;
+    const CURRENT_LANG = "@currentLang";
+</script>
+
+<div class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+    <!-- HEADER -->
+    <div class="text-center sm:text-left space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center justify-center sm:justify-start gap-2.5">
+            <i class="fa-solid fa-users text-teal-500"></i>
+            <span>@(isEn ? "Reader Community" : "Cộng Đồng Đọc Truyện")</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-400 font-medium">
+            @(isEn ? "Share thoughts and discuss story chapters." : "Chia sẻ cảm nghĩ và thảo luận về các chương truyện.")
+        </p>
+    </div>
+
+    <!-- KHUNG TẠO BÀI VIẾT -->
+    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-100 shadow-sm space-y-4">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+            <div class="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center font-black text-sm shrink-0">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+                <h3 class="font-extrabold text-slate-800 text-sm sm:text-base">
+                    @(isEn ? "Create New Post" : "Tạo bài viết mới")
+                </h3>
+                <p class="text-[11px] text-slate-400">
+                    @(isEn ? "Post your opinions, feelings, or story suggestions..." : "Đăng ý kiến, cảm nhận hoặc gợi ý truyện hay...")
+                </p>
+            </div>
+        </div>
+
+        <textarea id="postContent" rows="3" maxlength="5000"
+                  class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all resize-none text-slate-800"
+                  placeholder="@(isEn ? "What are you thinking about the comic you just read?" : "Bạn đang nghĩ gì về bộ truyện vừa đọc?")"></textarea>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+                    @(isEn ? "Attach Story (Optional)" : "Đính kèm truyện (Tùy chọn)")
+                </label>
+                <select id="storySelect" onchange="onStoryChange(this.value)"
+                        class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all">
+                    <option value="">--( @(isEn ? "No attachment" : "Không đính kèm") )--</option>
+                    @foreach (var story in stories)
+                    {
+                        <option value="@story.StoryId">@story.Title</option>
+                    }
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+                    @(isEn ? "Attach Chapter (Optional)" : "Đính kèm chương (Tùy chọn)")
+                </label>
+                <select id="chapterSelect" disabled
+                        class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all disabled:opacity-50">
+                    <option value="">--( @(isEn ? "Select story first" : "Chọn truyện trước") )--</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="postIsSpoiler" class="w-4 h-4 rounded text-teal-500 focus:ring-teal-400 border-slate-300">
+                <span class="text-xs font-bold text-slate-600 flex items-center gap-1"> 
+                    <i class="fa-solid fa-eye-slash text-slate-400"></i> @(isEn ? "Contains Spoiler" : "Chứa nội dung Spoiler")
+                </span>
+            </label>
+
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="clearPostForm()" class="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs font-bold transition">
+                    @(isEn ? "Clear" : "Xóa nội dung")
+                </button>
+                <button type="button" id="btnCreatePost" onclick="submitPost()" class="btn-grad px-6 py-2 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane text-[11px]"></i><span>@(isEn ? "Post" : "Đăng bài")</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BAR TABS & TÌM KIẾM -->
+    <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <button type="button" onclick="switchTab('latest')" id="tab-latest"
+                    class="filter-tab active-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-teal-50 text-teal-700 border border-teal-200">
+                <i class="fa-solid fa-clock-rotate-left"></i><span>@(isEn ? "Latest" : "Mới nhất")</span>
+            </button>
+            <button type="button" onclick="switchTab('popular')" id="tab-popular"
+                    class="filter-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60">
+                <i class="fa-solid fa-fire text-amber-500"></i><span>@(isEn ? "Popular" : "Nổi bật")</span>
+            </button>
+            @if (currentUserId > 0)
+            {
+                <button type="button" onclick="switchTab('my_posts')" id="tab-my_posts"
+                        class="filter-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60">
+                    <i class="fa-solid fa-user-pen text-sky-500"></i><span>@(isEn ? "My Posts" : "Bài viết của tôi")</span>
+                </button>
+            }
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto">
+            <select id="filterStorySelect" onchange="applyFilters()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none max-w-[160px] truncate">
+                <option value="">--( @(isEn ? "All Stories" : "Tất cả truyện") )--</option>
+                @foreach (var story in stories)
+                {
+                    <option value="@story.StoryId">@story.Title</option>
+                }
+            </select>
+
+            <div class="relative flex-1 md:w-56">
+                <input type="text" id="communitySearchInput" placeholder="@(isEn ? "Search..." : "Tìm kiếm...")"
+                       class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition" />
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-3 text-slate-400 text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH BÀI VIẾT BAN ĐẦU (SSR) -->
+    <div id="communityPosts" class="space-y-5">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var post in Model)
+            {
+                bool isLikedByMe = post.PostLikes != null && post.PostLikes.Any(l => l.UserId == currentUserId);
+                var rootComments = post.PostComments != null 
+                    ? post.PostComments.Where(c => c.ParentCommentId == null).OrderBy(c => c.CreatedAt).ToList() 
+                    : new List<TblPostComment>();
+                var totalCommentsCount = post.PostComments?.Count ?? 0;
+                var userName = post.User?.Name ?? (isEn ? "Anonymous" : "Ẩn danh");
+                var avatarUrl = !string.IsNullOrEmpty(post.User?.Img) ? (post.User.Img.StartsWith("/") ? post.User.Img : "/" + post.User.Img) : "/assets/image/placeholder.png";
+
+                <article class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3.5 post-card" data-post-id="@post.PostId">
+
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <img src="@avatarUrl" class="w-10 h-10 rounded-2xl object-cover border border-teal-200 shrink-0 shadow-sm" onerror="this.src='/assets/image/placeholder.png';" />
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-slate-800 text-xs sm:text-sm">@userName</h4>
+                                    @if (post.UserId == currentUserId)
+                                    {
+                                        <button type="button" onclick="deletePost(@post.PostId)" class="text-slate-300 hover:text-rose-500 text-xs transition" title="@(isEn ? "Delete post" : "Xóa bài viết")">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    }
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                                    <i class="fa-regular fa-clock"></i><span>@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        @if (post.Story != null || post.Chapter != null)
+                        {
+                            <div class="flex flex-wrap items-center gap-1.5 justify-end">
+                                @if (post.Story != null)
+                                {
+                                    <a href="/Story/Detail/@post.Story.StoryId" target="_blank" 
+                                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/60 text-teal-700 font-bold text-[11px] hover:bg-teal-100 transition shadow-2xs">
+                                        <i class="fa-solid fa-book text-[10px] text-teal-500"></i>
+                                        <span class="truncate max-w-[160px] sm:max-w-[220px]">@post.Story.Title</span>
+                                    </a>
+                                }
+                                @if (post.Chapter != null)
+                                {
+                                    <a href="/Story/Read?storyId=@post.StoryId&chapterId=@post.ChapterId" target="_blank" 
+                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200/60 text-sky-700 font-bold text-[11px] hover:bg-sky-100 transition shadow-2xs">
+                                        <i class="fa-solid fa-bookmark text-[10px] text-sky-500"></i>
+                                        <span>@(isEn ? "Chapter" : "Chương") @post.Chapter.ChapterNumber</span>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Nội dung bài viết với Spoiler Nền Trắng Xuyên Mờ -->
+                    @if (post.IsSpoiler)
+                    {
+                        <div class="spoiler-container my-1 p-3">
+                            <p class="post-content-text text-slate-700 text-xs sm:text-[13px] leading-relaxed whitespace-pre-wrap break-words">@post.Content</p>
+                            
+                            <div class="spoiler-overlay-layer">
+                                <span class="text-slate-700 font-bold text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-eye-slash text-teal-600"></i>
+                                    <span>@(isEn ? "Spoiler Content" : "Nội dung Spoiler")</span>
+                                    <span class="text-[10px] bg-teal-50 text-teal-700 border border-teal-200/60 px-2 py-0.5 rounded-full font-semibold">@((post.Content ?? "").Length) @(isEn ? "chars" : "ký tự")</span>
+                                </span>
+                                <button type="button" onclick="revealSpoiler(this)" class="btn-grad px-3 py-1 text-white rounded-lg text-[11px] font-bold shadow-xs transition cursor-pointer">
+                                    @(isEn ? "View" : "Xem nội dung")
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="post-content-text text-xs sm:text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">@post.Content</p>
+                    }
+
+                    <!-- Thao tác Thích & Bình luận -->
+                    <div class="flex items-center gap-4 pt-2.5 border-t border-slate-100 text-xs font-bold text-slate-500 select-none">
+                        <button type="button" onclick="toggleLikePost(@post.PostId)"
+                                class="btn-like inline-flex items-center gap-1.5 hover:text-rose-500 transition active:scale-95 @(isLikedByMe ? "text-rose-500 font-extrabold" : "")">
+                            <i class="@(isLikedByMe ? "fa-solid text-rose-500" : "fa-regular") fa-heart text-sm like-icon"></i>
+                            <span>@(isEn ? "Like" : "Thích")</span>
+                            <span class="like-count text-slate-700">@(post.PostLikes?.Count ?? 0)</span>
+                        </button>
+
+                        <button type="button" onclick="document.getElementById('input-comment-@post.PostId').focus()" class="inline-flex items-center gap-1.5 hover:text-teal-600 transition active:scale-95">
+                            <i class="fa-regular fa-comment text-sm"></i>
+                            <span>@(isEn ? "Comment" : "Bình luận")</span>
+                            <span class="comment-count text-slate-700">@totalCommentsCount</span>
+                        </button>
+                    </div>
+
+                    <!-- DANH SÁCH BÌNH LUẬN -->
+                    <div class="comments-section pt-3 border-t border-slate-100 space-y-3">
+                        <div class="comments-list space-y-2.5">
+                            @if (rootComments.Any())
+                            {
+                                foreach (var comment in rootComments)
+                                {
+                                    var commentUser = comment.User?.Name ?? (isEn ? "Anonymous" : "Ẩn danh");
+                                    var commentAvatar = !string.IsNullOrEmpty(comment.User?.Img) ? (comment.User.Img.StartsWith("/") ? comment.User.Img : "/" + comment.User.Img) : "/assets/image/placeholder.png";
+                                    var replies = post.PostComments.Where(c => c.ParentCommentId == comment.CommentId).OrderBy(c => c.CreatedAt).ToList();
+
+                                    <div class="bg-slate-50 p-3 rounded-2xl space-y-1.5 text-xs comment-item" data-comment-id="@comment.CommentId">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <img src="@commentAvatar" class="w-6 h-6 rounded-full object-cover border border-slate-200" onerror="this.src='/assets/image/placeholder.png';" />
+                                                <span class="font-bold text-slate-800 text-xs">@commentUser</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[10px] text-slate-400 font-medium">@comment.CreatedAt.ToString("HH:mm dd/MM")</span>
+                                                @if (comment.UserId == currentUserId)
+                                                {
+                                                    <button type="button" onclick="deleteComment(@comment.CommentId)" class="text-slate-300 hover:text-rose-500 text-[11px] transition" title="@(isEn ? "Delete comment" : "Xóa bình luận")">
+                                                        <i class="fa-regular fa-trash-can"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        @if (comment.IsSpoiler)
+                                        {
+                                            <div class="spoiler-container my-1 p-2.5 ml-8">
+                                                <p class="comment-content-text text-slate-700 text-xs leading-relaxed whitespace-pre-wrap break-words">@comment.Content</p>
+                                                <div class="spoiler-overlay-layer">
+                                                    <span class="text-slate-700 font-bold text-[11px] flex items-center gap-1.5">
+                                                        <i class="fa-solid fa-eye-slash text-teal-600"></i>
+                                                        <span>@(isEn ? "Spoiler Comment" : "Bình luận Spoiler")</span>
+                                                        <span class="text-[9px] bg-teal-50 text-teal-700 border border-teal-200/60 px-1.5 py-0.5 rounded-full font-semibold">@((comment.Content ?? "").Length) @(isEn ? "chars" : "ký tự")</span>
+                                                    </span>
+                                                    <button type="button" onclick="revealSpoiler(this)" class="btn-grad px-2.5 py-0.5 text-white rounded-md text-[10px] font-bold shadow-xs transition cursor-pointer">
+                                                        @(isEn ? "View" : "Xem")
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="comment-content-text text-slate-700 text-xs pl-8 leading-relaxed whitespace-pre-wrap break-words">@comment.Content</p>
+                                        }
+
+                                        @if (comment.Story != null || comment.Chapter != null)
+                                        {
+                                            <div class="flex flex-wrap items-center gap-1 mt-1 pl-8">
+                                                @if (comment.Story != null)
+                                                {
+                                                    <a href="/Story/Detail/@comment.Story.StoryId" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200/60 text-teal-700 font-semibold text-[10px] hover:bg-teal-100 transition">
+                                                        <i class="fa-solid fa-book text-[9px] text-teal-500"></i><span class="truncate max-w-[150px]">@comment.Story.Title</span>
+                                                    </a>
+                                                }
+                                                @if (comment.Chapter != null)
+                                                {
+                                                    <a href="/Story/Read?storyId=@comment.StoryId&chapterId=@comment.ChapterId" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200/60 text-sky-700 font-semibold text-[10px] hover:bg-sky-100 transition">
+                                                        <i class="fa-solid fa-bookmark text-[9px] text-sky-500"></i><span>@(isEn ? "Chapter" : "Chương") @comment.Chapter.ChapterNumber</span>
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+
+                                        <div class="pl-8 pt-0.5">
+                                            <button type="button" onclick="showReplyStatus(@post.PostId, @comment.CommentId, '@commentUser')"
+                                                    class="text-[10px] text-teal-600 font-bold hover:text-teal-700 transition inline-flex items-center gap-1">
+                                                <i class="fa-solid fa-reply text-[9px]"></i><span>@(isEn ? "Reply" : "Phản hồi")</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="replies-container ml-6 sm:ml-8 mt-2 pl-3 border-l-2 border-teal-200 space-y-2">
+                                            @if (replies.Any())
+                                            {
+                                                foreach (var reply in replies)
+                                                {
+                                                    var replyUser = reply.User?.Name ?? (isEn ? "Anonymous" : "Ẩn danh");
+                                                    var replyAvatar = !string.IsNullOrEmpty(reply.User?.Img) ? (reply.User.Img.StartsWith("/") ? reply.User.Img : "/" + reply.User.Img) : "/assets/image/placeholder.png";
+
+                                                    <div class="bg-white p-2.5 rounded-xl text-xs space-y-1 comment-item reply" data-comment-id="@reply.CommentId">
+                                                        <div class="flex items-center justify-between gap-2">
+                                                            <div class="flex items-center gap-2">
+                                                                <img src="@replyAvatar" class="w-5 h-5 rounded-full object-cover border border-slate-200" onerror="this.src='/assets/image/placeholder.png';" />
+                                                                <span class="font-bold text-slate-800 text-[11px]">@replyUser</span>
+                                                            </div>
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="text-[9px] text-slate-400 font-medium">@reply.CreatedAt.ToString("HH:mm dd/MM")</span>
+                                                                @if (reply.UserId == currentUserId)
+                                                                {
+                                                                    <button type="button" onclick="deleteComment(@reply.CommentId)" class="text-slate-300 hover:text-rose-500 text-[10px] transition" title="@(isEn ? "Delete reply" : "Xóa phản hồi")">
+                                                                        <i class="fa-regular fa-trash-can"></i>
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                        </div>
+
+                                                        @if (reply.IsSpoiler)
+                                                        {
+                                                            <div class="spoiler-container my-1 p-2.5 ml-7">
+                                                                <p class="comment-content-text text-slate-700 text-[11px] leading-relaxed whitespace-pre-wrap break-words">@reply.Content</p>
+                                                                <div class="spoiler-overlay-layer">
+                                                                    <span class="text-slate-700 font-bold text-[10px] flex items-center gap-1">
+                                                                        <i class="fa-solid fa-eye-slash text-teal-600"></i>
+                                                                        <span>@(isEn ? "Spoiler Reply" : "Phản hồi Spoiler")</span>
+                                                                        <span class="text-[9px] bg-teal-50 text-teal-700 border border-teal-200/60 px-1 py-0.5 rounded-full font-semibold">@((reply.Content ?? "").Length) @(isEn ? "chars" : "ký tự")</span>
+                                                                    </span>
+                                                                    <button type="button" onclick="revealSpoiler(this)" class="btn-grad px-2 py-0.5 text-white rounded-md text-[9px] font-bold shadow-xs transition cursor-pointer">
+                                                                        @(isEn ? "View" : "Xem")
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <p class="comment-content-text text-slate-700 text-[11px] pl-7 leading-relaxed whitespace-pre-wrap break-words">@reply.Content</p>
+                                                        }
+
+                                                        @if (reply.Story != null || reply.Chapter != null)
+                                                        {
+                                                            <div class="flex flex-wrap items-center gap-1 mt-1 pl-7">
+                                                                @if (reply.Story != null)
+                                                                {
+                                                                    <a href="/Story/Detail/@reply.Story.StoryId" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200/60 text-teal-700 font-semibold text-[10px] hover:bg-teal-100 transition">
+                                                                        <i class="fa-solid fa-book text-[9px] text-teal-500"></i><span class="truncate max-w-[150px]">@reply.Story.Title</span>
+                                                                    </a>
+                                                                }
+                                                                @if (reply.Chapter != null)
+                                                                {
+                                                                    <a href="/Story/Read?storyId=@reply.StoryId&chapterId=@reply.ChapterId" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200/60 text-sky-700 font-semibold text-[10px] hover:bg-sky-100 transition">
+                                                                        <i class="fa-solid fa-bookmark text-[9px] text-sky-500"></i><span>@(isEn ? "Chapter" : "Chương") @reply.Chapter.ChapterNumber</span>
+                                                                    </a>
+                                                                }
+                                                            </div>
+                                                        }
+
+                                                        <div class="pl-7 pt-0.5">
+                                                            <button type="button" onclick="showReplyStatus(@post.PostId, @reply.CommentId, '@replyUser')"
+                                                                    class="text-[10px] text-teal-600 font-bold hover:text-teal-700 transition inline-flex items-center gap-1">
+                                                                <i class="fa-solid fa-reply text-[9px]"></i><span>@(isEn ? "Reply" : "Phản hồi")</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="no-comments text-center py-4 text-xs font-semibold text-slate-400 italic">
+                                    @(isEn ? "No comments yet. Be the first to start the discussion!" : "Chưa có bình luận nào. Hãy là người đầu tiên thảo luận!")
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Trạng thái Đang phản hồi -->
+                        <div class="replying-to hidden bg-teal-50 border border-teal-100 text-teal-700 text-xs px-3 py-1.5 rounded-xl flex items-center justify-between" data-post-id="@post.PostId">
+                            <span class="font-medium">@(isEn ? "Replying to" : "Đang phản hồi") <strong class="reply-user-name font-bold"></strong></span>
+                            <button type="button" onclick="cancelReplyStatus(@post.PostId)" class="text-rose-500 font-bold text-xs ml-2"><i class="fa-solid fa-xmark mr-1"></i> @(isEn ? "Cancel" : "Hủy")</button>
+                        </div>
+
+                        <!-- Đính kèm cho Bình luận -->
+                        <div id="comment-attach-box-@post.PostId" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <select id="comment-story-@post.PostId" onchange="onStoryChange(this.value, 'comment-chapter-@post.PostId')"
+                                        class="p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all">
+                                    <option value="">-- @(isEn ? "Attach Story" : "Đính kèm truyện") --</option>
+                                    @foreach (var s in stories)
+                                    {
+                                        <option value="@s.StoryId">@s.Title</option>
+                                    }
+                                </select>
+                                <select id="comment-chapter-@post.PostId" disabled
+                                        class="p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all disabled:opacity-50">
+                                    <option value="">-- @(isEn ? "Select chapter" : "Chọn chương") --</option>
+                                </select>
+                            </div>
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none pt-1">
+                                <input type="checkbox" id="comment-spoiler-@post.PostId" class="w-3.5 h-3.5 rounded text-teal-500 focus:ring-teal-400 border-slate-300">
+                                <span class="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-eye-slash text-slate-400"></i> @(isEn ? "Contains Spoiler" : "Chứa nội dung Spoiler")
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Ô nhập Bình luận -->
+                        <div class="flex items-center gap-2 pt-1">
+                            <button type="button" onclick="toggleCommentAttachment(@post.PostId)" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs transition" title="@(isEn ? "Attachment & Spoiler options" : "Tùy chọn đính kèm & Spoiler")">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                            <input type="text" id="input-comment-@post.PostId" data-post-id="@post.PostId"
+                                   class="comment-input flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition"
+                                   placeholder="@(isEn ? "Write a comment..." : "Viết bình luận...")" maxlength="2000" />
+                            <button type="button" onclick="sendComment(@post.PostId)" class="btn-grad p-2.5 text-white rounded-xl cursor-pointer hover:scale-105 active:scale-95 transition shadow-sm">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </article>
+            }
+        }
+    </div>
+
+    <!-- TRIGGER PHÂN TRANG -->
+    <div id="infiniteScrollTrigger" class="py-6 text-center">
+        <div id="loadingSpinner" class="hidden inline-flex items-center gap-2 text-teal-600 font-bold text-xs">
+            <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
+            <span>@(isEn ? "Loading more posts..." : "Đang tải thêm bài viết...")</span>
+        </div>
+        <div id="noMorePosts" class="hidden text-slate-400 font-semibold text-xs py-2 italic">
+            @(isEn ? "You have reached the end of the community posts!" : "Bạn đã xem hết tất cả bài viết!")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        let replyMap = {};
+        let currentPage = 2;
+        const pageSize = 10;
+        let isLoading = false;
+        let hasMore = true;
+        let currentTab = "latest";
+        let searchDebounce = null;
+
+        const STORIES_OPTIONS = `@Html.Raw(string.Join("", stories.Select(s => $"<option value='{s.StoryId}'>{s.Title.Replace("'", "\\'")}</option>")))`;
+
+        function toggleCommentAttachment(postId) {
+            const attachBox = document.getElementById(`comment-attach-box-${postId}`);
+            if (attachBox) {
+                attachBox.classList.toggle("hidden");
+            }
+        }
+
+        // HÀM MỞ SPOILER: Xóa lớp mờ trắng phía trên
+        function revealSpoiler(btn) {
+            const overlay = btn.closest(".spoiler-overlay-layer");
+            if (overlay) overlay.remove();
+        }
+
+        function renderHashtagText(text) {
+            if (!text) return "";
+            return text.replace(/#([\wàáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệđìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]+)/gi, function (match) {
+                return `<span onclick="searchByHashtag('${match}')" class="text-teal-600 font-bold hover:underline cursor-pointer bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-200/50 transition">${match}</span>`;
+            });
+        }
+
+        function searchByHashtag(tag) {
+            const searchInput = document.getElementById("communitySearchInput");
+            if (searchInput) {
+                searchInput.value = tag;
+                applyFilters();
+            }
+        }
+
+        function renderSpoilerContent(content, isSpoiler, isComment = false) {
+            const formattedText = renderHashtagText(content);
+            const charCount = (content || "").length;
+            const charText = CURRENT_LANG === 'en' ? 'chars' : 'ký tự';
+            const alertText = isComment 
+                ? (CURRENT_LANG === 'en' ? 'Spoiler Comment' : 'Bình luận Spoiler')
+                : (CURRENT_LANG === 'en' ? 'Spoiler Content' : 'Nội dung Spoiler');
+            const viewText = CURRENT_LANG === 'en' ? 'View' : 'Xem';
+
+            if (!isSpoiler) {
+                return `<p class="${isComment ? 'comment-content-text' : 'post-content-text'} text-slate-700 ${isComment ? 'text-xs pl-8' : 'text-xs sm:text-[13px]'} leading-relaxed whitespace-pre-wrap break-words">${formattedText}</p>`;
+            }
+
+            return `
+                <div class="spoiler-container my-1 p-3 ${isComment ? 'ml-8' : ''}">
+                    <p class="${isComment ? 'comment-content-text' : 'post-content-text'} text-slate-700 ${isComment ? 'text-xs' : 'text-xs sm:text-[13px]'} leading-relaxed whitespace-pre-wrap break-words">
+                        ${formattedText}
+                    </p>
+
+                    <div class="spoiler-overlay-layer">
+                        <span class="text-slate-700 font-bold text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-eye-slash text-teal-600"></i>
+                            <span>${alertText}</span>
+                            <span class="text-[10px] bg-teal-50 text-teal-700 border border-teal-200/60 px-2 py-0.5 rounded-full font-semibold">${charCount} ${charText}</span>
+                        </span>
+                        <button type="button" onclick="revealSpoiler(this)" class="btn-grad px-3 py-1 text-white rounded-lg text-[11px] font-bold shadow-xs transition cursor-pointer">
+                            ${viewText}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".post-content-text, .comment-content-text").forEach(el => {
+                if (el.textContent.includes("#")) {
+                    el.innerHTML = renderHashtagText(el.textContent);
+                }
+            });
+
+            const trigger = document.getElementById("infiniteScrollTrigger");
+            if (trigger) {
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !isLoading && hasMore) {
+                        loadMorePosts();
+                    }
+                }, { threshold: 0.1 });
+
+                observer.observe(trigger);
+            }
+
+            document.getElementById("communitySearchInput")?.addEventListener("input", function () {
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(() => {
+                    applyFilters();
+                }, 400);
+            });
+        });
+
+        function switchTab(tabName) {
+            if (currentTab === tabName) return;
+            currentTab = tabName;
+
+            document.querySelectorAll(".filter-tab").forEach(btn => {
+                btn.className = "filter-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60";
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "filter-tab active-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-teal-50 text-teal-700 border border-teal-200";
+            }
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            hasMore = true;
+            document.getElementById("noMorePosts")?.classList.add("hidden");
+
+            const container = document.getElementById("communityPosts");
+            if (container) container.innerHTML = "";
+
+            loadMorePosts();
+        }
+
+        async function loadMorePosts() {
+            if (isLoading || !hasMore) return;
+
+            isLoading = true;
+            const spinner = document.getElementById("loadingSpinner");
+            if (spinner) spinner.classList.remove("hidden");
+
+            const searchValue = document.getElementById("communitySearchInput")?.value.trim() || "";
+            const filterStoryId = document.getElementById("filterStorySelect")?.value || "";
+
+            try {
+                const res = await fetch(`/Community/GetPosts?page=${currentPage}&pageSize=${pageSize}&filterTab=${currentTab}&search=${encodeURIComponent(searchValue)}&filterStoryId=${filterStoryId}`);
+                if (!res.ok) throw new Error("Lỗi tải bài viết");
+
+                const posts = await res.json();
+
+                if (Array.isArray(posts) && posts.length > 0) {
+                    renderPosts(posts);
+                    currentPage++;
+                    if (posts.length < pageSize) {
+                        hasMore = false;
+                        document.getElementById("noMorePosts")?.classList.remove("hidden");
+                    }
+                } else {
+                    hasMore = false;
+                    document.getElementById("noMorePosts")?.classList.remove("hidden");
+                }
+            } catch (err) {
+                console.error("Infinite scroll error:", err);
+            } finally {
+                isLoading = false;
+                if (spinner) spinner.classList.add("hidden");
+            }
+        }
+
+        function renderPosts(posts) {
+            const container = document.getElementById("communityPosts");
+            if (!container) return;
+
+            const isEn = CURRENT_LANG === 'en';
+
+            posts.forEach(post => {
+                if (container.querySelector(`.post-card[data-post-id="${post.postId}"]`)) return;
+
+                const avatarUrl = post.userImage ? (post.userImage.startsWith("/") ? post.userImage : "/" + post.userImage) : "/assets/image/placeholder.png";
+                
+                let storyBadge = post.storyTitle 
+                    ? `<a href="/Story/Detail/${post.storyId}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/60 text-teal-700 font-bold text-[11px] hover:bg-teal-100 transition shadow-2xs"><i class="fa-solid fa-book text-[10px] text-teal-500"></i><span class="truncate max-w-[160px] sm:max-w-[220px]">${post.storyTitle}</span></a>` 
+                    : "";
+                let chapterBadge = post.chapterTitle 
+                    ? `<a href="/Story/Read?storyId=${post.storyId}&chapterId=${post.chapterId}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200/60 text-sky-700 font-bold text-[11px] hover:bg-sky-100 transition shadow-2xs"><i class="fa-solid fa-bookmark text-[10px] text-sky-500"></i><span>${post.chapterTitle}</span></a>` 
+                    : "";
+
+                let deleteBtnHtml = post.userId === CURRENT_USER_ID 
+                    ? `<button type="button" onclick="deletePost(${post.postId})" class="text-slate-300 hover:text-rose-500 text-xs transition" title="${isEn ? "Delete" : "Xóa"}"><i class="fa-regular fa-trash-can"></i></button>` 
+                    : "";
+
+                const postElement = document.createElement("article");
+                postElement.className = "bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3.5 post-card";
+                postElement.setAttribute("data-post-id", post.postId);
+
+                postElement.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${avatarUrl}" class="w-10 h-10 rounded-2xl object-cover border border-teal-200 shrink-0 shadow-sm" onerror="this.src='/assets/image/placeholder.png';" />
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-slate-800 text-xs sm:text-sm">${post.userName}</h4>
+                                    ${deleteBtnHtml}
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5"><i class="fa-regular fa-clock"></i><span>${post.createdAt}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1.5 justify-end">${storyBadge}${chapterBadge}</div>
+                    </div>
+
+                    ${renderSpoilerContent(post.content, post.isSpoiler, false)}
+
+                    <div class="flex items-center gap-4 pt-2.5 border-t border-slate-100 text-xs font-bold text-slate-500 select-none">
+                        <button type="button" onclick="toggleLikePost(${post.postId})" class="btn-like inline-flex items-center gap-1.5 hover:text-rose-500 transition active:scale-95 ${post.isLikedByMe ? "text-rose-500 font-extrabold" : ""}">
+                            <i class="${post.isLikedByMe ? "fa-solid text-rose-500" : "fa-regular"} fa-heart text-sm like-icon"></i> <span>${isEn ? "Like" : "Thích"}</span> <span class="like-count text-slate-700">${post.totalLikes}</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('input-comment-${post.postId}').focus()" class="inline-flex items-center gap-1.5 hover:text-teal-600 transition active:scale-95">
+                            <i class="fa-regular fa-comment text-sm"></i> <span>${isEn ? "Comment" : "Bình luận"}</span> <span class="comment-count text-slate-700">${post.totalComments}</span>
+                        </button>
+                    </div>
+
+                    <div class="comments-section pt-3 border-t border-slate-100 space-y-3">
+                        <div class="comments-list space-y-2.5">
+                            <div class="no-comments text-center py-4 text-xs font-semibold text-slate-400 italic">${isEn ? "No comments yet!" : "Chưa có bình luận nào!"}</div>
+                        </div>
+
+                        <div class="replying-to hidden bg-teal-50 border border-teal-100 text-teal-700 text-xs px-3 py-1.5 rounded-xl flex items-center justify-between" data-post-id="${post.postId}">
+                            <span class="font-medium">${isEn ? "Replying to" : "Đang phản hồi"} <strong class="reply-user-name font-bold"></strong></span>
+                            <button type="button" onclick="cancelReplyStatus(${post.postId})" class="text-rose-500 font-bold text-xs ml-2"><i class="fa-solid fa-xmark mr-1"></i> ${isEn ? "Cancel" : "Hủy"}</button>
+                        </div>
+
+                        <div id="comment-attach-box-${post.postId}" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <select id="comment-story-${post.postId}" onchange="onStoryChange(this.value, 'comment-chapter-${post.postId}')"
+                                        class="p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all">
+                                    <option value="">-- ${isEn ? "Attach Story" : "Đính kèm truyện"} --</option>
+                                    ${STORIES_OPTIONS}
+                                </select>
+                                <select id="comment-chapter-${post.postId}" disabled
+                                        class="p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400 transition-all disabled:opacity-50">
+                                    <option value="">-- ${isEn ? "Select chapter" : "Chọn chương"} --</option>
+                                </select>
+                            </div>
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none pt-1">
+                                <input type="checkbox" id="comment-spoiler-${post.postId}" class="w-3.5 h-3.5 rounded text-teal-500 focus:ring-teal-400 border-slate-300">
+                                <span class="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-eye-slash text-slate-400"></i> ${isEn ? "Contains Spoiler" : "Chứa nội dung Spoiler"}
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1">
+                            <button type="button" onclick="toggleCommentAttachment(${post.postId})" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs transition" title="${isEn ? "Attachment & Spoiler options" : "Tùy chọn đính kèm & Spoiler"}">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                            <input type="text" id="input-comment-${post.postId}" data-post-id="${post.postId}" class="comment-input flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition" placeholder="${isEn ? "Write a comment..." : "Viết bình luận..."}" maxlength="2000" />
+                            <button type="button" onclick="sendComment(${post.postId})" class="btn-grad p-2.5 text-white rounded-xl cursor-pointer hover:scale-105 active:scale-95 transition shadow-sm">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(postElement);
+            });
+        }
+
+        async function onStoryChange(storyId, targetChapterSelectId = "chapterSelect") {
+            const chapterSelect = document.getElementById(targetChapterSelectId);
+            if (!chapterSelect) return;
+
+            const defaultText = CURRENT_LANG === 'en' ? '-- Select Chapter --' : '-- Chọn chương --';
+            chapterSelect.innerHTML = `<option value="">${defaultText}</option>`;
+            chapterSelect.disabled = true;
+
+            if (!storyId || storyId === "0") return;
+
+            try {
+                const res = await fetch(`/Community/GetChaptersByStory?storyId=${storyId}`);
+                if (!res.ok) throw new Error("Error loading chapters!");
+                
+                const chapters = await res.json();
+                if (Array.isArray(chapters) && chapters.length > 0) {
+                    chapters.forEach(c => {
+                        const opt = document.createElement("option");
+                        opt.value = c.chapterId;
+                        opt.textContent = c.displayTitle || `Chương ${c.chapterNumber}`;
+                        chapterSelect.appendChild(opt);
+                    });
+                    chapterSelect.disabled = false;
+                }
+            } catch (err) {
+                console.warn("Lỗi tải chương:", err.message);
+            }
+        }
+
+        function clearPostForm() {
+            document.getElementById("postContent").value = "";
+            document.getElementById("storySelect").value = "";
+            const chapterSelect = document.getElementById("chapterSelect");
+            chapterSelect.innerHTML = `<option value="">-- ${CURRENT_LANG === 'en' ? 'Select story first' : 'Chọn truyện trước'} --</option>`;
+            chapterSelect.disabled = true;
+            const chk = document.getElementById("postIsSpoiler");
+            if (chk) chk.checked = false;
+        }
+
+        async function submitPost() {
+            const btn = document.getElementById("btnCreatePost");
+            const content = document.getElementById("postContent").value.trim();
+            const storySelect = document.getElementById("storySelect");
+            const chapterSelect = document.getElementById("chapterSelect");
+            const isSpoiler = document.getElementById("postIsSpoiler")?.checked || false;
+
+            const storyId = storySelect.value ? parseInt(storySelect.value) : null;
+            const chapterId = chapterSelect.value ? parseInt(chapterSelect.value) : null;
+
+            if (!content) {
+                alert(CURRENT_LANG === 'en' ? "Please enter post content!" : "Vui lòng nhập nội dung bài viết!");
+                return;
+            }
+
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/Community/CreatePost", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content, storyId, chapterId, isSpoiler })
+                });
+
+                const data = await res.json();
+                if (data.requireLogin) {
+                    window.location.href = "/Account/Login?returnUrl=" + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (data.success) {
+                    clearPostForm();
+                } else alert(data.message);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function showReplyStatus(postId, commentId, userName) {
+            replyMap[postId] = { commentId, userName };
+            const replyBox = document.querySelector(`.replying-to[data-post-id="${postId}"]`);
+            if (replyBox) {
+                replyBox.querySelector(".reply-user-name").textContent = "@@" + userName;
+                replyBox.classList.remove("hidden");
+            }
+            const input = document.getElementById(`input-comment-${postId}`);
+            if (input) {
+                input.placeholder = (CURRENT_LANG === 'en' ? "Replying to @@" : "Phản hồi @@") + userName + "...";
+                input.focus();
+            }
+            toggleCommentAttachment(postId);
+        }
+
+        function cancelReplyStatus(postId) {
+            delete replyMap[postId];
+            const replyBox = document.querySelector(`.replying-to[data-post-id="${postId}"]`);
+            if (replyBox) replyBox.classList.add("hidden");
+            const input = document.getElementById(`input-comment-${postId}`);
+            if (input) input.placeholder = CURRENT_LANG === 'en' ? "Write a comment..." : "Viết bình luận...";
+        }
+
+        async function sendComment(postId) {
+            const input = document.getElementById(`input-comment-${postId}`);
+            const content = input ? input.value.trim() : "";
+            if (!content) return;
+
+            const activeReply = replyMap[postId] || null;
+            const parentCommentId = activeReply ? activeReply.commentId : null;
+            const storySelect = document.getElementById(`comment-story-${postId}`);
+            const chapterSelect = document.getElementById(`comment-chapter-${postId}`);
+            const isSpoiler = document.getElementById(`comment-spoiler-${postId}`)?.checked || false;
+
+            const storyId = storySelect && storySelect.value ? parseInt(storySelect.value) : null;
+            const chapterId = chapterSelect && chapterSelect.value ? parseInt(chapterSelect.value) : null;
+
+            try {
+                const res = await fetch("/Community/AddComment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ postId: parseInt(postId), content, parentCommentId, storyId, chapterId, isSpoiler })
+                });
+
+                const data = await res.json();
+                if (data.requireLogin) {
+                    window.location.href = "/Account/Login?returnUrl=" + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (data.success) {
+                    input.value = "";
+                    cancelReplyStatus(postId);
+                    if (storySelect) storySelect.value = "";
+                    if (chapterSelect) { chapterSelect.value = ""; chapterSelect.disabled = true; }
+                    const spoilerChk = document.getElementById(`comment-spoiler-${postId}`);
+                    if (spoilerChk) spoilerChk.checked = false;
+                    const attachBox = document.getElementById(`comment-attach-box-${postId}`);
+                    if (attachBox) attachBox.classList.add("hidden");
+                } else alert(data.message);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm(CURRENT_LANG === 'en' ? "Are you sure you want to delete this post?" : "Bạn có chắc chắn muốn xóa bài viết này không?")) return;
+
+            try {
+                const res = await fetch(`/Community/DeletePost?postId=${postId}`, { method: "POST" });
+                const data = await res.json();
+                if (!data.success) alert(data.message || "Error!");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm(CURRENT_LANG === 'en' ? "Are you sure you want to delete this comment?" : "Bạn có chắc muốn xóa bình luận này?")) return;
+
+            try {
+                const res = await fetch(`/Community/DeleteComment?commentId=${commentId}`, { method: "POST" });
+                const data = await res.json();
+                if (!data.success) alert(data.message || "Error!");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function toggleLikePost(postId) {
+            const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+            if (!postCard) return;
+
+            const likeBtn = postCard.querySelector(".btn-like");
+            const countSpan = postCard.querySelector(".like-count");
+            const currentlyLiked = likeBtn.classList.contains("text-rose-500");
+            let currentCount = parseInt(countSpan.textContent) || 0;
+
+            if (currentlyLiked) {
+                likeBtn.classList.remove("text-rose-500", "font-extrabold");
+                countSpan.textContent = Math.max(0, currentCount - 1);
+            } else {
+                likeBtn.classList.add("text-rose-500", "font-extrabold");
+                countSpan.textContent = currentCount + 1;
+            }
+
+            try {
+                const res = await fetch("/Community/ToggleLike", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ postId: parseInt(postId) })
+                });
+                const data = await res.json();
+                if (data.requireLogin) window.location.href = "/Account/Login?returnUrl=" + encodeURIComponent(window.location.pathname);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // SIGNALR LISTENERS
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/communityHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("PostDeleted", function (postId) {
+            const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+            if (postCard) {
+                postCard.style.transition = "all 0.3s ease";
+                postCard.style.opacity = "0";
+                postCard.style.transform = "scale(0.95)";
+                setTimeout(() => postCard.remove(), 300);
+            }
+        });
+
+        connection.on("CommentDeleted", function (payload) {
+            const pId = payload.postId || payload.PostId;
+            const deletedIds = payload.deletedCommentIds || payload.DeletedCommentIds || [];
+            const totalComments = payload.totalComments || payload.TotalComments;
+
+            deletedIds.forEach(cId => {
+                const cItem = document.querySelector(`.comment-item[data-comment-id="${cId}"]`);
+                if (cItem) cItem.remove();
+            });
+
+            const postCard = document.querySelector(`.post-card[data-post-id="${pId}"]`);
+            if (postCard) {
+                const commentCountSpan = postCard.querySelector(".comment-count");
+                if (commentCountSpan) commentCountSpan.textContent = totalComments;
+            }
+        });
+
+        connection.start().catch(err => console.error("SignalR Error: ", err));
+    </script>
+}

@@ -29,11 +29,12 @@
                 </div>
 
                 <!-- Lọc Role (Admin / Viewer) -->
-                <div class="w-40">
+                <div class="w-48">
                     <select id="filterRole" class="select2-custom w-full mt-1 p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none shadow-sm">
                         <option data-color="linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%)" value="all" selected>@SharedLocalizer["Admin_FilterAllRoles"]</option>
+                        <option data-color="linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)" value="Super Admin">Super Admin</option>
                         <option data-color="linear-gradient(135deg, #0250c5 0%, #d43f8d 100%)" value="Admin">@SharedLocalizer["AdminCommon_AdminRole"]</option>
-                        <option data-color="linear-gradient(135deg, #FF8008, #FFC837)" value="Viewer" >@SharedLocalizer["AdminCommon_ViewerRole"]</option>
+                        <option data-color="linear-gradient(135deg, #FF8008, #FFC837)" value="Viewer">@SharedLocalizer["AdminCommon_ViewerRole"]</option>
                     </select>
                 </div>
 
@@ -95,6 +96,10 @@
     <!-- Inject từ điển ngôn ngữ cho Admins JS Module an toàn bằng Json.Serialize -->
     <script>
         window.ADMIN_LANG = window.ADMIN_LANG || {};
+        window.IS_SUPER_ADMIN = @((ViewBag.IsSuperAdmin ?? false).ToString().ToLower());
+        window.CURRENT_ADMIN_ID = @(ViewBag.CurrentAdminId ?? 0);
+        window.ADMIN_LANG = window.ADMIN_LANG || {};
+        window.ADMIN_LANG.RoleSuperAdmin = "Super Admin";
         window.ADMIN_LANG.NotFoundAccounts = @Json.Serialize(SharedLocalizer["Admin_NotFoundAccounts"].Value);
         window.ADMIN_LANG.NoDisplayName = @Json.Serialize(SharedLocalizer["Admin_NoDisplayName"].Value);
         window.ADMIN_LANG.StatusActive = @Json.Serialize(SharedLocalizer["Admin_StatusActive"].Value);

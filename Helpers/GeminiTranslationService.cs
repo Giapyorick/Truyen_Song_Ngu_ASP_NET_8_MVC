@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -27,9 +31,6 @@ namespace WebTruyenTranh.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Hàm dịch chuỗi đơn (Tiêu đề, tóm tắt truyện, tên chương) theo yêu cầu của IAiTranslationService
-        /// </summary>
         public async Task<string> TranslateAsync(string text, string fromLang, string toLang)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -37,10 +38,9 @@ namespace WebTruyenTranh.Services
 
             string endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
-            // Prompt hướng dẫn dịch văn phong truyện tranh và chỉ trả text thuần
             var requestPayload = new
             {
-                model = "openai/gpt-oss-120b", // Model dịch nhanh và chuẩn ngữ cảnh trên Groq
+                model = "openai/gpt-oss-120b",
                 messages = new[]
                 {
                     new
@@ -90,9 +90,6 @@ namespace WebTruyenTranh.Services
             return content.Trim().Trim('\"');
         }
 
-        /// <summary>
-        /// Hàm gửi raw prompt (dùng cho dịch batch đoạn văn trả về JSON array)
-        /// </summary>
         public async Task<string> GetAiResponse(string prompt)
         {
             string endpoint = "https://api.groq.com/openai/v1/chat/completions";
@@ -139,6 +136,77 @@ namespace WebTruyenTranh.Services
             }
 
             return content.Trim();
+        }
+
+        public async IAsyncEnumerable<string> StreamAiResponseAsync(
+            string prompt,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            string endpoint = "https://api.groq.com/openai/v1/chat/completions";
+
+            var requestPayload = new
+            {
+                model = "openai/gpt-oss-120b",
+                stream = true,
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a professional reading assistant and language tutor." },
+                    new { role = "user", content = prompt }
+                },
+                max_tokens = 2048,
+                temperature = 0.3
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            request.Content = new StringContent(JsonSerializer.Serialize(requestPayload), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogError($"[Groq Stream Error] {response.StatusCode} | {err}");
+                yield return $"[Error {response.StatusCode}]";
+                yield break;
+            }
+
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream);
+
+            while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                if (line.StartsWith("data: "))
+                {
+                    var data = line.Substring(6).Trim();
+                    if (data == "[DONE]") break;
+
+                    string deltaContent = "";
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(data);
+                        var choices = doc.RootElement.GetProperty("choices");
+                        if (choices.GetArrayLength() > 0)
+                        {
+                            var delta = choices[0].GetProperty("delta");
+                            if (delta.TryGetProperty("content", out var contentElem))
+                            {
+                                deltaContent = contentElem.GetString() ?? "";
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    if (!string.IsNullOrEmpty(deltaContent))
+                    {
+                        yield return deltaContent;
+                    }
+                }
+            }
         }
     }
 }

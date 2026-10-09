@@ -895,3 +895,62 @@ position: static;
 margin-top: 2rem;
 }
 }
+
+/* Tối ưu hiển thị Markdown bên trong bong bóng chat AI */
+.ai-content {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    color: #1e293b !important;
+}
+
+    .ai-content h3 {
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        margin-top: 10px !important;
+        margin-bottom: 4px !important;
+        color: #0f766e !important; /* Màu teal nổi bật */
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ai-content p {
+        margin-bottom: 6px !important;
+    }
+
+    .ai-content ul {
+        list-style-type: disc !important;
+        padding-left: 18px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .ai-content li {
+        margin-bottom: 4px !important;
+    }
+
+    .ai-content strong {
+        color: #047857 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Định dạng bảng Markdown nếu AI sinh ra bảng */
+    .ai-content table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 8px 0 !important;
+        font-size: 11.5px !important;
+    }
+
+    .ai-content th, .ai-content td {
+        border: 1px solid #e2e8f0 !important;
+        padding: 5px 8px !important;
+        text-align: left !important;
+    }
+
+    .ai-content th {
+        background-color: #f1f5f9 !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+    }

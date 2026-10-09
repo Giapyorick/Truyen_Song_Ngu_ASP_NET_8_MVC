@@ -1,23 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace WebTruyenTranh.Areas.Admin.ViewModels
+﻿namespace WebTruyenTranh.Areas.Admin.ViewModels
 {
     public class AdminUserViewModel
     {
         public int AdminId { get; set; }
-
-        [Required(ErrorMessage = "Please enter your account!")]
-        [StringLength(50)]
         public string Username { get; set; } = string.Empty;
-
-        public string? Password { get; set; }
-
-        [StringLength(100)]
+        public string? Password { get; set; }                 // Mật khẩu mới
+        public string? ConfirmPassword { get; set; }          // Nhập lại mật khẩu mới
+        public string? CurrentAdminPassword { get; set; }     // Mật khẩu hiện tại của người đang thao tác
         public string? FullName { get; set; }
-
-        [Required]
-        public string Role { get; set; } = "Viewer"; // Admin hoặc Viewer
-
+        public string Role { get; set; } = "Viewer";
         public bool IsActive { get; set; } = true;
     }
 }
