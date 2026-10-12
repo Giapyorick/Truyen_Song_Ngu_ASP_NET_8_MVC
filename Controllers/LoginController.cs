@@ -73,22 +73,71 @@ namespace WebTruyenTranh.Controllers
                 requireChangePassword = mustChangePassword
             });
         }
+        [HttpPost]
+        [RateLimit("SendRegisterOtp", maxRequests: 3, timeWindowInSeconds: 120)]
+        public async Task<IActionResult> SendRegisterOtp(string email, string captchaAnswer, [FromServices] IEmailSenderService emailSender)
+        {
+            // Kiểm tra Captcha trước khi gửi OTP
+            if (!CaptchaHelper.ValidateCaptcha(HttpContext.Session, "RegisterCaptchaResult", captchaAnswer))
+            {
+                return Json(new { success = false, message = "Incorrect security captcha answer!", needNewCaptcha = true });
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Json(new { success = false, message = "Please enter your email address!" });
+            }
+
+            string cleanEmail = email.Trim().ToLower();
+
+            // Kiểm tra xem Email đã tồn tại chưa
+            bool emailExists = await _context.TblUsers.AnyAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
+            if (emailExists)
+            {
+                return Json(new { success = false, message = "This email is already registered. Please sign in!" });
+            }
+
+            // Tạo mã OTP 6 số ngẫu nhiên
+            string otpCode = new Random().Next(100000, 999999).ToString();
+
+            // Lưu OTP vào Session (hết hạn sau 5 phút)
+            HttpContext.Session.SetString("Register_OTP", otpCode);
+            HttpContext.Session.SetString("Register_OTPEmail", cleanEmail);
+            HttpContext.Session.SetString("Register_OTPExpiry", DateTime.UtcNow.AddMinutes(5).ToString("o"));
+            await HttpContext.Session.CommitAsync();
+
+            string emailSubject = "Bilingual Manga - Email Verification Code";
+            string emailBody = $@"
+            <div style='font-family: Arial, sans-serif; padding: 24px; color: #334155; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;'>
+                <h2 style='color: #0d9488; margin-top: 0;'>Email Verification Code</h2>
+                <p>Hello,</p>
+                <p>Thank you for registering at <b>Bilingual Manga</b>. Your email verification OTP code is:</p>
+                <div style='margin: 16px 0; padding: 14px 24px; background-color: #f0fdfa; border: 1.5px dashed #0d9488; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #0f766e; display: inline-block; border-radius: 8px;'>
+                    {otpCode}
+                </div>
+                <p style='color: #64748b; font-size: 13px;'>* This code is valid for <b>5 minutes</b>. Please do not share this code with anyone.</p>
+            </div>";
+
+            try
+            {
+                await emailSender.SendEmailAsync(cleanEmail, emailSubject, emailBody);
+                return Json(new { success = true, message = "Verification OTP has been sent to your Gmail address!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Mail error: " + ex.Message });
+            }
+        }
 
         [HttpPost]
         [RateLimit("UserRegister", maxRequests: 3, timeWindowInSeconds: 120)]
-        public async Task<IActionResult> Register(UsersViewModel model, string captchaAnswer)
+        public async Task<IActionResult> Register(UsersViewModel model, string otpCode)
         {
             // 1. LỚP BẪY BOT (Honeypot Trap)
             string trap = Request.Form["SystemSecurity_FakeTrap"].ToString();
             if (!string.IsNullOrEmpty(trap))
             {
                 return Json(new { success = true, message = "Account created successfully!" });
-            }
-
-            // 2. LỚP CAPTCHA
-            if (!CaptchaHelper.ValidateCaptcha(HttpContext.Session, "RegisterCaptchaResult", captchaAnswer))
-            {
-                return Json(new { success = false, message = "Incorrect security captcha answer!", needNewCaptcha = true });
             }
 
             if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Passwork))
@@ -102,13 +151,35 @@ namespace WebTruyenTranh.Controllers
             }
 
             string cleanEmail = model.Email.Trim().ToLower();
-            bool emailExists = await _context.TblUsers.AnyAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
 
+            // 2. KIỂM TRA MÃ OTP TỪ SESSION
+            string? savedOtp = HttpContext.Session.GetString("Register_OTP");
+            string? savedEmail = HttpContext.Session.GetString("Register_OTPEmail");
+            string? expiryStr = HttpContext.Session.GetString("Register_OTPExpiry");
+
+            if (string.IsNullOrEmpty(otpCode) || string.IsNullOrEmpty(savedOtp) || savedEmail != cleanEmail)
+            {
+                return Json(new { success = false, message = "Invalid OTP request. Please request a new code!" });
+            }
+
+            if (DateTime.TryParse(expiryStr, out DateTime expiryTime) && DateTime.UtcNow > expiryTime)
+            {
+                return Json(new { success = false, message = "OTP has expired. Please request a new verification code!" });
+            }
+
+            if (savedOtp != otpCode.Trim())
+            {
+                return Json(new { success = false, message = "Incorrect OTP code. Please try again!" });
+            }
+
+            // Kiểm tra lại Email trùng lặp
+            bool emailExists = await _context.TblUsers.AnyAsync(u => u.Email != null && u.Email.Trim().ToLower() == cleanEmail);
             if (emailExists)
             {
                 return Json(new { success = false, message = "This email is already registered. Please sign in!" });
             }
 
+            // Upload Avatar (nếu có)
             string avatarPath = "";
             if (model.formFile != null && model.formFile.Length > 0)
             {
@@ -143,6 +214,11 @@ namespace WebTruyenTranh.Controllers
 
                 await _context.TblUsers.AddAsync(newUser);
                 await _context.SaveChangesAsync();
+
+                // Xóa Session OTP sau khi tạo tài khoản thành công
+                HttpContext.Session.Remove("Register_OTP");
+                HttpContext.Session.Remove("Register_OTPEmail");
+                HttpContext.Session.Remove("Register_OTPExpiry");
 
                 return Json(new
                 {

@@ -368,21 +368,89 @@ function loadChapterList(page = null) {
     });
 }
 // Xử lý Import Excel
+$(document).ready(function () {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('excelFile');
+    const fileStatus = document.getElementById('fileStatus');
+
+    if (dropZone) {
+        // Chặn hành vi mở file mặc định của trình duyệt
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        // Đổi màu viền khi kéo file đè lên ô DropZone
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('border-indigo-500', 'bg-indigo-100/50'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/50'), false);
+        });
+
+        // Bắt sự kiện thả (Drop)
+        dropZone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+
+            // TH1: Kéo thả file trực tiếp từ máy tính (Desktop/File Explorer)
+            if (dt.files && dt.files.length > 0) {
+                fileInput.files = dt.files;
+                $(dropZone).attr('data-selected-filename', ''); // Clear file name chọn từ kho
+                if (fileStatus) fileStatus.innerText = dt.files[0].name;
+            }
+            // TH2: Kéo thả file từ Kho lưu trữ Admin (File Manager)
+            else {
+                const fileName = dt.getData('text/plain') || dt.getData('fileName');
+                if (fileName) {
+                    fileInput.value = ''; // Reset input file máy tính
+                    $(dropZone).attr('data-selected-filename', fileName); // Lưu tên file kho
+                    if (fileStatus) fileStatus.innerText = `📄 ${fileName} (Từ kho lưu trữ)`;
+                    if (typeof showToast === 'function') showToast(`Đã chọn tệp: ${fileName}`, 'info');
+                }
+            }
+        });
+    }
+});
+
+// Xử lý Import Excel Đa Năng (Thay thế hàm executeImport cũ)
+// Xử lý Import Excel
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
-    if (fileInput.files.length === 0) {
+    const dropZone = document.getElementById('dropZone');
+
+    // Lấy tên file lưu trữ (nếu kéo từ File Manager)
+    let savedFileName = $(dropZone) ? $(dropZone).attr('data-selected-filename') : '';
+    if (savedFileName) {
+        savedFileName = decodeURIComponent(savedFileName); // Giải mã URL-encoded name
+    }
+
+    const importUrl = $(dropZone).attr('data-import-url') || '/Admin/tblChapters/ImportToExcel';
+    const file = fileInput && fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+    // Kiểm tra nếu cả 2 nguồn đều không có file
+    if (!file && !savedFileName) {
         showToast(L.ChooseExcelFile || 'Please choose file Excel!', 'error');
         return;
     }
 
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+
+    if (file) {
+        // TH1: Upload file trực tiếp từ máy tính
+        formData.append('file', file);
+    } else if (savedFileName) {
+        // TH2: Truyền tên file được kéo từ File Manager
+        formData.append('serverFileName', savedFileName);
+    }
 
     const $btn = $('#btnDoImport');
     $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
-        url: '/Admin/tblChapters/ImportToExcel',
+        url: importUrl,
         type: 'POST',
         data: formData,
         processData: false,
@@ -396,8 +464,9 @@ function executeImport() {
                 showToast(res.message, 'error');
             }
         },
-        error: function () {
-            showToast(L.ErrImport || 'Error during import file!', 'error');
+        error: function (xhr) {
+            const msg = xhr.responseJSON ? xhr.responseJSON.message : (L.ErrImport || 'Error during import file!');
+            showToast(msg, 'error');
         },
         complete: function () {
             $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import');

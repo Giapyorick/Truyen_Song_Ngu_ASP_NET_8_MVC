@@ -32,7 +32,8 @@ namespace WebTruyenTranh.Components
             // 2. Lấy 8 truyện đầu tiên kèm tiêu đề song ngữ
             var topStories = await _context.TblStories
                 .AsNoTracking()
-                .OrderByDescending(s => s.StoryId)
+                .OrderByDescending(s => s.PublicationDate)
+                .ThenByDescending(s => s.StoryId) // Thêm dòng này để truyện nào đăng sau (ID lớn hơn) luôn nằm trên
                 .Take(8)
                 .Select(s => new
                 {

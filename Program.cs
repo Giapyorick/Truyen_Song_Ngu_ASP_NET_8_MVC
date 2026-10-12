@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.DataProtection; // Thêm namespace này
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,6 @@ using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Hubs;
 using WebTruyenTranh.Models;
 using WebTruyenTranh.Services;
-using WebTruyenTranh.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +18,19 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<TruyenSongNguContext>(options =>
     options.UseSqlServer(connectionString));
+
+// =========================================================================
+// SỬA LỖI RESTART MẤT SESSION: CẤU HÌNH PERSIST DATA PROTECTION KEYS
+// =========================================================================
+var keysFolder = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "Keys");
+if (!Directory.Exists(keysFolder))
+{
+    Directory.CreateDirectory(keysFolder);
+}
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+    .SetApplicationName("WebTruyenTranhApp");
 
 // 2. CẤU HÌNH LOCALIZATION
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -53,9 +66,7 @@ builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
 
-// =========================================================================
 // 4. LƯU SESSION VÀO SQL SERVER (BẢNG TblSessionCache)
-// =========================================================================
 builder.Services.AddDistributedSqlServerCache(options =>
 {
     options.ConnectionString = connectionString;
@@ -70,12 +81,15 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 
+// Cấu hình Session sống lâu hơn và giữ Cookie cố định
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.IdleTimeout = TimeSpan.FromDays(7);
+    options.Cookie.Name = ".WebTruyenTranh.Session";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.MaxAge = TimeSpan.FromDays(7);
 });
 
 builder.Services.AddSingleton(HtmlEncoder.Create(allowedRanges: new[] {
@@ -103,7 +117,6 @@ builder.Services.AddHangfireServer(options => { options.WorkerCount = 1; });
 
 var app = builder.Build();
 
-
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -121,9 +134,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseCookiePolicy();
 app.UseSession();
 app.UseAuthentication();
@@ -140,4 +151,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapHub<CommunityHub>("/communityHub");
+
 app.Run();

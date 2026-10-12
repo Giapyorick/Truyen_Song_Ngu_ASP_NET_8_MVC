@@ -259,10 +259,10 @@
     <value>Tìm kiếm truyện</value>
   </data>
   <data name="Nav_Bilingual" xml:space="preserve">
-    <value>Song ngữ EN-VI</value>
+    <value>Anime song ngữ</value>
   </data>
   <data name="Nav_BilingualBadge" xml:space="preserve">
-    <value>HOT</value>
+    <value>Sắp có</value>
   </data>
   <data name="Nav_Categories" xml:space="preserve">
     <value>Thể loại</value>
@@ -334,7 +334,7 @@
     <value>Chỉnh sửa hồ sơ</value>
   </data>
   <data name="Profile_Following" xml:space="preserve">
-    <value>Đang theo dõi</value>
+    <value>Theo dõi</value>
   </data>
   <data name="Profile_Liked" xml:space="preserve">
     <value>Yêu thích</value>
@@ -2108,5 +2108,98 @@
   </data>
   <data name="Nav_Community" xml:space="preserve">
     <value>Cộng đồng</value>
+  </data>
+  <data name="Chapter_Prefix" xml:space="preserve">
+    <value>Chương</value>
+  </data>
+  <data name="Vocab_OriginalContext" xml:space="preserve">
+    <value>Ngữ cảnh gốc:</value>
+  </data>
+  <data name="Vocab_ViewExplanation" xml:space="preserve">
+    <value>Xem giải nghĩa</value>
+  </data>
+  <data name="Vocab_Collapse" xml:space="preserve">
+    <value>Thu gọn</value>
+  </data>
+  <data name="Vocab_SavedAt" xml:space="preserve">
+    <value>Đã lưu</value>
+  </data>
+  <data name="Vocab_EmptyTitle" xml:space="preserve">
+    <value>Chưa có trích dẫn hoặc ghi chú nào</value>
+  </data>
+  <data name="Vocab_EmptyHint" xml:space="preserve">
+    <value>Khi đọc truyện, hãy bôi đen đoạn tâm đắc và bấm "Hỏi AI" rồi chọn "Lưu trích dẫn" nhé!</value>
+  </data>
+  <data name="Btn_Delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="Profile_Lorebook" xml:space="preserve">
+    <value>Sổ trích dẫn &amp; Cốt truyện</value>
+  </data>
+  <data name="Auth_VerifyEmailTitle" xml:space="preserve">
+    <value>Xác thực địa chỉ Gmail</value>
+  </data>
+  <data name="Auth_OtpSentNotice" xml:space="preserve">
+    <value>Chúng tôi đã gửi mã xác nhận 6 chữ số đến:</value>
+  </data>
+  <data name="Auth_ResendCode" xml:space="preserve">
+    <value>Gửi lại mã</value>
+  </data>
+  <data name="Auth_ConfirmAndCreate" xml:space="preserve">
+    <value>Xác nhận &amp; Tạo tài khoản</value>
+  </data>
+  <data name="Auth_FillRequiredFields" xml:space="preserve">
+    <value>Vui lòng điền đầy đủ các thông tin bắt buộc!</value>
+  </data>
+  <data name="Auth_PasswordMismatch" xml:space="preserve">
+    <value>Mật khẩu xác nhận không khớp!</value>
+  </data>
+  <data name="Admin_FileManagerTitle" xml:space="preserve">
+    <value>Kho Lưu Trữ Tệp Dữ Liệu Admin</value>
+  </data>
+  <data name="Admin_FileManagerSubtitle" xml:space="preserve">
+    <value>Kéo thả hoặc tải lên các tệp Excel, TXT, Document...</value>
+  </data>
+  <data name="Admin_DropZoneText" xml:space="preserve">
+    <value>Kéo &amp; thả tệp vào đây, hoặc</value>
+  </data>
+  <data name="Admin_BrowseText" xml:space="preserve">
+    <value>bấm để chọn</value>
+  </data>
+  <data name="Admin_SupportedFormats" xml:space="preserve">
+    <value>Hỗ trợ Excel (.xlsx, .xls), TXT, CSV, PDF, Word</value>
+  </data>
+  <data name="Admin_UploadedFiles" xml:space="preserve">
+    <value>Tệp đã lưu trữ</value>
+  </data>
+  <data name="Admin_NoFilesFound" xml:space="preserve">
+    <value>Chưa có tệp nào trong kho lưu trữ</value>
+  </data>
+  <data name="Admin_FilesCount" xml:space="preserve">
+    <value>tệp</value>
+  </data>
+  <data name="Admin_UploadSuccess" xml:space="preserve">
+    <value>Tải lên tệp dữ liệu thành công!</value>
+  </data>
+  <data name="Admin_DeleteConfirm" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa tệp này khỏi hệ thống?</value>
+  </data>
+  <data name="Admin_DeleteSuccess" xml:space="preserve">
+    <value>Đã xóa tệp dữ liệu thành công!</value>
+  </data>
+  <data name="AdminLayout_FileManager" xml:space="preserve">
+    <value>Quản lý tệp</value>
+  </data>
+  <data name="Para_ImportJobSuccess" xml:space="preserve">
+    <value>Nhập dữ liệu thành công</value>
+  </data>
+  <data name="Para_SelectChapter" xml:space="preserve">
+    <value>Chọn chương</value>
+  </data>
+  <data name="Para_ReqAiOrFileTargetMsg" xml:space="preserve">
+    <value>Vui lòng tải lên tệp hoặc chọn AI Translate cho các ngôn ngữ còn thiếu: {0}</value>
+  </data>
+  <data name="Para_SentTaskBackgroundSuccess" xml:space="preserve">
+    <value>Đã gửi tác vụ nền thành công!</value>
   </data>
 </root>

@@ -1,8 +1,4 @@
-﻿
-@using Microsoft.Extensions.Localization
-@using WebTruyenTranh
-@inject IStringLocalizer<SharedResource> SharedLocalizer
-@* MODAL IMPORT PARAGRAPH WITH AI *@
+﻿@* MODAL IMPORT PARAGRAPH WITH AI *@
 <div id="importParagraphModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
     <div id="importContent" class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] transform scale-95 opacity-0 transition-all duration-300">
         <div class="px-8 py-5 border-b border-teal-100/60 flex justify-between items-center">
@@ -34,9 +30,10 @@
                     <span class="text-xs text-gray-400">@SharedLocalizer["AdminCommon_SupportedFormatsLong"]</span>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- ĐƯA VỀ GRID PHẲNG ĐỒNG NHẤT KHÔNG BỊ TRƯỢT LỆCH -->
+                <div id="languageCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     <!-- 1. CỐ ĐỊNH: NGUỒN TIẾNG ANH (BẮT BUỘC) -->
-                    <div class="p-4 border-2 border-[#50C9C3] bg-teal-50/20 rounded-2xl space-y-3 relative flex flex-col justify-between">
+                    <div class="p-4 border-2 border-[#50C9C3] bg-teal-50/20 rounded-2xl space-y-3 relative flex flex-col justify-between h-full">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-bold text-cus flex items-center gap-2">
@@ -54,13 +51,13 @@
                                 <span class="text-[10px] bg-gradient-to-r from-[#50C9C3] to-[#96DEDA] text-white px-3 py-1 rounded-md font-semibold shadow-sm">@SharedLocalizer["AdminCommon_Browse"]</span>
                             </div>
                         </div>
-                        <div class="text-[11px] text-teal-700 bg-teal-100/50 px-3 py-2 rounded-xl flex items-center gap-1.5 font-medium">
+                        <div class="text-[11px] text-teal-700 bg-teal-100/50 px-3 py-2 rounded-xl flex items-center gap-1.5 font-medium mt-3">
                             <i class="fas fa-info-circle text-[#50C9C3]"></i> @SharedLocalizer["AdminAI_SourceUsageDescription"]
                         </div>
                     </div>
 
                     <!-- 2. CỐ ĐỊNH: ĐÍCH TIẾNG VIỆT (BẮT BUỘC) -->
-                    <div id="card_lang_vietnamese" class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-all flex flex-col justify-between">
+                    <div id="card_lang_vietnamese" class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-all flex flex-col justify-between h-full">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-bold text-cus flex items-center gap-2">
@@ -68,7 +65,7 @@
                                 </span>
                                 <a href="/assets/template/Story_Vietnamese_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> @SharedLocalizer["AdminCommon_Template"]</a>
                             </div>
-                            <div class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <div class="target-dropzone relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group" data-lang-key="vietnamese">
                                 <input type="file" id="file_vietnamese" data-lang-key="vietnamese" accept=".xlsx, .xls, .txt" class="target-lang-file absolute inset-0 opacity-0 cursor-pointer z-10">
                                 <div class="flex items-center gap-3">
                                     <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
@@ -77,16 +74,14 @@
                                 <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">@SharedLocalizer["AdminCommon_Browse"]</span>
                             </div>
                         </div>
-                        <!-- Mặc định: data-active="false", chưa tick chọn AI -->
                         <button type="button" id="btnAi_vietnamese" onclick="toggleAutoAiTranslate('vietnamese', this)" disabled
-                                class="ai-btn w-full py-2 px-3 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 from-[#50C9C3] to-[#96DEDA] text-white bg-gradient-to-r opacity-40 cursor-not-allowed"
+                                class="ai-btn w-full py-2 px-3 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 from-[#50C9C3] to-[#96DEDA] text-white bg-gradient-to-r opacity-40 cursor-not-allowed mt-3"
                                 data-active="false">
                             <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">@SharedLocalizer["AdminAI_TranslateEnglish"]</span>
                         </button>
                     </div>
 
-                    <!-- 3. KHUNG DÀNH CHO CÁC NGÔN NGỮ BỔ SUNG (TRUNG -> NHẬT -> PHÁP) -->
-                    <div id="dynamicExtraLanguagesContainer" class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <!-- CONTAINER CHO CÁC THẺ PHỤ SẼ ĐƯỢC CHÈN TRỰC TIẾP VÀO LƯỚI BẰNG JAVASCRIPT -->
                 </div>
             </div>
         </div>
@@ -97,7 +92,6 @@
         </div>
     </div>
 </div>
-
 @* FLOATING PROGRESS BAR CỦA HANGFIRE JOB *@
 <div id="aiProcessingOverlay" class="fixed bottom-6 right-6 z-[10001] hidden transform transition-all duration-300 translate-y-10 opacity-0">
     <div class="bg-white/95 backdrop-blur-md border border-teal-200 shadow-2xl rounded-2xl p-5 max-w-sm flex items-start gap-4 ring-1 ring-black/5">

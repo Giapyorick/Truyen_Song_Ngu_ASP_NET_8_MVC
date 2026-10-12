@@ -1,0 +1,48 @@
+﻿<!-- GIAO DIỆN ĐỌC LÉN EXCEL VIEW -->
+<div id="excelReaderView" class="hidden min-h-screen bg-slate-100 pb-12 select-none text-slate-800">
+    <div class="w-full bg-white shadow-md border-b border-slate-300">
+        <!-- Header Toolbar -->
+        <div class="bg-[#107c41] text-white px-4 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-2xl">table_chart</span>
+                <div>
+                    <h2 id="excelDocTitle" class="font-bold text-sm sm:text-base leading-tight truncate max-w-md">Bảng dữ liệu song ngữ...</h2>
+                    <p class="text-[11px] text-emerald-100">Microsoft Excel Online • Protected Sheet / Read-Only</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="excelChapterSelect" onchange="window.readerModule.switchChapter(this.value)" class="text-xs bg-white text-slate-800 font-semibold px-2.5 py-1 rounded outline-none cursor-pointer">
+                </select>
+                <button type="button" onclick="switchViewMode('standard')" class="text-xs bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-3 py-1 rounded transition">
+                    Thoát Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Formula Bar -->
+        <div class="bg-[#f0f2f5] border-b border-slate-300 px-3 py-1.5 flex items-center gap-2 text-xs">
+            <span id="excelActiveCell" class="font-mono font-bold text-[#107c41] bg-white px-2 py-0.5 rounded border border-slate-300 min-w-[45px] text-center">C2</span>
+            <span class="font-mono font-bold italic text-[#107c41]">fx</span>
+            <div id="excelFormulaText" class="flex-1 bg-white px-3 py-1 rounded border border-slate-300 truncate text-slate-700 font-medium">
+                Chọn một dòng để xem chi tiết...
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Grid -->
+    <div class="w-full overflow-x-auto bg-white min-h-[75vh]">
+        <table class="w-full border-collapse text-xs font-sans text-left">
+            <thead class="bg-[#f3f5f7] sticky top-0 z-10 border-b border-slate-300 select-none">
+                <tr class="text-slate-500 font-mono text-[11px] h-6">
+                    <th class="w-10 text-center bg-[#e8ecef] border-r border-slate-300">#</th>
+                    <th class="w-16 text-center border-r border-slate-300">A</th>
+                    <th class="w-1/2 px-3 border-r border-slate-300 font-bold text-blue-700">B (Tiếng Anh / Gốc)</th>
+                    <th class="w-1/2 px-3 border-r border-slate-300 font-bold text-emerald-700">C (Tiếng Việt / Bản Dịch)</th>
+                </tr>
+            </thead>
+            <tbody id="excelRowsBody" class="divide-y divide-slate-200 font-sans text-slate-800">
+                <!-- Nội dung bảng sẽ tự động đổ vào từ JS -->
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,307 @@
+﻿@* Views/Shared/Partials/_AdminFileManagerPartial.cshtml *@
+
+<!-- MODAL QUẢN LÝ TỆP DỮ LIỆU DÀNH CHO ADMIN -->
+<div id="adminFileManagerModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[9999] transition-all duration-300">
+    <!-- Nâng độ rộng modal từ max-w-xl lên max-w-5xl để chứa 3 cột -->
+    <div id="adminFileManagerModalContent" class="bg-white w-full max-w-5xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300 ease-out relative">
+
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-100 relative bg-gradient-to-r from-slate-50 to-white text-center">
+            <div class="w-11 h-11 mx-auto mb-2 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 text-lg shadow-2xs">
+                <i class="fa-solid text-cus fa-folder-open"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-cus">
+                @(SharedLocalizer["Admin_FileManagerTitle"]?.Value ?? "Kho Lưu Trữ Tệp Dữ Liệu Admin")
+            </h3>
+            <p class="text-xs text-cus mt-1">
+                @(SharedLocalizer["Admin_FileManagerSubtitle"]?.Value ?? "Kéo thả hoặc tải lên các tệp Excel, TXT, Document...")
+            </p>
+
+            <button type="button" onclick="closeAdminFileManagerModal()" class="absolute right-5 top-5 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all text-xl cursor-pointer">
+                &times;
+            </button>
+        </div>
+
+        <div class="p-6 space-y-6 max-h-[calc(78vh-120px)] overflow-y-auto">
+
+            <!-- 1. VÙNG KÉO THẢ TỆP (DRAG & DROP ZONE) -->
+            <div id="adminDropZone"
+                 class="border-2 border-dashed border-teal-300 hover:border-teal-500 bg-teal-50/40 hover:bg-teal-50/80 rounded-2xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 group">
+
+                <input type="file" id="adminFileInput" class="hidden" multiple onchange="handleAdminFileSelect(this.files)" accept=".xlsx,.xls,.txt,.csv,.pdf,.docx" />
+
+                <div class="w-10 h-10 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-lg group-hover:scale-110 transition-transform shadow-inner">
+                    <i class="fa-solid text-cus fa-cloud-arrow-up"></i>
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-slate-700">
+                        @(SharedLocalizer["Admin_DropZoneText"]?.Value ?? "Kéo & thả tệp vào đây, hoặc")
+                        <span class="text-teal-600 underline">@(SharedLocalizer["Admin_BrowseText"]?.Value ?? "bấm để chọn")</span>
+                    </p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">
+                        @(SharedLocalizer["Admin_SupportedFormats"]?.Value ?? "Hỗ trợ Excel (.xlsx, .xls), TXT, CSV, PDF, Word")
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. DANH SÁCH TỆP CHIA LÀM 3 CỘT -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-bold text-cus uppercase tracking-wider">
+                        @(SharedLocalizer["Admin_UploadedFiles"]?.Value ?? "Tệp đã lưu trữ")
+                    </h4>
+                    <span id="adminFileCountBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                        0 tệp
+                    </span>
+                </div>
+
+                <!-- KHU VỰC GRID 3 CỘT (TXT | EXCEL | KHÁC) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <!-- CỘT 1: TỆP TXT -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+                            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-lines text-amber-500"></i> Tệp Văn Bản (.txt)
+                            </span>
+                            <span id="badgeCountTxt" class="text-[10px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="colTxtList" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
+                            <div class="text-center py-6 text-slate-300 italic text-xs">Chưa có tệp .txt</div>
+                        </div>
+                    </div>
+
+                    <!-- CỘT 2: TỆP EXCEL -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+                            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-excel text-emerald-600"></i> Tệp Excel (.xlsx, .xls)
+                            </span>
+                            <span id="badgeCountExcel" class="text-[10px] font-extrabold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="colExcelList" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
+                            <div class="text-center py-6 text-slate-300 italic text-xs">Chưa có tệp Excel</div>
+                        </div>
+                    </div>
+
+                    <!-- CỘT 3: TỆP KHÁC -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+                            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-open text-indigo-500"></i> Tệp Khác (PDF, Doc, CSV...)
+                            </span>
+                            <span id="badgeCountOther" class="text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="colOtherList" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
+                            <div class="text-center py-6 text-slate-300 italic text-xs">Chưa có tệp khác</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+            <button type="button" onclick="closeAdminFileManagerModal()" class="btn-grad-cancel transition active:scale-95 cursor-pointer">
+                @(SharedLocalizer["AdminParagraphs_Close"]?.Value ?? "Đóng")
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- SCRIPT XỬ LÝ SỰ KIỆN VÀ PHÂN LOẠI FILE HÀNG LỌAT -->
+<script>
+    function openAdminFileManagerModal() {
+        const $overlay = $('#adminFileManagerModalOverlay');
+        const $content = $('#adminFileManagerModalContent');
+        $overlay.removeClass('hidden').addClass('flex');
+        setTimeout(() => $content.removeClass('translate-y-10 opacity-0').addClass('translate-y-0 opacity-100'), 10);
+        loadAdminSavedFiles();
+    }
+
+    function closeAdminFileManagerModal() {
+        const $overlay = $('#adminFileManagerModalOverlay');
+        const $content = $('#adminFileManagerModalContent');
+        $content.removeClass('translate-y-0 opacity-100').addClass('translate-y-10 opacity-0');
+        setTimeout(() => $overlay.removeClass('flex').addClass('hidden'), 300);
+    }
+
+    // Drag & Drop Handling
+    const adminDropZone = document.getElementById('adminDropZone');
+    const adminFileInput = document.getElementById('adminFileInput');
+
+    if (adminDropZone) {
+        adminDropZone.addEventListener('click', () => adminFileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            adminDropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            adminDropZone.addEventListener('dragenter', () => adminDropZone.classList.add('border-teal-500', 'bg-teal-100/60'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            adminDropZone.addEventListener('dragleave', () => adminDropZone.classList.remove('border-teal-500', 'bg-teal-100/60'), false);
+        });
+
+        adminDropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            handleAdminFileSelect(files);
+        });
+    }
+
+    function handleAdminFileSelect(files) {
+        if (!files || files.length === 0) return;
+
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+
+        $.ajax({
+            url: '/Admin/FileManager/UploadFiles',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                if (res.success) {
+                    if (typeof showToast === 'function') showToast(res.message, 'success');
+                    loadAdminSavedFiles();
+                } else {
+                    if (typeof showToast === 'function') showToast(res.message, 'error');
+                }
+            },
+            error: function () {
+                if (typeof showToast === 'function') showToast("Error uploading file!", 'error');
+            }
+        });
+    }
+
+    // Hàm phụ trợ render HTML từng thẻ item tệp
+    // Hàm phụ trợ render HTML từng thẻ item tệp có hỗ trợ Kéo (Draggable)
+    function renderFileCardItem(file) {
+        let iconClass = 'fa-file-lines text-amber-500';
+        let ext = (file.extension || '').toLowerCase();
+
+        if (ext.includes('xls')) iconClass = 'fa-file-excel text-emerald-600';
+        else if (ext.includes('txt')) iconClass = 'fa-file-lines text-amber-500';
+        else if (ext.includes('pdf')) iconClass = 'fa-file-pdf text-rose-500';
+        else if (ext.includes('doc')) iconClass = 'fa-file-word text-blue-600';
+        else if (ext.includes('csv')) iconClass = 'fa-file-csv text-teal-600';
+
+        // Tải đường dẫn tệp để truyền dữ liệu khi kéo
+        const downloadUrl = `/Admin/FileManager/DownloadFile?fileName=${encodeURIComponent(file.fileName)}`;
+
+        return `
+            <div draggable="true" ondragstart="handleAdminFileDragStart(event, '${encodeURIComponent(file.fileName)}')"
+                 class="flex items-center justify-between p-2.5 bg-white hover:bg-teal-50/50 border border-slate-200/80 hover:border-teal-300 rounded-xl transition group shadow-2xs cursor-grab active:cursor-grabbing">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-base shrink-0">
+                        <i class="fa-solid ${iconClass}"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <a href="${downloadUrl}"
+                           class="text-xs font-bold text-slate-700 hover:text-teal-600 truncate block cursor-pointer" title="${file.fileName}">
+                            ${file.fileName}
+                        </a>
+                        <span class="text-[10px] text-slate-400 font-medium block mt-0.5">${file.fileSize} • ${file.createdDate}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="${downloadUrl}"
+                       class="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition" title="Download">
+                        <i class="fa-solid fa-download text-xs"></i>
+                    </a>
+                    <button type="button" onclick="deleteAdminSavedFile('${file.fileName}')"
+                            class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Delete">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            </div>`;
+    }
+
+    // TẢI VÀ PHÂN LOẠI TỆP THÀNH 3 CỘT
+    function loadAdminSavedFiles() {
+        $.get('/Admin/FileManager/GetSavedFiles', function (res) {
+            if (res.success) {
+                const files = res.data || [];
+                const filesUnit = "@(SharedLocalizer["Admin_FilesCount"]?.Value ?? "tệp")";
+                $('#adminFileCountBadge').text(`${files.length} ${filesUnit}`);
+
+                const txtFiles = [];
+                const excelFiles = [];
+                const otherFiles = [];
+
+                // Lọc tệp theo extension
+                files.forEach(file => {
+                    const ext = (file.extension || '').toLowerCase();
+                    if (ext.includes('txt')) {
+                        txtFiles.push(file);
+                    } else if (ext.includes('xls')) {
+                        excelFiles.push(file);
+                    } else {
+                        otherFiles.push(file);
+                    }
+                });
+
+                // Cập nhật số lượng trên badge từng cột
+                $('#badgeCountTxt').text(txtFiles.length);
+                $('#badgeCountExcel').text(excelFiles.length);
+                $('#badgeCountOther').text(otherFiles.length);
+
+                // Render Cột 1: TXT
+                if (txtFiles.length === 0) {
+                    $('#colTxtList').html(`<div class="text-center py-8 text-slate-300 italic text-xs">Chưa có tệp .txt</div>`);
+                } else {
+                    $('#colTxtList').html(txtFiles.map(renderFileCardItem).join(''));
+                }
+
+                // Render Cột 2: EXCEL
+                if (excelFiles.length === 0) {
+                    $('#colExcelList').html(`<div class="text-center py-8 text-slate-300 italic text-xs">Chưa có tệp Excel</div>`);
+                } else {
+                    $('#colExcelList').html(excelFiles.map(renderFileCardItem).join(''));
+                }
+
+                // Render Cột 3: KHÁC
+                if (otherFiles.length === 0) {
+                    $('#colOtherList').html(`<div class="text-center py-8 text-slate-300 italic text-xs">Chưa có tệp khác</div>`);
+                } else {
+                    $('#colOtherList').html(otherFiles.map(renderFileCardItem).join(''));
+                }
+            }
+        });
+    }
+
+    function deleteAdminSavedFile(fileName) {
+        const confirmMsg = "@(SharedLocalizer["Admin_DeleteConfirm"]?.Value ?? "Bạn có chắc chắn muốn xóa tệp này khỏi hệ thống?")";
+        if (!confirm(confirmMsg)) return;
+
+        $.post('/Admin/FileManager/DeleteFile', { fileName: fileName }, function (res) {
+            if (res.success) {
+                if (typeof showToast === 'function') showToast(res.message, 'success');
+                loadAdminSavedFiles();
+            } else {
+                if (typeof showToast === 'function') showToast(res.message, 'error');
+            }
+        });
+    }
+    function handleAdminFileDragStart(event, encodedFileName) {
+        const fileName = decodeURIComponent(encodedFileName);
+
+        event.dataTransfer.setData('text/plain', fileName);
+        event.dataTransfer.setData('fileName', fileName);
+        closeAdminFileManagerModal();
+    }
+
+</script>

@@ -729,86 +729,126 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
         }
         [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportFromExcel(IFormFile file)
+        public async Task<IActionResult> ImportFromExcel(IFormFile? file, string? serverFileName)
         {
-            if (file == null || file.Length == 0)
-                return Json(new { success = false, message = "File is empty" });
+            Stream? fileStream = null;
+
+            // 1. Kiểm tra nguồn tệp (Tải từ máy tính HOẶC chọn/kéo thả từ File Manager / Template)
+            if (file != null && file.Length > 0)
+            {
+                fileStream = file.OpenReadStream();
+            }
+            else if (!string.IsNullOrWhiteSpace(serverFileName))
+            {
+                // Giải mã tên tệp phòng trường hợp dính mã hóa URL
+                string decodedFileName = System.Net.WebUtility.UrlDecode(serverFileName);
+                string fileNameOnly = Path.GetFileName(decodedFileName);
+
+                // Danh sách các thư mục lưu trữ khả thi chứa tệp
+                var possiblePaths = new[]
+                {
+            Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, fileNameOnly)
+        };
+
+                foreach (var path in possiblePaths)
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        fileStream = System.IO.File.OpenRead(path);
+                        break;
+                    }
+                }
+            }
+
+            if (fileStream == null)
+            {
+                return Json(new { success = false, message = "File is empty or not found!" });
+            }
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-            using var stream = new MemoryStream();
-            await file.CopyToAsync(stream);
-
-            using var package = new ExcelPackage(stream);
-            var worksheet = package.Workbook.Worksheets[0];
-            int rowCount = worksheet.Dimension.Rows;
 
             var authors = await _context.TblAuthors.ToListAsync();
             var categories = await _context.TblCategories.ToListAsync();
 
             try
             {
-                for (int row = 6; row <= rowCount; row++)
+                using (fileStream)
+                using (var package = new ExcelPackage(fileStream))
                 {
-                    string title = worksheet.Cells[row, 1].Text.Trim();
-                    if (string.IsNullOrEmpty(title)) continue;
-
-                    string description = worksheet.Cells[row, 2].Text.Trim();
-                    string authorIdText = worksheet.Cells[row, 3].Text.Trim();
-
-                    int? authorId = null;
-                    if (int.TryParse(authorIdText, out int a) && authors.Any(x => x.AuthorId == a))
-                        authorId = a;
-
-                    string langText = worksheet.Cells[row, 5].Text.Trim();
-                    if (string.IsNullOrWhiteSpace(langText)) langText = "Tiếng Anh, Tiếng Việt";
-
-                    DateOnly? pubDate = null;
-                    if (DateTime.TryParse(worksheet.Cells[row, 6].Text, out var dt))
-                        pubDate = DateOnly.FromDateTime(dt);
-
-                    string status = worksheet.Cells[row, 7].Text.Trim();
-                    if (string.IsNullOrEmpty(status)) status = "Posting";
-
-                    string categoryText = worksheet.Cells[row, 8].Text.Trim();
-
-                    var story = new TblStory
+                    if (package.Workbook.Worksheets.Count == 0)
                     {
-                        Title = title,
-                        Description = description,
-                        AuthorId = authorId,
-                        PublicationDate = pubDate,
-                        Status = status,
-                        Lang = langText, // Nạp trường Lang từ Excel
-                        Img = null,
-                        Likes = 0,
-                        Rate = 0,
-                        CountRate = 0,
-                        CountFolower = 0
-                    };
+                        return Json(new { success = false, message = "The uploaded Excel file contains no worksheets!" });
+                    }
 
-                    _context.TblStories.Add(story);
-                    await _context.SaveChangesAsync();
+                    var worksheet = package.Workbook.Worksheets[0];
+                    int rowCount = worksheet.Dimension?.Rows ?? 0;
 
-                    var categoryNames = categoryText
-                        .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(x => x.Trim());
-
-                    var categoryIds = categories
-                        .Where(c => categoryNames.Any(n => string.Equals(n, c.Name, StringComparison.OrdinalIgnoreCase)))
-                        .Select(c => c.CategoryId)
-                        .ToList();
-
-                    if (categoryIds.Any())
+                    for (int row = 6; row <= rowCount; row++)
                     {
-                        _context.TblCategoryOfStories.AddRange(
-                            categoryIds.Select(cid => new TblCategoryOfStory
-                            {
-                                StoryId = story.StoryId,
-                                CategoryId = cid
-                            })
-                        );
+                        string title = worksheet.Cells[row, 1].Text.Trim();
+                        if (string.IsNullOrEmpty(title)) continue;
+
+                        string description = worksheet.Cells[row, 2].Text.Trim();
+                        string authorIdText = worksheet.Cells[row, 3].Text.Trim();
+
+                        int? authorId = null;
+                        if (int.TryParse(authorIdText, out int a) && authors.Any(x => x.AuthorId == a))
+                            authorId = a;
+
+                        string langText = worksheet.Cells[row, 5].Text.Trim();
+                        if (string.IsNullOrWhiteSpace(langText)) langText = "Tiếng Anh, Tiếng Việt";
+
+                        DateOnly? pubDate = null;
+                        if (DateTime.TryParse(worksheet.Cells[row, 6].Text, out var dt))
+                            pubDate = DateOnly.FromDateTime(dt);
+
+                        string status = worksheet.Cells[row, 7].Text.Trim();
+                        if (string.IsNullOrEmpty(status)) status = "Posting";
+
+                        string categoryText = worksheet.Cells[row, 8].Text.Trim();
+
+                        var story = new TblStory
+                        {
+                            Title = title,
+                            Description = description,
+                            AuthorId = authorId,
+                            PublicationDate = pubDate,
+                            Status = status,
+                            Lang = langText, // Nạp trường Lang từ Excel
+                            Img = null,
+                            Likes = 0,
+                            Rate = 0,
+                            CountRate = 0,
+                            CountFolower = 0
+                        };
+
+                        _context.TblStories.Add(story);
                         await _context.SaveChangesAsync();
+
+                        var categoryNames = categoryText
+                            .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim());
+
+                        var categoryIds = categories
+                            .Where(c => categoryNames.Any(n => string.Equals(n, c.Name, StringComparison.OrdinalIgnoreCase)))
+                            .Select(c => c.CategoryId)
+                            .ToList();
+
+                        if (categoryIds.Any())
+                        {
+                            _context.TblCategoryOfStories.AddRange(
+                                categoryIds.Select(cid => new TblCategoryOfStory
+                                {
+                                    StoryId = story.StoryId,
+                                    CategoryId = cid
+                                })
+                            );
+                            await _context.SaveChangesAsync();
+                        }
                     }
                 }
             }
@@ -905,7 +945,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
                     if (story == null)
                     {
-                        return Json(new { success = false, message = "Không tìm thấy truyện cần sửa!" });
+                        return Json(new { success = false, message = "Not found the story to edit!" });
                     }
 
                     oldImgPath = story.Img;
@@ -982,13 +1022,13 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     }
                 }
 
-                return Json(new { success = true, message = isNew ? "Thêm truyện thành công!" : "Cập nhật truyện thành công!" });
+                return Json(new { success = true, message = isNew ? "Add successfuly!" : "Update successfuly!" });
             }
             catch (Exception ex)
             {
                 var inner = ex.InnerException?.Message ?? ex.Message;
                 System.Diagnostics.Debug.WriteLine($"[SAVE STORY ERROR]: {ex.Message} - {inner}");
-                return Json(new { success = false, message = "Lỗi lưu dữ liệu: " + inner });
+                return Json(new { success = false, message = "Error data: " + inner });
             }
         }
 

@@ -259,10 +259,10 @@
     <value>Search stories</value>
   </data>
   <data name="Nav_Bilingual" xml:space="preserve">
-    <value>Bilingual EN-VI</value>
+    <value>Bilingual anime</value>
   </data>
   <data name="Nav_BilingualBadge" xml:space="preserve">
-    <value>HOT</value>
+    <value>Coming</value>
   </data>
   <data name="Nav_Categories" xml:space="preserve">
     <value>Categories</value>
@@ -2108,5 +2108,98 @@
   </data>
   <data name="Nav_Community" xml:space="preserve">
     <value>Community</value>
+  </data>
+  <data name="Chapter_Prefix" xml:space="preserve">
+    <value>Chapter</value>
+  </data>
+  <data name="Vocab_OriginalContext" xml:space="preserve">
+    <value>Original Context:</value>
+  </data>
+  <data name="Vocab_ViewExplanation" xml:space="preserve">
+    <value>View Explanation</value>
+  </data>
+  <data name="Vocab_Collapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="Vocab_SavedAt" xml:space="preserve">
+    <value>Saved at</value>
+  </data>
+  <data name="Vocab_EmptyTitle" xml:space="preserve">
+    <value>No saved quotes or lore notes yet</value>
+  </data>
+  <data name="Vocab_EmptyHint" xml:space="preserve">
+    <value>Highlight compelling lines while reading, ask AI, and save them to your lorebook!</value>
+  </data>
+  <data name="Btn_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Profile_Lorebook" xml:space="preserve">
+    <value>Quotes &amp; Lorebook</value>
+  </data>
+  <data name="Auth_VerifyEmailTitle" xml:space="preserve">
+    <value>Verify Gmail Address</value>
+  </data>
+  <data name="Auth_OtpSentNotice" xml:space="preserve">
+    <value>We sent a 6-digit verification code to:</value>
+  </data>
+  <data name="Auth_ResendCode" xml:space="preserve">
+    <value>Resend Code</value>
+  </data>
+  <data name="Auth_ConfirmAndCreate" xml:space="preserve">
+    <value>Confirm &amp; Create</value>
+  </data>
+  <data name="Auth_FillRequiredFields" xml:space="preserve">
+    <value>Please fill in all required fields!</value>
+  </data>
+  <data name="Auth_PasswordMismatch" xml:space="preserve">
+    <value>Confirm password does not match!</value>
+  </data>
+  <data name="Admin_FileManagerTitle" xml:space="preserve">
+    <value>Admin File Repository</value>
+  </data>
+  <data name="Admin_FileManagerSubtitle" xml:space="preserve">
+    <value>Drag &amp; drop or upload Excel, TXT, Document files...</value>
+  </data>
+  <data name="Admin_DropZoneText" xml:space="preserve">
+    <value>Drag &amp; drop files here, or</value>
+  </data>
+  <data name="Admin_BrowseText" xml:space="preserve">
+    <value>click to browse</value>
+  </data>
+  <data name="Admin_SupportedFormats" xml:space="preserve">
+    <value>Supported: Excel (.xlsx, .xls), TXT, CSV, PDF, Word</value>
+  </data>
+  <data name="Admin_UploadedFiles" xml:space="preserve">
+    <value>Stored Files</value>
+  </data>
+  <data name="Admin_NoFilesFound" xml:space="preserve">
+    <value>No files in repository yet</value>
+  </data>
+  <data name="Admin_FilesCount" xml:space="preserve">
+    <value>files</value>
+  </data>
+  <data name="Admin_UploadSuccess" xml:space="preserve">
+    <value>File uploaded successfully!</value>
+  </data>
+  <data name="Admin_DeleteConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete this file from the system?</value>
+  </data>
+  <data name="Admin_DeleteSuccess" xml:space="preserve">
+    <value>File deleted successfully!</value>
+  </data>
+  <data name="AdminLayout_FileManager" xml:space="preserve">
+    <value>File manager</value>
+  </data>
+  <data name="Para_ImportJobSuccess" xml:space="preserve">
+    <value>Import successfully</value>
+  </data>
+  <data name="Para_SelectChapter" xml:space="preserve">
+    <value>Select chapter</value>
+  </data>
+  <data name="Para_ReqAiOrFileTargetMsg" xml:space="preserve">
+    <value>Please upload file or select AI Translate for missing languages: {0}</value>
+  </data>
+  <data name="Para_SentTaskBackgroundSuccess" xml:space="preserve">
+    <value>Sent background task successfully!</value>
   </data>
 </root>

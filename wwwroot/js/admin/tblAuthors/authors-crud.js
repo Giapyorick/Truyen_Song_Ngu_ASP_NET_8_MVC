@@ -34,7 +34,7 @@ $(document).ready(function () {
 });
 });
 
-// Submit form Thêm / Sửa
+// Submit form Thêm / Sửa Tác giả
 $('#authorForm').on('submit', function (e) {
     e.preventDefault();
     localStorage.setItem('authorPage', currentPage);
@@ -63,7 +63,7 @@ $('#authorForm').on('submit', function (e) {
                 editingPage = null;
                 loadAuthorList(currentPage);
             } else {
-                showToast("Error: " + res.message, 'error');
+                showToast(res.message || "An error occurred while saving author.", 'error');
                 isUpdating = false;
             }
         },
@@ -77,7 +77,7 @@ $('#authorForm').on('submit', function (e) {
     });
 });
 
-// Checkbox chọn tất cả
+// Checkbox chọn tất cả các dòng
 $('#selectAll').on('change', function () {
     const isChecked = this.checked;
     $('.user-checkbox').each(function () {
@@ -86,7 +86,7 @@ $('#selectAll').on('change', function () {
     });
 });
 
-// Checkbox từng dòng
+// Checkbox từng dòng tác giả
 $(document).on('change', '.user-checkbox', function () {
     const total = $('.user-checkbox').length;
     const checked = $('.user-checkbox:checked').length;
@@ -94,7 +94,7 @@ $(document).on('change', '.user-checkbox', function () {
     updateDeleteButton();
 });
 
-// Xóa nhiều
+// Xóa nhiều tác giả đã chọn
 $('#btnDeleteSelected').on('click', async function () {
     const ids = $('.user-checkbox:checked').map(function () { return parseInt(this.value); }).get();
     if (ids.length === 0) {
@@ -105,7 +105,7 @@ $('#btnDeleteSelected').on('click', async function () {
     const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
     const confirmMsg = (L.ConfirmDeleteMultiAuthors || 'Are you sure you want to delete <strong>{0}</strong> authors?')
         .replace('{0}', ids.length) + `<br><small class="text-red-400">${actionText}</small>`;
-    const confirmTitle = L.ConfirmDeleteMultiAuthorsTitle || "Delete Multiple";
+    const confirmTitle = L.ConfirmDeleteMultiAuthorsTitle || "Delete Multiple Authors";
 
     const confirmed = await customConfirm(confirmMsg, confirmTitle);
     if (!confirmed) return;
@@ -121,19 +121,19 @@ $('#btnDeleteSelected').on('click', async function () {
                 showToast(blockedTemplate.replace('{0}', res.blocked.join(', ')), 'error');
             }
             if (res.deleted && res.deleted.length > 0) {
-                const deletedTemplate = L.DeletedAuthorsSuccess || 'Deleted {0} author(s).';
+                const deletedTemplate = L.DeletedAuthorsSuccess || 'Successfully deleted {0} author(s).';
                 showToast(deletedTemplate.replace('{0}', res.deleted.length), 'success');
             }
             loadAuthorList(currentPage);
             $('#selectAll').prop('checked', false);
         },
         error: function () {
-            showToast(L.ErrConnectDelete || 'Cannot connect to server to delete account.', 'error');
+            showToast(L.ErrConnectDelete || 'Cannot connect to server to delete authors.', 'error');
         }
     });
 });
 
-// Kéo thả file Excel
+// Kéo thả hoặc thay đổi tệp Excel
 $('#excelFile').on('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -145,7 +145,7 @@ $('#excelFile').on('change', function (e) {
 // Load danh sách Author qua AJAX
 function loadAuthorList(page = 1) {
     currentPage = page;
-    const $body =$('#user-list-body');
+    const $body = $('#user-list-body');
     const genderVal = $('#filterGender').val();
     const statusVal = $('#filterStatus').val();
 
@@ -161,7 +161,7 @@ function loadAuthorList(page = 1) {
         },
         success: function (data) {
             if (!data.authors || data.authors.length === 0) {
-                const notFound = L.NotFoundAuthors || 'Not found any results.';
+                const notFound = L.NotFoundAuthors || 'No authors found matching criteria.';
                 $body.html(`<tr><td colspan="6" class="text-center py-10 text-gray-500">${notFound}</td></tr>`);
                 $('#pagination-container').html('');
                 return;
@@ -171,16 +171,16 @@ function loadAuthorList(page = 1) {
             data.authors.forEach(author => {
                 const avatarHtml = author.img
                     ? `<img onclick="openImagePreview(this.src)" src="/${author.img}" class="w-11 h-11 rounded-2xl object-cover shadow-sm border border-gray-100 cursor-pointer">`
-                    : `<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">${author.authorName ? author.authorName.charAt(0).toUpperCase() : 'U'}</div>`;
+                    : `<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">${author.authorName ? author.authorName.charAt(0).toUpperCase() : 'A'}</div>`;
 
                 const statusText = author.status === 'Active' ? (L.StatusActive || 'Active') : (L.StatusInactive || 'Inactive');
 
-                // XÁC ĐỊNH GIỚI TÍNH BÊN TRONG VÒNG LẶP CHO TỪNG TÁC GIẢ
+                // Xác định giới tính động
                 const isMale = (author.gender || '').toLowerCase() === 'male';
                 const genderClass = isMale ? 'male' : 'female';
-                const genderText = isMale 
-                    ? (L.GenderMale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderMale) || 'Male') 
-                    : (L.GenderFemale || (window.ADMIN_LANG && window.ADMIN_LANG.GenderFemale) || 'Female');
+                const genderText = isMale
+                    ? (L.GenderMale || 'Male')
+                    : (L.GenderFemale || 'Female');
 
                 html += `
                 <tr class="group hover:bg-indigo-50/30 transition-all">
@@ -212,10 +212,10 @@ function loadAuthorList(page = 1) {
                     </td>
                     <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-3">
-                            <button onclick="openModal('edit', ${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAccount || 'Edit'}">
+                            <button onclick="openModal('edit', ${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200" title="${L.TitleEditAuthor || 'Edit Author'}">
                                 <i class="fas fa-pencil-alt text-[11px]"></i>
                             </button>
-                            <button onclick="deleteAuthor(${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAccount || 'Delete'}">
+                            <button onclick="deleteAuthor(${author.authorId})" class="w-7 aspect-square p-0 flex items-center justify-center rounded-lg btn-grad-cancel bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-200" title="${L.TitleDeleteAuthor || 'Delete Author'}">
                                 <i class="fas fa-trash-alt text-[11px]"></i>
                             </button>
                         </div>
@@ -229,14 +229,14 @@ function loadAuthorList(page = 1) {
             isUpdating = false;
         },
         error: function () {
-            const errLoad = L.ErrLoadAuthors || 'Error loading data.';
+            const errLoad = L.ErrLoadAuthors || 'Error loading author data.';
             $body.html(`<tr><td colspan="6" class="text-center py-10 text-red-500">${errLoad}</td></tr>`);
             isUpdating = false;
         }
     });
 }
 
-// Mở Modal Add / Edit
+// Mở Modal Thêm mới / Cập nhật tác giả
 function openModal(mode, id = null) {
     const modal = $('#modalOverlay');
     const $imgPreview = $('#imgPreview');
@@ -246,10 +246,10 @@ function openModal(mode, id = null) {
     $imgPreview.addClass('hidden').attr('src', ''); $uploadIcon.removeClass('hidden');
 
     if (mode === 'add') {
-        $('#modalTitle').text(L.TitleAddAuthor || 'Add author');
+        $('#modalTitle').text(L.TitleAddAuthor || 'Add New Author');
         $('#authorId').val('0');
     } else {
-        $('#modalTitle').text(L.TitleEditAuthor || 'Update author');
+        $('#modalTitle').text(L.TitleEditAuthor || 'Update Author');
         editingPage = currentPage;
 
         $.get('/Admin/tblAuthors/GetById/' + id, function (data) {
@@ -281,7 +281,7 @@ function closeModal() {
 // Xóa 1 tác giả
 async function deleteAuthor(id) {
     const actionText = L.ActionCannotUndo || 'This action cannot be undone.';
-    const confirmMsg = (L.ConfirmDeleteSingleAuthor || 'Are you sure to remove this author?') + `<br><small class="text-red-400">${actionText}</small>`;
+    const confirmMsg = (L.ConfirmDeleteSingleAuthor || 'Are you sure you want to remove this author?') + `<br><small class="text-red-400">${actionText}</small>`;
     const confirmTitle = L.ConfirmDeleteSingleAuthorTitle || "Delete Author";
 
     const confirmed = await customConfirm(confirmMsg, confirmTitle);
@@ -301,7 +301,7 @@ async function deleteAuthor(id) {
                     showToast(res.message, 'success');
                 });
             } else {
-                showToast("Error: " + res.message, 'error');
+                showToast(res.message || "Failed to delete author.", 'error');
                 $row.removeClass('opacity-50 pointer-events-none');
             }
         },
@@ -312,20 +312,82 @@ async function deleteAuthor(id) {
     });
 }
 
-// Import Excel
+// Lắng nghe sự kiện Kéo & Thả file Import Excel
+$(document).ready(function () {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('excelFile');
+    const fileStatus = document.getElementById('fileStatus');
+
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('border-indigo-500', 'bg-indigo-100/50'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/50'), false);
+        });
+
+        dropZone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+
+            // Kéo thả file trực tiếp từ máy tính
+            if (dt.files && dt.files.length > 0) {
+                fileInput.files = dt.files;
+                $(dropZone).attr('data-selected-filename', '');
+                if (fileStatus) fileStatus.innerHTML = `<span class="text-indigo-600 font-bold italic">${dt.files[0].name}</span>`;
+            }
+            // Kéo thả file từ Kho lưu trữ (FileManager)
+            else {
+                const fileName = dt.getData('text/plain') || dt.getData('fileName');
+                if (fileName) {
+                    fileInput.value = '';
+                    $(dropZone).attr('data-selected-filename', fileName);
+                    const fileSelectedMsg = L.FileSelectedFromStorage || 'Selected file: {0} (From storage)';
+                    if (fileStatus) fileStatus.innerHTML = `<span class="text-indigo-600 font-bold italic">📄 ${decodeURIComponent(fileName)} (Storage)</span>`;
+                    if (typeof showToast === 'function') showToast(fileSelectedMsg.replace('{0}', decodeURIComponent(fileName)), 'info');
+                }
+            }
+        });
+    }
+});
+
+// Thực thi Import Excel
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
-    if (!fileInput.files.length) {
-        showToast(L.ChooseExcelFile || 'Please choose an Excel file!', 'error');
+    const dropZone = document.getElementById('dropZone');
+
+    let savedFileName = $(dropZone) ? $(dropZone).attr('data-selected-filename') : '';
+    if (savedFileName) {
+        savedFileName = decodeURIComponent(savedFileName);
+    }
+
+    const importUrl = $(dropZone).attr('data-import-url') || '/Admin/tblAuthors/ImportExcel';
+    const file = fileInput && fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+    if (!file && !savedFileName) {
+        showToast(L.ChooseExcelFile || 'Please select an Excel file to import!', 'error');
         return;
     }
 
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-    const $btn = $('#btnDoImport').prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
+
+    if (file) {
+        formData.append('file', file);
+    } else if (savedFileName) {
+        formData.append('serverFileName', savedFileName);
+    }
+
+    const $btn = $('#btnDoImport').prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Processing...'}`);
 
     $.ajax({
-        url: '/Admin/tblAuthors/ImportExcel',
+        url: importUrl,
         type: 'POST',
         data: formData,
         processData: false,
@@ -339,12 +401,12 @@ function executeImport() {
                 showToast(res.message, 'error');
             }
         },
-        error: () => showToast(L.ErrImport || 'Error during import!', 'error'),
+        error: () => showToast(L.ErrImport || 'Error occurred during file import!', 'error'),
         complete: () => $btn.prop('disabled', false).text(L.ConfirmImport || 'Confirm Import')
     });
 }
 
-// Export Excel
+// Xuất file Excel
 function exportExcel() {
     const search = $('#filterSearch').val();
     const gender = $('#filterGender').val();
@@ -352,7 +414,7 @@ function exportExcel() {
     window.location.href = `/Admin/tblAuthors/ExportToExcel?search=${search}&gender=${gender}&status=${status}`;
 }
 
-// Render Phân Trang
+// Render các nút Phân Trang
 function renderPagination(curr, total) {
     const container = $('#pagination-container').empty();
     if (total <= 1) return;
@@ -376,7 +438,7 @@ function renderPagination(curr, total) {
 
     html += `<button onclick="loadAuthorList(${curr + 1})" class="px-2 py-1 border rounded ${curr === total ? 'opacity-40' : ''}" ${curr === total ? 'disabled' : ''}>▶</button>`;
     html += `<button onclick="loadAuthorList(${total})" class="px-2 py-1 border rounded ${curr === total ? 'opacity-40' : ''}" ${curr === total ? 'disabled' : ''}>⏭</button>`;
-    html += `<div class="flex items-center gap-1 ml-3"><span class="text-sm">Go:</span><input type="number" min="1" max="${total}" value="${curr}" class="w-16 px-2 py-1 border rounded text-center" onkeydown="if(event.key==='Enter') gotoPage(this, ${total})"></div>`;
+    html += `<div class="flex items-center gap-1 ml-3"><span class="text-sm">${L.PageGo || 'Go:'}</span><input type="number" min="1" max="${total}" value="${curr}" class="w-16 px-2 py-1 border rounded text-center" onkeydown="if(event.key==='Enter') gotoPage(this, ${total})"></div>`;
     html += `</div>`;
     container.html(html);
 }

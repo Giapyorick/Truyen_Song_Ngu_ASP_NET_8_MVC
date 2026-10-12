@@ -1,0 +1,61 @@
+﻿<!-- GIAO DIỆN ĐỌC LÉN WORD VIEW -->
+<div id="wordReaderView" class="hidden min-h-screen bg-[#ddd9d6] pt-2 pb-12 select-none text-slate-800">
+    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden border border-slate-300">
+        <!-- Header Toolbar -->
+        <div class="bg-[#185abd] text-white px-4 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-2xl">description</span>
+                <div>
+                    <h2 id="wordDocTitle" class="font-bold text-sm sm:text-base leading-tight truncate max-w-md">Đang tải tài liệu...</h2>
+                    <p class="text-[11px] text-blue-100">Microsoft Word Online • Chế độ làm việc / Read-Only</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="wordChapterSelect" onchange="window.readerModule.switchChapter(this.value)" class="text-xs bg-white text-slate-800 font-semibold px-2.5 py-1 rounded outline-none cursor-pointer">
+                </select>
+                <button type="button" onclick="switchViewMode('standard')" class="text-xs bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1 rounded transition">
+                    Thoát Word
+                </button>
+            </div>
+        </div>
+
+        <!-- Ribbon Bar -->
+        <div class="bg-[#f1edea] border-b border-slate-300 p-2 flex items-center flex-wrap gap-4 text-xs">
+            <div class="flex items-center gap-1">
+                <span class="font-bold text-slate-600">Font:</span>
+                <select onchange="updateWordFont(this.value)" class="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs">
+                    <option value="font-serif">Merriweather (Cổ điển)</option>
+                    <option value="font-sans">Inter (Hiện đại)</option>
+                    <option value="font-mono">JetBrains Mono (Kỹ thuật)</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-1">
+                <button type="button" onclick="adjustWordFontSize(-2)" class="px-2 py-0.5 bg-white border border-slate-300 rounded font-bold">A-</button>
+                <span id="wordFontSizeText" class="px-1.5 font-mono text-slate-700">16px</span>
+                <button type="button" onclick="adjustWordFontSize(2)" class="px-2 py-0.5 bg-white border border-slate-300 rounded font-bold">A+</button>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="font-bold text-slate-600">Màu giấy:</span>
+                <button type="button" onclick="setWordPaperColor('white')" class="w-5 h-5 rounded-full bg-white border border-slate-400" title="Trắng"></button>
+                <button type="button" onclick="setWordPaperColor('sepia')" class="w-5 h-5 rounded-full bg-[#fbf0d9] border border-slate-400" title="Ngà Sepia"></button>
+                <button type="button" onclick="setWordPaperColor('slate')" class="w-5 h-5 rounded-full bg-[#e8ecef] border border-slate-400" title="Xám nhạt"></button>
+            </div>
+            <div class="ml-auto font-mono text-[11px] text-slate-500 hidden sm:block">
+                Lưu tự động vào OneDrive • Tự động đồng bộ
+            </div>
+        </div>
+
+        <!-- Word Paper Sheet -->
+        <div class="p-4 sm:p-10 flex justify-center bg-[#ddd9d6] min-h-[70vh]">
+            <div id="wordPaperSheet" class="w-full max-w-[820px] bg-white shadow-2xl p-8 sm:p-16 rounded-sm transition-colors duration-200">
+                <div class="text-center border-b pb-6 mb-6">
+                    <h1 id="wordSheetStoryTitle" class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">TÊN TRUYỆN</h1>
+                    <p id="wordSheetChapterTitle" class="text-sm sm:text-base text-slate-500 font-medium italic mt-1">Chương 1</p>
+                </div>
+                <div id="wordParagraphsStream" class="space-y-6 font-serif text-slate-800 leading-relaxed text-justify select-text">
+                    <!-- Nội dung sẽ tự động đổ vào từ JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -460,20 +460,67 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
         [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportExcel(IFormFile file)
+        public async Task<IActionResult> ImportExcel(IFormFile? file, string? serverFileName)
         {
-            if (file == null || file.Length <= 0) 
-                return Json(new { success = false, message = "Please select file!" });
+            Stream? fileStream = null;
+
+            // 1. Nếu người dùng tải file trực tiếp từ máy tính
+            if (file != null && file.Length > 0)
+            {
+                fileStream = file.OpenReadStream();
+            }
+            // 2. Nếu kéo thả/chọn từ Kho lưu trữ (File Manager) hoặc thư mục assets/template
+            else if (!string.IsNullOrWhiteSpace(serverFileName))
+            {
+                // Giải mã URL và chỉ lấy tên file an toàn
+                string decodedFileName = System.Net.WebUtility.UrlDecode(serverFileName);
+                string fileNameOnly = Path.GetFileName(decodedFileName);
+
+                // Danh sách các đường dẫn tìm kiếm tệp
+                var possiblePaths = new[]
+                {
+            Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, fileNameOnly)
+        };
+
+                foreach (var path in possiblePaths)
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        fileStream = System.IO.File.OpenRead(path);
+                        break;
+                    }
+                }
+            }
+
+            if (fileStream == null)
+            {
+                return Json(new { success = false, message = "Please select or upload a valid Excel file!" });
+            }
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            using (var stream = new MemoryStream())
+            try
             {
-                await file.CopyToAsync(stream);
-                using (var package = new ExcelPackage(stream))
+                using (fileStream)
+                using (var package = new ExcelPackage(fileStream))
                 {
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; 
-                    int rowCount = worksheet.Dimension.Rows;
+                    if (package.Workbook.Worksheets.Count == 0)
+                    {
+                        return Json(new { success = false, message = "The uploaded Excel file contains no worksheets!" });
+                    }
+
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                    int rowCount = worksheet.Dimension?.Rows ?? 0;
+
+                    if (rowCount < 6)
+                    {
+                        return Json(new { success = false, message = "No valid data found in file! Data must start from row 6." });
+                    }
+
                     var authorList = new List<TblAuthor>();
 
                     for (int row = 6; row <= rowCount; row++)
@@ -497,32 +544,38 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                             }
                         }
 
-                        var author = new TblAuthor
-                        {
-                            AuthorName = worksheet.Cells[row, 1].Value?.ToString(),
-                            DoB = dob,
-                            Email = worksheet.Cells[row, 3].Value?.ToString(),
-                            Gender = worksheet.Cells[row, 4].Value?.ToString(),      
-                            Country = worksheet.Cells[row, 5].Value?.ToString(),
-                                 
-                            Status = "Active"
-                        };
+                        var authorName = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
+                        var email = worksheet.Cells[row, 3].Value?.ToString()?.Trim();
 
-                        if (!string.IsNullOrEmpty(author.AuthorName) && !string.IsNullOrEmpty(author.Email))
+                        if (!string.IsNullOrEmpty(authorName) && !string.IsNullOrEmpty(email))
                         {
+                            var author = new TblAuthor
+                            {
+                                AuthorName = authorName,
+                                DoB = dob,
+                                Email = email,
+                                Gender = worksheet.Cells[row, 4].Value?.ToString()?.Trim(),
+                                Country = worksheet.Cells[row, 5].Value?.ToString()?.Trim(),
+                                Status = "Active"
+                            };
+
                             authorList.Add(author);
                         }
                     }
 
                     if (authorList.Count > 0)
                     {
-                        _context.TblAuthors.AddRange(authorList);
+                        await _context.TblAuthors.AddRangeAsync(authorList);
                         await _context.SaveChangesAsync();
-                        return Json(new { success = true, message = $"Imported {authorList.Count} author successfully!" });
+                        return Json(new { success = true, message = $"Imported {authorList.Count} authors successfully!" });
                     }
-                    
+
                     return Json(new { success = false, message = "No valid data was found in the file." });
                 }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error processing file: {ex.Message}" });
             }
         }
 

@@ -424,126 +424,158 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
         [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportExcel(IFormFile file)
+        public async Task<IActionResult> ImportExcel(IFormFile? file, string? serverFileName)
         {
-            if (file == null || file.Length <= 0)
-                return Json(new { success = false, message = "Please select a file!" });
+            Stream? fileStream = null;
+
+            // 1. Kiểm tra nguồn tệp (Tải từ máy tính HOẶC chọn/kéo thả từ File Manager / Template)
+            if (file != null && file.Length > 0)
+            {
+                fileStream = file.OpenReadStream();
+            }
+            else if (!string.IsNullOrWhiteSpace(serverFileName))
+            {
+                // Giải mã tên tệp phòng trường hợp dính mã hóa URL
+                string decodedFileName = System.Net.WebUtility.UrlDecode(serverFileName);
+                string fileNameOnly = Path.GetFileName(decodedFileName);
+
+                // Danh sách các thư mục lưu trữ khả thi chứa tệp
+                var possiblePaths = new[]
+                {
+            Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, fileNameOnly)
+        };
+
+                foreach (var path in possiblePaths)
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        fileStream = System.IO.File.OpenRead(path);
+                        break;
+                    }
+                }
+            }
+
+            if (fileStream == null)
+            {
+                return Json(new { success = false, message = "Please select or upload a valid Excel file!" });
+            }
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            using (var stream = new MemoryStream())
+            try
             {
-                await file.CopyToAsync(stream);
-                try
+                using (fileStream)
+                using (var package = new ExcelPackage(fileStream))
                 {
-                    using (var package = new ExcelPackage(stream))
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                    if (worksheet == null || worksheet.Dimension == null)
+                        return Json(new { success = false, message = "The Excel file is empty or has no worksheet." });
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    // 1. Tải trước toàn bộ Email hiện có trong Database để kiểm tra
+                    var existingEmailsInDb = await _context.TblUsers
+                        .Select(x => x.Email.ToLower())
+                        .ToListAsync();
+                    var existingEmailSet = new HashSet<string>(existingEmailsInDb, StringComparer.OrdinalIgnoreCase);
+
+                    // 2. Set theo dõi email xuất hiện trong file Excel để tránh trùng lặp nội bộ file
+                    var fileEmailSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    var userList = new List<TblUser>();
+                    var duplicateEmails = new List<string>();
+
+                    for (int row = 6; row <= rowCount; row++)
                     {
-                        ExcelWorksheet worksheet = package.Workbook.Worksheets.FirstOrDefault();
-                        if (worksheet == null || worksheet.Dimension == null)
-                            return Json(new { success = false, message = "The Excel file is empty or has no worksheet." });
+                        string rawName = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
+                        string rawEmail = worksheet.Cells[row, 3].Value?.ToString()?.Trim();
 
-                        int rowCount = worksheet.Dimension.Rows;
+                        // Bỏ qua các hàng trống
+                        if (string.IsNullOrEmpty(rawName) || string.IsNullOrEmpty(rawEmail))
+                            continue;
 
-                        // 1. Tải trước toàn bộ Email hiện có trong Database để kiểm tra
-                        var existingEmailsInDb = await _context.TblUsers
-                            .Select(x => x.Email.ToLower())
-                            .ToListAsync();
-                        var existingEmailSet = new HashSet<string>(existingEmailsInDb, StringComparer.OrdinalIgnoreCase);
-
-                        // 2. Set theo dõi email xuất hiện trong file Excel để tránh trùng lặp nội bộ file
-                        var fileEmailSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                        var userList = new List<TblUser>();
-                        var duplicateEmails = new List<string>();
-
-                        for (int row = 6; row <= rowCount; row++)
+                        // KIỂM TRA: Email đã có trong CSDL hoặc lặp lại trong chính file Excel
+                        if (existingEmailSet.Contains(rawEmail) || fileEmailSet.Contains(rawEmail))
                         {
-                            string rawName = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
-                            string rawEmail = worksheet.Cells[row, 3].Value?.ToString()?.Trim();
-
-                            // Bỏ qua các hàng trống
-                            if (string.IsNullOrEmpty(rawName) || string.IsNullOrEmpty(rawEmail))
-                                continue;
-
-                            // KIỂM TRA: Email đã có trong CSDL hoặc lặp lại trong chính file Excel
-                            if (existingEmailSet.Contains(rawEmail) || fileEmailSet.Contains(rawEmail))
-                            {
-                                duplicateEmails.Add(rawEmail);
-                                continue; // Bỏ qua không thêm dòng này
-                            }
-
-                            // Đánh dấu email đã xử lý
-                            fileEmailSet.Add(rawEmail);
-
-                            var cellValue = worksheet.Cells[row, 2].Value;
-                            DateOnly? dob = null;
-
-                            if (cellValue is DateTime dt)
-                            {
-                                dob = DateOnly.FromDateTime(dt);
-                            }
-                            else if (cellValue != null && double.TryParse(cellValue.ToString(), out double d))
-                            {
-                                dob = DateOnly.FromDateTime(DateTime.FromOADate(d));
-                            }
-                            else if (!string.IsNullOrEmpty(cellValue?.ToString()))
-                            {
-                                if (DateTime.TryParse(cellValue.ToString(), out DateTime parsedDt))
-                                {
-                                    dob = DateOnly.FromDateTime(parsedDt);
-                                }
-                            }
-
-                            string phoneRaw = worksheet.Cells[row, 4].Value?.ToString()?.Trim();
-                            string phoneFormatted = !string.IsNullOrEmpty(phoneRaw) && !phoneRaw.StartsWith("0")
-                                ? "0" + phoneRaw
-                                : phoneRaw ?? "";
-
-                            var user = new TblUser
-                            {
-                                Name = rawName,
-                                DoB = dob,
-                                Email = rawEmail,
-                                Phone = phoneFormatted,
-                                Gender = worksheet.Cells[row, 5].Value?.ToString()?.Trim() ?? "Other",
-                                Status = worksheet.Cells[row, 6].Value?.ToString()?.Trim() ?? "Active",
-                                Passwork = PasswordHasher.Hash("123456"),
-                                CreateAd = DateTime.Now
-                            };
-
-                            userList.Add(user);
+                            duplicateEmails.Add(rawEmail);
+                            continue; // Bỏ qua không thêm dòng này
                         }
 
-                        if (userList.Count > 0)
+                        // Đánh dấu email đã xử lý
+                        fileEmailSet.Add(rawEmail);
+
+                        var cellValue = worksheet.Cells[row, 2].Value;
+                        DateOnly? dob = null;
+
+                        if (cellValue is DateTime dt)
                         {
-                            _context.TblUsers.AddRange(userList);
-                            await _context.SaveChangesAsync();
-
-                            string msg = $"Successfully imported {userList.Count} member(s)!";
-                            if (duplicateEmails.Count > 0)
+                            dob = DateOnly.FromDateTime(dt);
+                        }
+                        else if (cellValue != null && double.TryParse(cellValue.ToString(), out double d))
+                        {
+                            dob = DateOnly.FromDateTime(DateTime.FromOADate(d));
+                        }
+                        else if (!string.IsNullOrEmpty(cellValue?.ToString()))
+                        {
+                            if (DateTime.TryParse(cellValue.ToString(), out DateTime parsedDt))
                             {
-                                msg += $" (Skipped {duplicateEmails.Count} duplicate email(s): {string.Join(", ", duplicateEmails.Distinct())})";
+                                dob = DateOnly.FromDateTime(parsedDt);
                             }
-
-                            return Json(new { success = true, message = msg });
                         }
 
+                        string phoneRaw = worksheet.Cells[row, 4].Value?.ToString()?.Trim();
+                        string phoneFormatted = !string.IsNullOrEmpty(phoneRaw) && !phoneRaw.StartsWith("0")
+                            ? "0" + phoneRaw
+                            : phoneRaw ?? "";
+
+                        var user = new TblUser
+                        {
+                            Name = rawName,
+                            DoB = dob,
+                            Email = rawEmail,
+                            Phone = phoneFormatted,
+                            Gender = worksheet.Cells[row, 5].Value?.ToString()?.Trim() ?? "Other",
+                            Status = worksheet.Cells[row, 6].Value?.ToString()?.Trim() ?? "Active",
+                            Passwork = PasswordHasher.Hash("123456"),
+                            CreateAd = DateTime.Now
+                        };
+
+                        userList.Add(user);
+                    }
+
+                    if (userList.Count > 0)
+                    {
+                        _context.TblUsers.AddRange(userList);
+                        await _context.SaveChangesAsync();
+
+                        string msg = $"Successfully imported {userList.Count} member(s)!";
                         if (duplicateEmails.Count > 0)
                         {
-                            return Json(new
-                            {
-                                success = false,
-                                message = $"No new members imported. All {duplicateEmails.Count} email(s) already exist: {string.Join(", ", duplicateEmails.Distinct())}"
-                            });
+                            msg += $" (Skipped {duplicateEmails.Count} duplicate email(s): {string.Join(", ", duplicateEmails.Distinct())})";
                         }
 
-                        return Json(new { success = false, message = "No valid data was found in the file." });
+                        return Json(new { success = true, message = msg });
                     }
+
+                    if (duplicateEmails.Count > 0)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"No new members imported. All {duplicateEmails.Count} email(s) already exist: {string.Join(", ", duplicateEmails.Distinct())}"
+                        });
+                    }
+
+                    return Json(new { success = false, message = "No valid data was found in the file." });
                 }
-                catch (Exception ex)
-                {
-                    return StatusCode(500, new { success = false, message = ex.Message, detail = ex.ToString() });
-                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message, detail = ex.ToString() });
             }
         }
 

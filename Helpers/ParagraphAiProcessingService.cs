@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,9 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using OfficeOpenXml;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
 
@@ -18,6 +19,13 @@ namespace WebTruyenTranh.Services
     public interface IParagraphAiProcessingService
     {
         Task ProcessChapterFileJob(int chapterId, string tempFilePath, string targetLanguage);
+        Task ProcessAiAlignAndImportJob(
+            int chapterId,
+            string tempEnPath,
+            string? tempViPath,
+            string? tempZhPath,
+            string? tempJaPath,
+            string? tempFrPath);
     }
 
     public class ParagraphAiProcessingService : IParagraphAiProcessingService
@@ -71,33 +79,29 @@ namespace WebTruyenTranh.Services
                 var (chunkSize, delayMs) = CalculateBatchConfig(requestedLangs.Count);
                 _logger.LogInformation($"[Hangfire Config] Translating {requestedLangs.Count} language(s). Batch: {chunkSize}, Delay: {delayMs / 1000.0}s.");
 
-                while (true)
+                // LẤY THỨ TỰ LỚN NHẤT HIỆN TẠI TRONG CSDL ĐỂ NỐI TIẾP (APPEND)
+                int currentMaxOrder = await _context.TblParagraphs
+                    .Where(p => p.ChapterId == chapterId)
+                    .Select(p => (int?)p.ParagraphOrder)
+                    .MaxAsync() ?? -1;
+
+                int orderTracker = currentMaxOrder >= 0 ? currentMaxOrder + 1 : 0;
+
+                // Tiến hành chia batch và gửi AI dịch từng phần của file MỚI
+                int processedInFileCount = 0;
+
+                while (processedInFileCount < allBlocks.Count)
                 {
-                    int savedCount = await _context.TblParagraphs
-                        .CountAsync(p => p.ChapterId == chapterId);
-
-                    if (savedCount >= allBlocks.Count)
-                    {
-                        _logger.LogInformation($"[Hangfire] Completed 100% ({allBlocks.Count} sentences) for Chapter ID: {chapterId}.");
-                        break;
-                    }
-
-                    var currentBatch = allBlocks.Skip(savedCount).Take(chunkSize).ToList();
+                    var currentBatch = allBlocks.Skip(processedInFileCount).Take(chunkSize).ToList();
                     if (currentBatch.Count == 0) break;
 
-                    int currentMaxOrder = await _context.TblParagraphs
-                        .Where(p => p.ChapterId == chapterId)
-                        .Select(p => (int?)p.ParagraphOrder)
-                        .MaxAsync() ?? -1;
-
-                    int orderTracker = currentMaxOrder + 1;
-
-                    if (savedCount == 0 && currentBatch.Count > 0)
+                    // CHỈ gán BlockType = 0 (mở đầu chương) nếu chương này HOÀN TOÀN CHƯA CÓ DỮ LIỆU CŨ
+                    if (currentMaxOrder == -1 && processedInFileCount == 0)
                     {
                         currentBatch[0].BlockType = 0;
                     }
 
-                    _logger.LogInformation($"[Hangfire] Translating batch: #{savedCount + 1} to #{savedCount + currentBatch.Count} / {allBlocks.Count}");
+                    _logger.LogInformation($"[Hangfire] Translating AI batch: #{processedInFileCount + 1} to #{processedInFileCount + currentBatch.Count} / {allBlocks.Count}");
 
                     var inputItems = currentBatch.Select((b, idx) => new { id = idx + 1, text = b.English }).ToList();
                     string jsonInput = JsonSerializer.Serialize(inputItems);
@@ -231,6 +235,8 @@ Format:
                     await _context.TblParagraphs.AddRangeAsync(newEntities);
                     await _context.SaveChangesAsync();
 
+                    processedInFileCount += validCount;
+
                     _logger.LogInformation($"[Hangfire] Saved {validCount} sentences. Delaying {delayMs / 1000.0}s...");
                     await Task.Delay(delayMs);
                 }
@@ -249,6 +255,243 @@ Format:
                 {
                     try { File.Delete(tempFilePath); } catch { }
                 }
+            }
+        }
+
+        [AutomaticRetry(Attempts = 3, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        public async Task ProcessAiAlignAndImportJob(
+            int chapterId,
+            string tempEnPath,
+            string? tempViPath,
+            string? tempZhPath,
+            string? tempJaPath,
+            string? tempFrPath)
+        {
+            try
+            {
+                // 1. Phân tích file Tiếng Anh chuẩn
+                string rawEnText = ReadRawTextFromFile(tempEnPath);
+                var enBlocks = SegmentTextToBlocks(rawEnText);
+                int targetCount = enBlocks.Count;
+
+                if (targetCount == 0)
+                {
+                    _logger.LogWarning($"[Hangfire AutoAlign] File Nguồn Tiếng Anh rỗng.");
+                    return;
+                }
+
+                // 2. Hàm gọi AI căn chỉnh từng ngôn ngữ (Tích hợp Smart Throttling / Dynamic Delay)
+                async Task<List<string>?> AlignLangAsync(string langName, string? filePath)
+                {
+                    if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
+
+                    string rawText = ReadRawTextFromFile(filePath);
+                    var rawBlocks = SegmentTextToBlocks(rawText);
+
+                    if (rawBlocks.Count == targetCount)
+                        return rawBlocks.Select(b => b.English).ToList();
+
+                    var allAlignedResults = new List<string>();
+
+                    // Giảm xuống 7 câu/batch để đảm bảo Requested Tokens < 3500, tránh đụng trần 8000 TPM
+                    int batchSize = 7;
+                    int totalBatches = (int)Math.Ceiling((double)targetCount / batchSize);
+
+                    for (int b = 0; b < totalBatches; b++)
+                    {
+                        var currentEnBatch = enBlocks.Skip(b * batchSize).Take(batchSize).ToList();
+                        int currentBatchCount = currentEnBatch.Count;
+
+                        int rawStart = (int)Math.Round((double)b * rawBlocks.Count / totalBatches);
+                        int rawTake = (int)Math.Round((double)(b + 1) * rawBlocks.Count / totalBatches) - rawStart;
+                        var currentRawBatch = rawBlocks.Skip(rawStart).Take(Math.Max(rawTake, currentBatchCount)).ToList();
+
+                        var sourceList = currentEnBatch.Select((x, idx) => new { id = idx + 1, en = x.English }).ToList();
+                        var rawList = currentRawBatch.Select((x, idx) => new { raw_id = idx + 1, text = x.English }).ToList();
+
+                        string prompt = $@"You are a JSON-only API. Align {langName} translation lines with English source.
+
+ENGLISH SOURCE ({currentBatchCount} items):
+{JsonSerializer.Serialize(sourceList)}
+
+RAW {langName.ToUpper()} TRANSLATION LINES:
+{JsonSerializer.Serialize(rawList)}
+
+TASK:
+Re-align, split, or merge the provided {langName} lines to MATCH EXACTLY the {currentBatchCount} English items 1-to-1.
+
+RULES:
+- Return ONLY a JSON array of {currentBatchCount} objects with keys ""id"" (1 to {currentBatchCount}) and ""text"".
+- Absolutely NO markdown blocks, NO explanations, NO thinking tags.
+Example:
+[
+  {{\""id\"": 1, \""text\"": \""...\""}},
+  {{\""id\"": 2, \""text\"": \""...\""}}
+]";
+
+                        string aiResponse = "";
+                        bool callSuccess = false;
+
+                        // VÒNG LẶP RETRY VÔ HẠN VỚI CHIẾN THUẬT BẮT LỖI RATE LIMIT
+                        while (!callSuccess)
+                        {
+                            try
+                            {
+                                aiResponse = await _aiService.GetAiResponse(prompt);
+                                if (!string.IsNullOrWhiteSpace(aiResponse))
+                                {
+                                    callSuccess = true;
+                                }
+                                else
+                                {
+                                    _logger.LogWarning($"[Hangfire AutoAlign] AI trả về rỗng cho {langName} Batch {b + 1}/{totalBatches}. Thử lại sau 3s...");
+                                    await Task.Delay(3000);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                string errMsg = ex.Message;
+                                _logger.LogWarning($"[Hangfire AutoAlign Exception] {langName} Batch {b + 1}: {errMsg}");
+
+                                // Bắt chính xác lỗi Rate Limit từ Groq API / OpenAI
+                                if (errMsg.Contains("Rate limit", StringComparison.OrdinalIgnoreCase) ||
+                                    errMsg.Contains("TooManyRequests", StringComparison.OrdinalIgnoreCase) ||
+                                    errMsg.Contains("TPM", StringComparison.OrdinalIgnoreCase) ||
+                                    errMsg.Contains("rate_limit_exceeded", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    double waitSeconds = 15.0; // Mặc định chờ 15s
+
+                                    // Lấy số giây chính xác từ câu thông báo "Please try again in 20.7825s"
+                                    var matchSec = Regex.Match(errMsg, @"try again in (\d+(\.\d+)?)s", RegexOptions.IgnoreCase);
+                                    if (matchSec.Success && double.TryParse(matchSec.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out double parsedSec))
+                                    {
+                                        waitSeconds = parsedSec + 2.0; // Bội hoàn thêm 2 giây cho an toàn
+                                    }
+
+                                    _logger.LogInformation($"[Hangfire AutoAlign Throttling] Chạm trần TPM. Tự động tạm dừng {waitSeconds:F1}s trước khi gửi lại...");
+                                    await Task.Delay((int)(waitSeconds * 1000));
+                                }
+                                else
+                                {
+                                    await Task.Delay(4000);
+                                }
+                            }
+                        }
+
+                        // Dọn dẹp JSON
+                        string cleanJson = Regex.Replace(aiResponse, @"<think>[\s\S]*?<\/think>", "", RegexOptions.IgnoreCase).Trim();
+                        if (cleanJson.StartsWith("```json", StringComparison.OrdinalIgnoreCase)) cleanJson = cleanJson.Substring(7);
+                        else if (cleanJson.StartsWith("```")) cleanJson = cleanJson.Substring(3);
+                        if (cleanJson.EndsWith("```")) cleanJson = cleanJson.Substring(0, cleanJson.Length - 3);
+                        cleanJson = cleanJson.Trim();
+
+                        int firstBracket = cleanJson.IndexOf('[');
+                        if (firstBracket >= 0) cleanJson = cleanJson.Substring(firstBracket);
+
+                        cleanJson = RepairTruncatedJsonArray(cleanJson);
+
+                        var batchList = new List<string>();
+                        try
+                        {
+                            using var doc = JsonDocument.Parse(cleanJson);
+                            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var elem in doc.RootElement.EnumerateArray())
+                                {
+                                    if (elem.TryGetProperty("text", out var textProp))
+                                        batchList.Add(textProp.GetString() ?? "");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"[Hangfire AutoAlign] Lỗi Parse JSON {langName} Batch {b + 1}: {ex.Message}. Chuỗi: {cleanJson}");
+                            b--; // Lùi Batch lại để thử lại Batch này
+                            await Task.Delay(3000);
+                            continue;
+                        }
+
+                        if (batchList.Count != currentBatchCount)
+                        {
+                            _logger.LogWarning($"[Hangfire AutoAlign] Batch {b + 1} tệp {langName} trả về {batchList.Count}/{currentBatchCount} câu. Thử lại batch...");
+                            b--; // Thử lại batch nếu lệch câu
+                            await Task.Delay(3000);
+                            continue;
+                        }
+
+                        allAlignedResults.AddRange(batchList);
+
+                        // Nghỉ 3.5 giây giữa mỗi Batch để cơ chế TPM khôi phục lại bớt token
+                        _logger.LogInformation($"[Hangfire AutoAlign] Hoàn tất Batch {b + 1}/{totalBatches} cho {langName}. Nghỉ 3.5s...");
+                        await Task.Delay(3500);
+                    }
+
+                    return allAlignedResults;
+                }
+
+                // 3. Tiến hành căn chỉnh từng ngôn ngữ
+                var viLines = await AlignLangAsync("Vietnamese", tempViPath);
+                var zhLines = await AlignLangAsync("Chinese", tempZhPath);
+                var jaLines = await AlignLangAsync("Japanese", tempJaPath);
+                var frLines = await AlignLangAsync("French", tempFrPath);
+
+                // 4. Lưu dữ liệu vào CSDL
+                int currentMaxOrder = await _context.TblParagraphs
+                    .Where(p => p.ChapterId == chapterId)
+                    .Select(p => (int?)p.ParagraphOrder)
+                    .MaxAsync() ?? -1;
+
+                int orderTracker = currentMaxOrder + 1;
+                var newEntities = new List<TblParagraph>();
+
+                for (int i = 0; i < targetCount; i++)
+                {
+                    var block = enBlocks[i];
+                    int finalBlockType = block.BlockType;
+                    if (i == 0 && currentMaxOrder == -1) finalBlockType = 0;
+
+                    newEntities.Add(new TblParagraph
+                    {
+                        ChapterId = chapterId,
+                        ParagraphOrder = orderTracker++,
+                        BlockType = finalBlockType,
+                        English = block.English.Trim(),
+                        Vietnamese = viLines != null && i < viLines.Count ? CleanLeadingDash(viLines[i]) : "",
+                        Chinese = zhLines != null && i < zhLines.Count ? CleanLeadingDash(zhLines[i]) : null,
+                        Japanese = jaLines != null && i < jaLines.Count ? CleanLeadingDash(jaLines[i]) : null,
+                        French = frLines != null && i < frLines.Count ? CleanLeadingDash(frLines[i]) : null
+                    });
+                }
+
+                await _context.TblParagraphs.AddRangeAsync(newEntities);
+                await _context.SaveChangesAsync();
+                await _context.Database.ExecuteSqlInterpolatedAsync($"EXEC sp_ReindexParagraphOrder @ChapID = {chapterId}");
+
+                _logger.LogInformation($"[Hangfire AutoAlign] Hoàn thành căn chỉnh & lưu thành công {newEntities.Count} câu cho Chapter ID: {chapterId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[Hangfire AutoAlign Failed] Lỗi: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                TryDeleteFile(tempEnPath); TryDeleteFile(tempViPath); TryDeleteFile(tempZhPath);
+                TryDeleteFile(tempJaPath); TryDeleteFile(tempFrPath);
+            }
+        }
+
+        private static string CleanLeadingDash(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+            return Regex.Replace(text.Trim(), @"^[–-]\s*", "").Trim();
+        }
+
+        private void TryDeleteFile(string? path)
+        {
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
+                try { File.Delete(path); } catch { }
             }
         }
 
@@ -309,68 +552,56 @@ Format:
             rawText = SanitizeOcrArtifacts(rawText);
             rawText = rawText.Replace("\r\n", "\n").Replace("\r", "\n");
 
-            var rawParagraphs = Regex.Split(rawText, @"\n\s*\n+")
-                .Select(p => p.Trim())
-                .Where(p => !string.IsNullOrWhiteSpace(p))
-                .ToList();
+            var rawParagraphs = rawText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            bool isFirstParagraphInChapter = true;
 
             foreach (var para in rawParagraphs)
             {
-                string cleanPara = Regex.Replace(para, @"(\b\w+)-?\n+(\w+\b)", "$1$2");
-                cleanPara = Regex.Replace(cleanPara, @"\s*\n+\s*", " ").Trim();
-                cleanPara = Regex.Replace(cleanPara, @"[ ]{2,}", " ");
+                if (string.IsNullOrWhiteSpace(para)) continue;
 
-                if (string.IsNullOrWhiteSpace(cleanPara)) continue;
-
-                var dialogueRegex = new Regex(@"([“""][^”""]+?[”""])", RegexOptions.Compiled);
-                var parts = dialogueRegex.Split(cleanPara)
-                    .Select(p => p.Trim())
-                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                var sentences = Regex.Split(para, @"(?<=[\.!\?。！？][”""」』]?)\s*(?=[A-Z0-9“""ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸ–-]|[\u4e00-\u9fa5\u3040-\u30ff])")
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
                     .ToList();
 
-                bool isFirstPartInParagraph = true;
+                bool isFirstInParagraph = true;
 
-                foreach (var part in parts)
+                foreach (var sentence in sentences)
                 {
-                    bool isDialogue = (part.StartsWith("\"") && part.EndsWith("\"")) ||
-                                      (part.StartsWith("“") && part.EndsWith("”"));
+                    string cleanSentence = sentence;
+                    int blockType = 1;
 
-                    if (isDialogue)
+                    bool startsWithDash = cleanSentence.StartsWith("-") || cleanSentence.StartsWith("–");
+
+                    if (startsWithDash)
                     {
-                        string formattedQuote = "\"" + part.Substring(1, part.Length - 2).Trim() + "\"";
+                        blockType = 4;
+                        cleanSentence = Regex.Replace(cleanSentence, @"^[–-]\s*", "").Trim();
+                    }
+                    else if (isFirstParagraphInChapter)
+                    {
+                        blockType = 0;
+                        isFirstParagraphInChapter = false;
+                    }
+                    else if (Regex.IsMatch(cleanSentence, @"[""“][^""”]+[""”]"))
+                    {
+                        blockType = 4;
+                    }
+                    else if (isFirstInParagraph)
+                    {
+                        blockType = 2;
+                    }
+
+                    isFirstInParagraph = false;
+
+                    if (!string.IsNullOrWhiteSpace(cleanSentence))
+                    {
                         result.Add(new ExtractedBlock
                         {
-                            BlockType = 4,
-                            English = formattedQuote
+                            BlockType = blockType,
+                            English = cleanSentence
                         });
-                        isFirstPartInParagraph = false;
-                    }
-                    else
-                    {
-                        var sentences = Regex.Split(part, @"(?<=[\.!\?][”""]?)\s+(?=[A-Z0-9“""])")
-                            .Select(s => s.Trim())
-                            .Where(s => !string.IsNullOrWhiteSpace(s))
-                            .ToList();
-
-                        foreach (var sentence in sentences)
-                        {
-                            int blockType;
-                            if (isFirstPartInParagraph)
-                            {
-                                blockType = 2;
-                                isFirstPartInParagraph = false;
-                            }
-                            else
-                            {
-                                blockType = 1;
-                            }
-
-                            result.Add(new ExtractedBlock
-                            {
-                                BlockType = blockType,
-                                English = sentence
-                            });
-                        }
                     }
                 }
             }
@@ -407,8 +638,14 @@ Format:
             return text;
         }
 
-        private string ReadRawTextFromFile(string filePath)
+        private string ReadRawTextFromFile(string? filePath)
         {
+            // Kiểm tra nếu đường dẫn rỗng hoặc tệp không tồn tại trên ổ đĩa -> Trả về chuỗi rỗng thay vì ném lỗi FileNotFoundException
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            {
+                return string.Empty;
+            }
+
             string ext = Path.GetExtension(filePath).ToLower();
             var sb = new StringBuilder();
 
@@ -422,14 +659,17 @@ Format:
             using (var stream = File.OpenRead(filePath))
             using (var package = new ExcelPackage(stream))
             {
-                var sheet = package.Workbook.Worksheets[0];
-                int rowCount = sheet.Dimension?.Rows ?? 0;
-                for (int row = 1; row <= rowCount; row++)
+                if (package.Workbook.Worksheets.Count > 0)
                 {
-                    string cell = sheet.Cells[row, 1].Text;
-                    if (!string.IsNullOrWhiteSpace(cell))
+                    var sheet = package.Workbook.Worksheets[0];
+                    int rowCount = sheet.Dimension?.Rows ?? 0;
+                    for (int row = 1; row <= rowCount; row++)
                     {
-                        sb.AppendLine(cell.Trim());
+                        string cell = sheet.Cells[row, 1].Text;
+                        if (!string.IsNullOrWhiteSpace(cell))
+                        {
+                            sb.AppendLine(cell.Trim());
+                        }
                     }
                 }
             }

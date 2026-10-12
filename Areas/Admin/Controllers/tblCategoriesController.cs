@@ -292,46 +292,98 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 			);
 		}
 
-		[HttpPost]
+        [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportExcel(IFormFile file)
-		{
-			if (file == null || file.Length <= 0)
-				return Json(new { success = false, message = "Please select file!" });
+        public async Task<IActionResult> ImportExcel(IFormFile? file, string? serverFileName)
+        {
+            Stream? fileStream = null;
 
-			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            // 1. Kiểm tra nguồn tệp (Tải trực tiếp HOẶC chọn/kéo thả từ File Manager / Template)
+            if (file != null && file.Length > 0)
+            {
+                fileStream = file.OpenReadStream();
+            }
+            else if (!string.IsNullOrWhiteSpace(serverFileName))
+            {
+                // Giải mã tên tệp phòng trường hợp mã hóa URL
+                string decodedFileName = System.Net.WebUtility.UrlDecode(serverFileName);
+                string fileNameOnly = Path.GetFileName(decodedFileName);
 
-			using var stream = new MemoryStream();
-			await file.CopyToAsync(stream);
+                // Danh sách các thư mục lưu trữ khả thi chứa tệp
+                var possiblePaths = new[]
+                {
+            Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly),
+            Path.Combine(_webHostEnvironment.WebRootPath, fileNameOnly)
+        };
 
-			using var package = new ExcelPackage(stream);
-			var worksheet = package.Workbook.Worksheets[0];
-			int rowCount = worksheet.Dimension.Rows;
+                foreach (var path in possiblePaths)
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        fileStream = System.IO.File.OpenRead(path);
+                        break;
+                    }
+                }
+            }
 
-			var list = new List<TblCategory>();
+            if (fileStream == null)
+            {
+                return Json(new { success = false, message = "Please select or upload a valid Excel file!" });
+            }
 
-			for (int row = 6; row <= rowCount; row++)
-			{
-				var item = new TblCategory
-				{
-					Name = worksheet.Cells[row, 1].Value?.ToString(),
-					Description = worksheet.Cells[row, 2].Value?.ToString(),
-					Status = worksheet.Cells[row, 3].Value?.ToString() ?? "Active"
-				};
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-				if (!string.IsNullOrEmpty(item.Name))
-					list.Add(item);
-			}
+            try
+            {
+                using (fileStream)
+                using (var package = new ExcelPackage(fileStream))
+                {
+                    if (package.Workbook.Worksheets.Count == 0)
+                    {
+                        return Json(new { success = false, message = "The uploaded Excel file contains no worksheets!" });
+                    }
 
-			if (list.Any())
-			{
-				_context.TblCategories.AddRange(list);
-				await _context.SaveChangesAsync();
-				return Json(new { success = true, message = $"Imported {list.Count} categories successfully!" });
-			}
+                    var worksheet = package.Workbook.Worksheets[0];
+                    int rowCount = worksheet.Dimension?.Rows ?? 0;
 
-			return Json(new { success = false, message = "No valid data was found in the file." });
-		}
+                    if (rowCount < 6)
+                    {
+                        return Json(new { success = false, message = "No valid data found in file! Data must start from row 6." });
+                    }
+
+                    var list = new List<TblCategory>();
+
+                    for (int row = 6; row <= rowCount; row++)
+                    {
+                        var item = new TblCategory
+                        {
+                            Name = worksheet.Cells[row, 1].Value?.ToString()?.Trim(),
+                            Description = worksheet.Cells[row, 2].Value?.ToString()?.Trim(),
+                            Status = worksheet.Cells[row, 3].Value?.ToString()?.Trim() ?? "Active"
+                        };
+
+                        if (!string.IsNullOrEmpty(item.Name))
+                            list.Add(item);
+                    }
+
+                    if (list.Any())
+                    {
+                        _context.TblCategories.AddRange(list);
+                        await _context.SaveChangesAsync();
+                        return Json(new { success = true, message = $"Imported {list.Count} categories successfully!" });
+                    }
+
+                    return Json(new { success = false, message = "No valid data was found in the file." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error processing file: {ex.Message}" });
+            }
+        }
         [HttpPost]
         [AdminRoleAuthorize]
         public async Task<IActionResult> SaveStory(
@@ -359,7 +411,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
                 if (string.IsNullOrWhiteSpace(cleanTitleEn))
                 {
-                    return Json(new { success = false, message = "Vui lòng nhập tiêu đề truyện!" });
+                    return Json(new { success = false, message = "Please enter thr story title!" });
                 }
 
                 // 2. Upload ảnh bìa nếu có chọn file
@@ -412,7 +464,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
                     if (story == null)
                     {
-                        return Json(new { success = false, message = "Không tìm thấy truyện cần sửa!" });
+                        return Json(new { success = false, message = "Not found the story need to update!" });
                     }
 
                     oldImgPath = story.Img;
@@ -489,13 +541,13 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     }
                 }
 
-                return Json(new { success = true, message = isNew ? "Thêm truyện thành công!" : "Cập nhật truyện thành công!" });
+                return Json(new { success = true, message = isNew ? "Add successfuly!" : "Update sucessfuly!" });
             }
             catch (Exception ex)
             {
                 var inner = ex.InnerException?.Message ?? ex.Message;
                 System.Diagnostics.Debug.WriteLine($"[SAVE STORY ERROR]: {ex.Message} - {inner}");
-                return Json(new { success = false, message = "Lỗi lưu dữ liệu: " + inner });
+                return Json(new { success = false, message = "Error data: " + inner });
             }
         }
 

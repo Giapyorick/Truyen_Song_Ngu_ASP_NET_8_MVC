@@ -29,7 +29,7 @@ namespace WebTruyenTranh.Controllers
             return View();
         }
         [HttpGet]
-        public async Task<IActionResult> GetStoriesInfinite(string? search, string type = "likes", int? categoryId = null, int page = 1, int pageSize = 8)
+        public async Task<IActionResult> GetStoriesInfinite(string? search, string type = "latest", int? categoryId = null, int page = 1, int pageSize = 8)
         {
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
@@ -73,7 +73,9 @@ namespace WebTruyenTranh.Controllers
                 "rate" => query.OrderByDescending(s => s.Rate).ThenByDescending(s => s.CountRate).ThenByDescending(s => s.StoryId),
                 "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes).ThenByDescending(s => s.StoryId),
                 "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate).ThenByDescending(s => s.StoryId),
-                _ => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower).ThenByDescending(s => s.StoryId)
+                "likes" => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower).ThenByDescending(s => s.StoryId),
+                // Mặc định hoặc khi chọn "latest": Ưu tiên ngày xuất bản mới nhất, sau đó đến StoryId giảm dần
+                _ => query.OrderByDescending(s => s.PublicationDate).ThenByDescending(s => s.StoryId)
             };
 
             // 3. Phân trang và Project trực tiếp bằng 1 Query duy nhất

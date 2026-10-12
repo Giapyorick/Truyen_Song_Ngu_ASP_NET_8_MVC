@@ -306,61 +306,127 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
 
         [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportToExcel(IFormFile file)
+        public async Task<IActionResult> ImportToExcel(IFormFile? file, string? serverFileName)
         {
-            if (file == null || file.Length <= 0) 
-                return Json(new { success = false, message = "Please select file!" });
+            Stream? fileStream = null;
+
+            if (file != null && file.Length > 0)
+            {
+                fileStream = file.OpenReadStream();
+            }
+            else if (!string.IsNullOrWhiteSpace(serverFileName))
+            {
+                // Kiểm tra lần lượt các thư mục lưu tệp có thể có
+                var path1 = Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", serverFileName);
+                var path2 = Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", serverFileName);
+                var path3 = Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", serverFileName);
+
+                string? validPath = null;
+                if (System.IO.File.Exists(path1)) validPath = path1;
+                else if (System.IO.File.Exists(path2)) validPath = path2;
+                else if (System.IO.File.Exists(path3)) validPath = path3;
+
+                if (validPath != null)
+                {
+                    fileStream = System.IO.File.OpenRead(validPath);
+                }
+            }
+
+            if (fileStream == null)
+            {
+                return Json(new { success = false, message = "Please select or upload a valid Excel file!" });
+            }
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            using (var stream = new MemoryStream())
+            try
             {
-                await file.CopyToAsync(stream);
-                using (var package = new ExcelPackage(stream))
+                using (fileStream)
+                using (var package = new ExcelPackage(fileStream))
                 {
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; 
-                    int rowCount = worksheet.Dimension.Rows;
+                    if (package.Workbook.Worksheets.Count == 0)
+                    {
+                        return Json(new { success = false, message = "The uploaded Excel file contains no worksheets!" });
+                    }
+
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                    int rowCount = worksheet.Dimension?.Rows ?? 0;
+
+                    if (rowCount < 6)
+                    {
+                        return Json(new { success = false, message = "No valid data found in file! Data must start from row 6." });
+                    }
+
                     var chapterList = new List<TblChapter>();
-                    var chapters = await _context.TblChapters.ToListAsync();
 
                     for (int row = 6; row <= rowCount; row++)
                     {
-                        if (!int.TryParse(worksheet.Cells[row, 2].Text, out int storyId))
+                        if (!int.TryParse(worksheet.Cells[row, 2].Text, out int storyId) || storyId <= 0)
                             continue;
 
-                        if (!int.TryParse(worksheet.Cells[row, 4].Text, out int chapterNumber))
+                        if (!int.TryParse(worksheet.Cells[row, 4].Text, out int chapterNumber) || chapterNumber < 0)
                             continue;
 
-                        DateTime? createdDate = null;
+                        var titleEn = worksheet.Cells[row, 1].Text?.Trim();
+                        var titleVi = worksheet.Cells[row, 3].Text?.Trim();
+
+                        if (string.IsNullOrEmpty(titleEn) && string.IsNullOrEmpty(titleVi))
+                            continue;
+
+                        string mainTitle = !string.IsNullOrEmpty(titleEn) ? titleEn : titleVi!;
+
+                        DateTime? createdDate = DateTime.Now;
                         if (DateTime.TryParse(worksheet.Cells[row, 5].Text, out var dt))
+                        {
                             createdDate = dt;
-
-                        var title = worksheet.Cells[row, 1].Text?.Trim();
-                        if (string.IsNullOrEmpty(title))
-                            continue;
+                        }
 
                         if (chapterList.Any(x => x.StoryId == storyId && x.ChapterNumber == chapterNumber))
                             continue;
 
-                        chapterList.Add(new TblChapter
+                        var newChapter = new TblChapter
                         {
-                            Title = title,
+                            Title = mainTitle,
                             StoryId = storyId,
                             ChapterNumber = chapterNumber,
-                            CreatedDate = createdDate
-                        });
-                    }
+                            CreatedDate = createdDate,
+                            TblChapterTranslations = new List<TblChapterTranslation>()
+                        };
 
+                        if (!string.IsNullOrEmpty(titleEn))
+                        {
+                            newChapter.TblChapterTranslations.Add(new TblChapterTranslation
+                            {
+                                LanguageCode = "en-US",
+                                Title = titleEn
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(titleVi))
+                        {
+                            newChapter.TblChapterTranslations.Add(new TblChapterTranslation
+                            {
+                                LanguageCode = "vi-VN",
+                                Title = titleVi
+                            });
+                        }
+
+                        chapterList.Add(newChapter);
+                    }
 
                     if (chapterList.Count > 0)
                     {
-                        _context.TblChapters.AddRange(chapterList);
+                        await _context.TblChapters.AddRangeAsync(chapterList);
                         await _context.SaveChangesAsync();
                         return Json(new { success = true, message = $"Imported {chapterList.Count} chapters successfully!" });
                     }
-                    
+
                     return Json(new { success = false, message = "No valid data was found in the file." });
                 }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error processing file: {ex.Message}" });
             }
         }
         [HttpPost]

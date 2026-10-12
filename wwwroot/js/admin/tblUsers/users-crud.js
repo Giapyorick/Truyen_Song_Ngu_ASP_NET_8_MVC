@@ -235,9 +235,62 @@ $('#userForm').on('submit', function (e) {
 });
 
 // Xử lý Import dữ liệu từ Excel
+// Xử lý sự kiện Kéo & Thả (Drag & Drop) cho ô DropZone Import
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('excelFile');
+const fileStatus = document.getElementById('fileStatus');
+
+if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, e => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('border-indigo-500', 'bg-indigo-100/50'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/50'), false);
+    });
+
+    dropZone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+
+        // TH1: Kéo thả file trực tiếp từ máy tính
+        if (dt.files && dt.files.length > 0) {
+            fileInput.files = dt.files;
+            $(dropZone).attr('data-selected-filename', '');
+            if (fileStatus) fileStatus.innerHTML = `<span class="text-indigo-600 font-bold italic">${dt.files[0].name}</span>`;
+        }
+        // TH2: Kéo thả file từ Kho lưu trữ (File Manager) hoặc Template
+        else {
+            const fileName = dt.getData('text/plain') || dt.getData('fileName');
+            if (fileName) {
+                fileInput.value = ''; // Reset input file chọn từ máy tính
+                $(dropZone).attr('data-selected-filename', fileName);
+                if (fileStatus) fileStatus.innerHTML = `<span class="text-indigo-600 font-bold italic">📄 ${decodeURIComponent(fileName)} (Từ kho lưu trữ)</span>`;
+                if (typeof showToast === 'function') showToast(`Đã chọn tệp: ${decodeURIComponent(fileName)}`, 'info');
+            }
+        }
+    });
+}
+// Xử lý Import dữ liệu từ Excel đa năng
 function executeImport() {
     const fileInput = document.getElementById('excelFile');
-    if (fileInput.files.length === 0) {
+    const dropZone = document.getElementById('dropZone');
+
+    let savedFileName = $(dropZone) ? $(dropZone).attr('data-selected-filename') : '';
+    if (savedFileName) {
+        savedFileName = decodeURIComponent(savedFileName);
+    }
+
+    const importUrl = $(dropZone).attr('data-import-url') || '/Admin/tblUsers/ImportExcel';
+    const file = fileInput && fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+    if (!file && !savedFileName) {
         if (typeof showToast === 'function') {
             showToast(L.ChooseExcelFile || 'Please choose an Excel file!', 'error');
         }
@@ -245,13 +298,20 @@ function executeImport() {
     }
 
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+
+    if (file) {
+        // Tải file trực tiếp từ máy tính
+        formData.append('file', file);
+    } else if (savedFileName) {
+        // Tên file trong kho lưu trữ hoặc /assets/template/
+        formData.append('serverFileName', savedFileName);
+    }
 
     const $btn = $('#btnDoImport');
     $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${L.Processing || 'Loading...'}`);
 
     $.ajax({
-        url: '/Admin/tblUsers/ImportExcel',
+        url: importUrl,
         type: 'POST',
         data: formData,
         processData: false,

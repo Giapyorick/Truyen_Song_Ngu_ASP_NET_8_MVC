@@ -15,5 +15,8 @@
     <EmbeddedResource Update="Resources\SharedResource.en-US.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\SharedResource.vi-VN.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

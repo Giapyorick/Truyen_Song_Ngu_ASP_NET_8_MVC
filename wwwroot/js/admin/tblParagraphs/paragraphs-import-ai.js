@@ -1,6 +1,7 @@
-/* paragraphs-import-ai.js - Quản lý Import AI theo thứ tự chuẩn: English, Vietnamese, Chinese, Japanese, French */
+/* paragraphs-import-ai.js - Quản lý Import AI với Console Log Debug chi tiết & Hỗ trợ Song ngữ */
 
 var L = window.ADMIN_LANG || {};
+var AL = window.adminLocalizer || {};
 
 let activeTargetLanguages = ['vietnamese'];
 let selectedAiLanguages = new Set();
@@ -14,14 +15,27 @@ const LANGUAGE_DEFINITIONS = [
 ];
 
 function getImportCulture() {
-    return (typeof getCurrentCulture === 'function') ? getCurrentCulture().trim() : 'vi-VN';
+    const match = document.cookie.match(new RegExp('(^| )\\.AspNetCore\\.Culture=([^;]+)'));
+    if (match) {
+        const cultureValue = decodeURIComponent(match[2]);
+        if (cultureValue.includes('en')) return 'en-US';
+        if (cultureValue.includes('vi')) return 'vi-VN';
+    }
+
+    const htmlLang = document.documentElement.lang;
+    if (htmlLang) return htmlLang;
+
+    if (typeof getCurrentCulture === 'function') return getCurrentCulture().trim();
+
+    return 'vi-VN';
 }
 
 function initImportSelect2() {
+    console.log("👉 [DEBUG] Khởi tạo Select2 cho Modal Import...");
     const $modal = $('#importParagraphModal');
     const isVi = getImportCulture().toLowerCase().startsWith('vi');
-    const storyPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectStoryPlaceholder) || (isVi ? '-- Chọn truyện --' : '-- Select story --');
-    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+    const storyPlaceholder = L.SelectStoryPlaceholder || L.SelectStory || AL.selectStory || (isVi ? '-- Chọn truyện --' : '-- Select story --');
+    const chapterPlaceholder = L.SelectChapterPlaceholder || L.SelectChapter || AL.selectChapter || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
 
     if (!$('#storySelect').hasClass("select2-hidden-accessible")) {
         $('#storySelect').select2({
@@ -45,11 +59,12 @@ function initImportSelect2() {
 }
 
 function openParagraphModal() {
+    console.log("👉 [DEBUG] Mở modal Import Paragraphs");
     const $modal = $('#importParagraphModal');
     const $content = $('#importContent');
 
     if ($modal.length === 0) {
-        console.error("Không tìm thấy modal #importParagraphModal trong DOM!");
+        console.error("❌ Không tìm thấy modal #importParagraphModal trong DOM!");
         return;
     }
 
@@ -63,6 +78,7 @@ function openParagraphModal() {
 }
 
 function closeParagraphModal() {
+    console.log("👉 [DEBUG] Đóng modal Import Paragraphs");
     const $modal = $('#importParagraphModal');
     const $content = $('#importContent');
 
@@ -73,47 +89,57 @@ function closeParagraphModal() {
     }, 250);
 }
 
-// 1. Nạp danh sách truyện vào select của Modal (Hỗ trợ song ngữ)
+// 1. Nạp danh sách truyện vào select của Modal
 function loadModalStories() {
+    console.log("👉 [DEBUG] Đang nạp danh sách truyện...");
     const $storySelect = $('#storySelect');
     const $chapterSelect = $('#chapterSelect');
     const currentCulture = getImportCulture();
     const isVi = currentCulture.toLowerCase().startsWith('vi');
-    const storyPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectStoryPlaceholder) || (isVi ? '-- Chọn truyện --' : '-- Select story --');
-    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+    const storyPlaceholder = L.SelectStoryPlaceholder || L.SelectStory || AL.selectStory || (isVi ? '-- Chọn truyện --' : '-- Select story --');
+    const chapterPlaceholder = L.SelectChapterPlaceholder || L.SelectChapter || AL.selectChapter || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
 
     isInternalReset = true;
     $storySelect.empty().append(`<option value="">${storyPlaceholder}</option>`);
     $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
-    $('#dynamicExtraLanguagesContainer').empty();
+    $('#languageCardsGrid .dynamic-lang-card').remove();
 
     $.get('/Admin/tblParagraphs/GetStoriesForSelect', { culture: currentCulture }, function (data) {
+        console.log("✅ [DEBUG] Đã tải danh sách truyện:", data);
         if (data && data.length > 0) {
             data.forEach(x => {
                 $storySelect.append(new Option(x.name, x.id, false, false));
             });
         }
-        $storySelect.val('').trigger('change.select2'); $chapterSelect.val('').trigger('change.select2');
+        $storySelect.val('').trigger('change.select2');
+        $chapterSelect.val('').trigger('change.select2');
         isInternalReset = false;
-    }).fail(function () {
+    }).fail(function (err) {
         isInternalReset = false;
+        console.error("❌ [DEBUG] Lỗi tải truyện:", err);
         showToast(L.ErrConnectServer || 'Cannot load stories for modal!', 'error');
     });
 }
 
-// 2. Xử lý khi chọn một truyện -> Nạp chương tương ứng
-let currentChapterXhr = null; 
+// 2. Xử lý khi chọn một truyện -> Nạp chương tương ứng & Đọc đúng ngôn ngữ từ CSDL
+let currentChapterXhr = null;
+let isHandlingStoryChange = false;
 
 function handleStoryChange(storyId) {
+    console.log("👉 [DEBUG] Xử lý chọn StoryId:", storyId);
+    if (isHandlingStoryChange) return;
+    isHandlingStoryChange = true;
+
     const $chapterSelect = $('#chapterSelect');
-    const $extraContainer = $('#dynamicExtraLanguagesContainer');
+    const $gridContainer = $('#languageCardsGrid');
     const currentCulture = getImportCulture();
     const isVi = currentCulture.toLowerCase().startsWith('vi');
-    const chapterPlaceholder = (window.ADMIN_LANG && window.ADMIN_LANG.SelectChapterPlaceholder) || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+    const chapterPlaceholder = L.SelectChapterPlaceholder || L.SelectChapter || AL.selectChapter || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+    const browseText = AL.browse || L.Browse || 'Browse';
+    const chooseOrDropText = AL.chooseOrDropFile || L.ChooseOrDropFile || 'Choose or drop file...';
 
-    // Luôn dọn sạch danh sách cũ trước
     $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
-    $extraContainer.empty();
+    $gridContainer.find('.dynamic-lang-card').remove();
 
     activeTargetLanguages = ['vietnamese'];
     selectedAiLanguages.clear();
@@ -126,107 +152,99 @@ function handleStoryChange(storyId) {
 
     if (!storyId || storyId <= 0 || storyId === "" || storyId === "all") {
         $chapterSelect.val('').trigger('change.select2');
+        isHandlingStoryChange = false;
         return;
     }
 
-    // Nếu có request cũ đang tải dở thì hủy ngay
     if (currentChapterXhr && currentChapterXhr.readyState !== 4) {
         currentChapterXhr.abort();
     }
 
-    // A. Nạp danh sách chương
+    // Tải danh sách chương
     currentChapterXhr = $.get('/Admin/tblParagraphs/GetChaptersForSelect', { id: storyId, culture: currentCulture }, function (data) {
-        // Làm sạch lại 1 lần nữa trước khi append để đảm bảo không bị trùng dữ liệu
+        console.log("✅ [DEBUG] Đã tải danh sách chương:", data);
         $chapterSelect.empty().append(`<option value="">${chapterPlaceholder}</option>`);
-
         if (data && Array.isArray(data) && data.length > 0) {
             data.forEach(x => {
                 $chapterSelect.append(new Option(x.name, x.id, false, false));
             });
         }
-        $chapterSelect.val('').trigger('change.select2');
-    }).fail(function (xhr) {
-        if (xhr.statusText !== 'abort') {
-            $chapterSelect.val('').trigger('change.select2');
-            showToast(L.ErrConnectServer || 'Không thể tải danh sách chương!', 'error');
-        }
+        $chapterSelect.trigger('change.select2');
     });
 
-    // B. Nạp danh sách ngôn ngữ tương ứng với truyện (giữ nguyên logic bên dưới)
+    // Tải ngôn ngữ theo CSDL của truyện
     $.get('/Admin/tblParagraphs/GetLanguagesByStory', { storyId: storyId }, function (res) {
-        if (!res) return;
+        console.log("✅ [DEBUG] Ngôn ngữ theo truyện:", res);
+        if (res && res.success && res.languages) {
+            const hasEnFile = ($('#fileEnglish')[0].files && $('#fileEnglish')[0].files.length > 0) || $('#dropZoneEN').attr('data-selected-filename');
 
-        let rawLangString = "";
-        if (typeof res === 'string') {
-            rawLangString = res;
-        } else if (res.lang) {
-            rawLangString = res.lang;
-        } else if (res.languages) {
-            rawLangString = Array.isArray(res.languages)
-                ? res.languages.map(x => (typeof x === 'string' ? x : (x.code || x.name || ''))).join(',')
-                : String(res.languages);
-        } else if (Array.isArray(res)) {
-            rawLangString = res.map(x => (typeof x === 'string' ? x : (x.code || x.name || ''))).join(',');
-        }
+            res.languages.forEach(langItem => {
+                const langCode = langItem.code;
 
-        const normalizedStr = rawLangString.toLowerCase();
-        const hasEnFile = $('#fileEnglish')[0].files && $('#fileEnglish')[0].files.length > 0;
-        const extraDefs = LANGUAGE_DEFINITIONS.filter(d => !d.fixed);
+                if (langCode === 'english' || langCode === 'vietnamese') return;
 
-        extraDefs.forEach(def => {
-            let isMatch = false;
+                if (!activeTargetLanguages.includes(langCode)) {
+                    activeTargetLanguages.push(langCode);
+                }
 
-            if (def.key === 'chinese') {
-                isMatch = normalizedStr.includes('trung') || normalizedStr.includes('zh') || normalizedStr.includes('chinese');
-            } else if (def.key === 'japanese') {
-                isMatch = normalizedStr.includes('nhật') || normalizedStr.includes('ja') || normalizedStr.includes('japanese');
-            } else if (def.key === 'french') {
-                isMatch = normalizedStr.includes('pháp') || normalizedStr.includes('fr') || normalizedStr.includes('french');
-            }
-
-            if (isMatch) {
-                activeTargetLanguages.push(def.key);
+                const def = LANGUAGE_DEFINITIONS.find(d => d.key === langCode) || {
+                    key: langCode,
+                    name: langItem.name || langCode.toUpperCase()
+                };
 
                 const cardHtml = `
-                    <div id="card_lang_${def.key}" class="p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-all flex flex-col justify-between">
+                    <div id="card_lang_${def.key}" class="dynamic-lang-card p-4 border border-teal-100 bg-teal-50/10 rounded-2xl space-y-3 hover:border-teal-200 transition-all flex flex-col justify-between h-full min-h-[160px]">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-bold text-cus flex items-center gap-2">
-                                    ${def.name} <span class="text-[10px] text-red-500 font-extrabold">* Required</span>
+                                    ${def.name}
                                 </span>
                                 <a href="/assets/template/Story_${capitalizeFirstLetter(def.key)}_Template.xlsx" class="text-[11px] text-teal-600 hover:underline font-medium"><i class="fas fa-file-excel"></i> Template</a>
                             </div>
-                            <div class="relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group">
+                            <div class="target-dropzone relative border-2 border-dashed border-teal-200 rounded-xl p-3 flex items-center justify-between bg-white hover:border-[#50C9C3] transition-all cursor-pointer group" data-lang-key="${def.key}">
                                 <input type="file" id="file_${def.key}" data-lang-key="${def.key}" accept=".xlsx, .xls, .txt" class="target-lang-file absolute inset-0 opacity-0 cursor-pointer z-10">
                                 <div class="flex items-center gap-3">
                                     <i class="fas fa-cloud-upload-alt text-teal-400 text-lg group-hover:scale-110 transition-transform"></i>
-                                    <span id="fileStatus_${def.key}" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">Choose or drop file...</span>
+                                    <span id="fileStatus_${def.key}" class="text-xs font-medium text-gray-600 truncate max-w-[150px]">${chooseOrDropText}</span>
                                 </div>
-                                <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">Browse</span>
+                                <span class="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md font-semibold border border-teal-100">${browseText}</span>
                             </div>
                         </div>
                         <button type="button" id="btnAi_${def.key}" onclick="toggleAutoAiTranslate('${def.key}', this)" ${hasEnFile ? '' : 'disabled'}
-                                class="ai-btn w-full py-2 px-3 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 from-[#50C9C3] to-[#96DEDA] text-white bg-gradient-to-r ${hasEnFile ? '' : 'opacity-40 cursor-not-allowed'}" 
+                                class="ai-btn w-full py-2 px-3 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 from-[#50C9C3] to-[#96DEDA] text-white bg-gradient-to-r ${hasEnFile ? '' : 'opacity-40 cursor-not-allowed'} mt-3" 
                                 data-active="false">
                             <i class="fas fa-wand-magic-sparkles text-amber-300"></i> <span class="ai-label">${L.AiTranslateFromEn || 'AI Translate from English'}</span>
                         </button>
                     </div>`;
 
-                $extraContainer.append(cardHtml);
-            }
-        });
+                $gridContainer.append(cardHtml);
+            });
+        }
+        isHandlingStoryChange = false;
+    }).fail(function () {
+        isHandlingStoryChange = false;
     });
 }
 
 // 3. Reset form
 function resetImportForm() {
+    console.log("👉 [DEBUG] Reset Import Form");
     isInternalReset = true;
+    const isVi = getImportCulture().toLowerCase().startsWith('vi');
+    const chapterPlaceholder = L.SelectChapterPlaceholder || L.SelectChapter || AL.selectChapter || (isVi ? '-- Chọn chương --' : '-- Select chapter --');
+    const chooseOrDropText = AL.chooseOrDropFile || L.ChooseOrDropFile || 'Choose or drop file...';
+    const uploadEnSourceText = L.UploadEnSourceFile || 'Upload English source file...';
+
     $('#storySelect').val('').trigger('change.select2');
-    $('#chapterSelect').empty().append('<option value="">-- Select chapter --</option>').val('').trigger('change.select2');
-    $('#fileEnglish, #file_vietnamese').val('');
-    $('#fileStatusEN').text('Upload English source file...');
-    $('#fileStatus_vietnamese').text('Choose or drop file...');
-    $('#dynamicExtraLanguagesContainer').empty();
+    $('#chapterSelect').empty().append(`<option value="">${chapterPlaceholder}</option>`).val('').trigger('change.select2');
+
+    $('#fileEnglish, #file_vietnamese, .target-lang-file').val('');
+    $('#dropZoneEN, .target-dropzone').removeAttr('data-selected-filename');
+    $('.target-dropzone, #dropZoneEN, .dynamic-lang-card, #card_lang_vietnamese').removeClass('ring-2 ring-red-500 bg-red-50/30');
+
+    $('#fileStatusEN').text(uploadEnSourceText);
+    $('#fileStatus_vietnamese').text(chooseOrDropText);
+    $('#languageCardsGrid .dynamic-lang-card').remove();
 
     $('.ai-btn').prop('disabled', true).addClass('opacity-40 cursor-not-allowed')
         .removeClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600 shadow-md')
@@ -245,119 +263,249 @@ function capitalizeFirstLetter(string) {
 
 // Đăng ký các sự kiện khi trang sẵn sàng
 $(document).ready(function () {
-    // Lắng nghe sự kiện chọn truyện của Select2
+
     $(document).on('change', '#storySelect', function () {
         if (!isInternalReset) {
             const selectedVal = $(this).val();
-            if (selectedVal !== undefined && selectedVal !== null) {
+            console.log("👉 [DEBUG] storySelect Change:", selectedVal);
+            if (selectedVal && selectedVal !== "" && selectedVal !== "all") {
                 handleStoryChange(selectedVal);
             }
         }
     });
 
+    $(document).on('change', '#chapterSelect', function () {
+        console.log("👉 [DEBUG] chapterSelect Change giá trị hiện tại:", $(this).val());
+    });
+
+    // Khi chọn file Tiếng Anh Local
     $('#fileEnglish').on('change', function () {
         const file = this.files && this.files.length > 0 ? this.files[0] : null;
+        console.log("👉 [DEBUG] Chọn file English Local:", file ? file.name : 'null');
+        const uploadEnSourceText = L.UploadEnSourceFile || 'Upload English source file...';
+
         if (file) {
             $('#fileStatusEN').text(file.name);
+            $('#dropZoneEN').removeAttr('data-selected-filename');
             $('.ai-btn').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
+            $('#dropZoneEN').removeClass('ring-2 ring-red-500');
         } else {
-            $('#fileStatusEN').text('Upload English source file...');
+            $('#fileStatusEN').text(uploadEnSourceText);
             $('.ai-btn').prop('disabled', true).addClass('opacity-40 cursor-not-allowed');
             selectedAiLanguages.clear();
-            $('.ai-btn').data('active', false)
-                .removeClass('ring-2 ring-purple-500 from-purple-600 to-indigo-600 shadow-md')
-                .addClass('from-[#50C9C3] to-[#96DEDA]');
-            $('.ai-btn .ai-label').text(L.AiTranslateFromEn || 'AI Translate from English');
         }
     });
 
+    // Khi chọn file ngôn ngữ phụ Local
     $(document).on('change', '.target-lang-file', function () {
         const file = this.files && this.files[0];
         const langKey = $(this).data('lang-key');
+        console.log(`👉 [DEBUG] Chọn file Local cho ngôn ngữ [${langKey}]:`, file ? file.name : 'null');
         const $status = $(`#fileStatus_${langKey}`);
-        const $aiBtn = $(`#btnAi_${langKey}`);
+        const chooseOrDropText = AL.chooseOrDropFile || L.ChooseOrDropFile || 'Choose or drop file...';
 
         if (file) {
             $status.text(file.name);
-            if ($aiBtn.data('active') === true) {
-                toggleAutoAiTranslate(langKey, $aiBtn[0]);
-            }
+            $(`#card_lang_${langKey} .target-dropzone`).removeAttr('data-selected-filename');
         } else {
-            $status.text(`Choose or drop file...`);
+            $status.text(chooseOrDropText);
         }
         validateLanguageCard(langKey);
     });
 
+    // Drag & Drop Kho lưu trữ cho ô Tiếng Anh
+    const dropZoneEN = document.getElementById('dropZoneEN');
+    if (dropZoneEN) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZoneEN.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        dropZoneEN.addEventListener('drop', e => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const savedStory = $('#storySelect').val();
+            const savedChapter = $('#chapterSelect').val();
+            const fromStorageText = L.FromStorageText || '(From storage)';
+
+            console.log("👉 [DEBUG Drop EN] Trước khi thả file -> StoryId:", savedStory, "| ChapId:", savedChapter);
+
+            const dt = e.dataTransfer;
+            if (dt.files && dt.files.length > 0) {
+                console.log("👉 [DEBUG Drop EN] Thả file từ máy tính:", dt.files[0].name);
+                document.getElementById('fileEnglish').files = dt.files;
+                $('#dropZoneEN').removeAttr('data-selected-filename');
+                $('#fileStatusEN').text(dt.files[0].name);
+            } else {
+                const fileName = dt.getData('text/plain') || dt.getData('fileName');
+                console.log("👉 [DEBUG Drop EN] Thả file từ FileManager:", fileName);
+                if (fileName) {
+                    $('#fileEnglish').val('');
+                    $('#dropZoneEN').attr('data-selected-filename', fileName);
+                    $('#fileStatusEN').html(`📄 ${decodeURIComponent(fileName)} ${fromStorageText}`);
+                }
+            }
+
+            if (savedStory) $('#storySelect').val(savedStory).trigger('change.select2');
+            if (savedChapter) $('#chapterSelect').val(savedChapter).trigger('change.select2');
+
+            $('.ai-btn').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
+            $('#dropZoneEN').removeClass('ring-2 ring-red-500');
+        });
+    }
+
+    // Drag & Drop động cho ô ngôn ngữ phụ từ FileManager
+    $(document).on('dragover dragenter', '.target-dropzone', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(document).on('drop', '.target-dropzone', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const savedStory = $('#storySelect').val();
+        const savedChapter = $('#chapterSelect').val();
+        const fromStorageText = L.FromStorageText || '(From storage)';
+
+        const dt = e.originalEvent.dataTransfer;
+        const langKey = $(this).data('lang-key');
+        const fileInput = document.getElementById(`file_${langKey}`);
+
+        if (dt.files && dt.files.length > 0) {
+            console.log(`👉 [DEBUG Drop ${langKey}] Thả file local:`, dt.files[0].name);
+            fileInput.files = dt.files;
+            $(this).removeAttr('data-selected-filename');
+            $(`#fileStatus_${langKey}`).text(dt.files[0].name);
+        } else {
+            const fileName = dt.getData('text/plain') || dt.getData('fileName');
+            console.log(`👉 [DEBUG Drop ${langKey}] Thả file FileManager:`, fileName);
+            if (fileName) {
+                $(`#file_${langKey}`).val('');
+                $(this).attr('data-selected-filename', fileName);
+                $(`#fileStatus_${langKey}`).html(`📄 ${decodeURIComponent(fileName)} ${fromStorageText}`);
+            }
+        }
+
+        if (savedStory) $('#storySelect').val(savedStory).trigger('change.select2');
+        if (savedChapter) $('#chapterSelect').val(savedChapter).trigger('change.select2');
+
+        validateLanguageCard(langKey);
+    });
+
+    // Nút xác nhận Import
     $('#btnImport').off('click').on('click', function () {
         const storyId = $('#storySelect').val();
         const chapId = $('#chapterSelect').val();
-        const inputEN = document.getElementById('fileEnglish');
-        const fileEN = inputEN && inputEN.files ? inputEN.files[0] : null;
 
-        if (!storyId || !chapId) {
+        console.log("🚀 [DEBUG Confirm Import] Bắt đầu kiểm tra dữ liệu gửi đi:");
+
+        // 1. Kiểm tra Chọn Truyện & Chương
+        if (!storyId || !chapId || storyId === "" || chapId === "") {
             showToast(L.ReqSelectStoryAndChapter || 'Please select both Story and Chapter!', 'error');
             return;
         }
-        if (!fileEN) {
+
+        // 2. Kiểm tra File Tiếng Anh Nguồn
+        const inputEN = document.getElementById('fileEnglish');
+        const fileEN = inputEN && inputEN.files ? inputEN.files[0] : null;
+        const serverFileNameEN = $('#dropZoneEN').attr('data-selected-filename') || '';
+
+        if (!fileEN && !serverFileNameEN) {
             showToast(L.ReqEnglishSourceFile || 'Please upload an English file as the source language!', 'error');
+            $('#dropZoneEN').addClass('ring-2 ring-red-500');
             return;
+        } else {
+            $('#dropZoneEN').removeClass('ring-2 ring-red-500');
         }
 
-        let hasError = false;
-        let missingLangs = [];
+        // 3. KIỂM TRA BẮT BUỘC ĐẦY ĐỦ TẤT CẢ CÁC NGÔN NGỮ PHỤ
+        let missingLanguages = [];
 
         activeTargetLanguages.forEach(langKey => {
-            const isAiSelected = selectedAiLanguages.has(langKey);
+            const isAiEnabled = selectedAiLanguages.has(langKey);
             const fileInput = document.getElementById(`file_${langKey}`);
-            const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            const hasLocalFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            const $card = $(`#card_lang_${langKey}`);
+            const hasServerFile = $card.find('.target-dropzone').attr('data-selected-filename') ? true : false;
 
-            if (!isAiSelected && !hasFile) {
-                hasError = true;
-                const def = LANGUAGE_DEFINITIONS.find(d => d.key === langKey);
-                missingLangs.push(def ? def.name : langKey);
-                $(`#card_lang_${langKey}`).addClass('ring-2 ring-red-500 bg-red-50/30');
+            if (!isAiEnabled && !hasLocalFile && !hasServerFile) {
+                missingLanguages.push(capitalizeFirstLetter(langKey));
+                $card.addClass('ring-2 ring-red-500 bg-red-50/30');
             } else {
-                $(`#card_lang_${langKey}`).removeClass('ring-2 ring-red-500 bg-red-50/30');
+                $card.removeClass('ring-2 ring-red-500 bg-red-50/30');
             }
         });
 
-        if (hasError) {
-            const missingTemplate = L.ReqAiOrFileTarget || 'Please enable AI Translation or upload a file for: {0}';
-            showToast(missingTemplate.replace('{0}', missingLangs.join(', ')), 'error');
+        if (missingLanguages.length > 0) {
+            const reqMsg = (L.ReqAiOrFileTargetMsg || 'Please upload file or select AI Translate for missing languages: {0}').replace('{0}', missingLanguages.join(', '));
+            showToast(reqMsg, 'error');
             return;
         }
 
         const formData = new FormData();
         formData.append('chapterId', chapId);
-        formData.append('fileEnglish', fileEN);
 
-        const targetLangs = Array.from(selectedAiLanguages).map(l => capitalizeFirstLetter(l)).join(',');
-        formData.append('targetLanguages', targetLangs);
+        if (fileEN) {
+            formData.append('fileEnglish', fileEN);
+        } else if (serverFileNameEN) {
+            formData.append('serverFileNameEnglish', decodeURIComponent(serverFileNameEN));
+        }
+
+        const isUsingAi = selectedAiLanguages.size > 0;
+        let targetUrl = isUsingAi ? '/Admin/tblParagraphs/EnqueueImportAi' : '/Admin/tblParagraphs/ImportFromFilesDirect';
+
+        if (isUsingAi) {
+            const targetLangs = Array.from(selectedAiLanguages).map(l => capitalizeFirstLetter(l)).join(',');
+            formData.append('targetLanguages', targetLangs);
+        }
 
         activeTargetLanguages.forEach(langKey => {
-            const fileInput = document.getElementById(`file_${langKey}`);
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                formData.append(`file${capitalizeFirstLetter(langKey)}`, fileInput.files[0]);
+            if (!selectedAiLanguages.has(langKey)) {
+                const fileInput = document.getElementById(`file_${langKey}`);
+                const $card = $(`#card_lang_${langKey}`);
+                const serverFileName = $card.find('.target-dropzone').attr('data-selected-filename') || '';
+
+                if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                    formData.append(`file${capitalizeFirstLetter(langKey)}`, fileInput.files[0]);
+                } else if (serverFileName) {
+                    formData.append(`serverFileName${capitalizeFirstLetter(langKey)}`, decodeURIComponent(serverFileName));
+                }
             }
         });
 
-        const enqueuingText = L.EnqueuingStatus || 'Enqueuing...';
-        const $btn = $(this).prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-2"></i> ${enqueuingText}`);
+        const processingText = isUsingAi ? (L.EnqueuingStatus || 'Enqueuing AI...') : (L.Processing || 'Importing files...');
+        const $btn = $(this).prop('disabled', true).html(`<i class="fas fa-spinner fa-spin mr-2"></i> ${processingText}`);
 
         $.ajax({
-            url: '/Admin/tblParagraphs/EnqueueImportAi',
+            url: targetUrl,
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function (res) {
                 if (res.success) {
-                    showToast(res.message || 'Queued background process successfully!', 'info');
+                    showToast(res.message || 'Import successful!', 'success');
                     closeParagraphModal();
-                    if (res.jobId) pollHangfireJob(res.jobId, storyId, chapId);
-                    else setTimeout(() => loadParagraphList(1), 3000);
+
+                    if (isUsingAi && res.jobId) {
+                        pollHangfireJob(res.jobId, storyId, chapId);
+                    } else {
+                        if (typeof loadParagraphList === 'function') {
+                            loadParagraphList(1);
+                        } else {
+                            location.reload();
+                        }
+                    }
                 } else {
-                    showToast(res.message || 'Failed to submit request!', 'error');
+                    if (res.message && (res.message.includes('không đồng nhất') || res.message.includes('mismatch') || res.message.includes('lệch'))) {
+                        showAiFormatPrompt(res.message);
+                    } else {
+                        showToast(res.message || 'Failed to import!', 'error');
+                    }
                 }
             },
             error: function (xhr) {
@@ -373,8 +521,9 @@ function validateLanguageCard(langKey) {
     const isAi = selectedAiLanguages.has(langKey);
     const fileInput = document.getElementById(`file_${langKey}`);
     const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    const hasServerFile = $(`#card_lang_${langKey}`).find('.target-dropzone').attr('data-selected-filename') ? true : false;
 
-    if (isAi || hasFile) {
+    if (isAi || hasFile || hasServerFile) {
         $(`#card_lang_${langKey}`).removeClass('ring-2 ring-red-500 bg-red-50/30');
     }
 }
@@ -413,8 +562,7 @@ function pollHangfireJob(jobId, storyId, chapId) {
 
     const preventUnload = function (e) {
         e.preventDefault();
-        e.returnValue = 'Background translation is running. Are you sure you want to leave?';
-        return e.returnValue;
+        return '';
     };
     window.addEventListener('beforeunload', preventUnload);
 
@@ -442,8 +590,8 @@ function pollHangfireJob(jobId, storyId, chapId) {
                         const $chapter = $('#filterChapter').html(`<option value="all">${allChapText}</option>`);
                         data.forEach(c => $chapter.append(`<option value="${c.id}">${c.name}</option>`));
                         $chapter.val(chapId).trigger('change.select2');
-                        currentPage = 1;
-                        loadParagraphList(1);
+                        if (typeof currentPage !== 'undefined') currentPage = 1;
+                        if (typeof loadParagraphList === 'function') loadParagraphList(1);
                     });
                 }
             } else if (statusRes.state === 'Processing') {
@@ -455,4 +603,118 @@ function pollHangfireJob(jobId, storyId, chapId) {
             showToast(L.ErrConnectServer || 'Lost connection while polling background job!', 'error');
         });
     }, 2500);
+}
+
+function triggerFileAnalysis() {
+    const fileEN = $('#fileEnglish')[0].files[0];
+    if (!fileEN) return;
+
+    const formData = new FormData();
+    formData.append('fileEnglish', fileEN);
+
+    ['vietnamese', 'chinese', 'japanese', 'french'].forEach(lang => {
+        const fileInput = $(`#file_${lang}`)[0];
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            formData.append(`file${capitalizeFirstLetter(lang)}`, fileInput.files[0]);
+        }
+    });
+
+    const analyzingText = L.AnalyzingSentenceStructure || 'Analyzing sentence structure across files...';
+    $('#analysisStatus').html(`<i class="fas fa-spinner fa-spin"></i> ${analyzingText}`);
+
+    $.ajax({
+        url: '/Admin/tblParagraphs/AnalyzeImportFiles',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res.success) {
+                if (res.isMismatched) {
+                    showAiFormatPrompt(res.mismatchedDetails);
+                } else {
+                    showToast(res.message, 'success');
+                    $('#btnImport').prop('disabled', false);
+                }
+            }
+        }
+    });
+}
+
+function showAiFormatPrompt(details) {
+    const swalTitle = L.MismatchedSentenceTitle || '⚠️ Sentence count mismatch!';
+    const swalMsg = L.MismatchedAskAiMsg || 'Would you like AI to automatically align and re-segment translations to match English 1-to-1?';
+    const confirmBtn = L.BtnConfirmAiFormat || '✨ AI Align & Import';
+    const cancelBtn = L.BtnManualEditFile || 'I will edit files manually';
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: swalTitle,
+            html: `<p class="text-sm text-gray-600 mb-2">${details}</p>
+                   <p class="text-xs font-semibold text-teal-600">${swalMsg}</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: confirmBtn,
+            cancelButtonText: cancelBtn,
+            confirmButtonColor: '#0d9488'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeAiAlignAndImport();
+            }
+        });
+    } else {
+        if (confirm(`${swalTitle}\n\n${details}\n\n${swalMsg}`)) {
+            executeAiAlignAndImport();
+        }
+    }
+}
+
+function executeAiAlignAndImport() {
+    const storyId = $('#storySelect').val();
+    const chapId = $('#chapterSelect').val();
+    const fileEN = $('#fileEnglish')[0].files[0];
+
+    if (!storyId || !chapId || !fileEN) {
+        showToast(L.ReqSelectStoryAndChapter || 'Please select Story, Chapter and English source file!', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('chapterId', chapId);
+    formData.append('fileEnglish', fileEN);
+
+    ['vietnamese', 'chinese', 'japanese', 'french'].forEach(lang => {
+        const fileInput = $(`#file_${lang}`)[0];
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            formData.append(`file${capitalizeFirstLetter(lang)}`, fileInput.files[0]);
+        }
+    });
+
+    const sendingJobText = L.EnqueuingStatus || 'Enqueuing Hangfire task...';
+    const $btn = $('#btnImport').prop('disabled', true)
+        .html(`<i class="fas fa-magic fa-spin mr-2"></i> ${sendingJobText}`);
+
+    $.ajax({
+        url: '/Admin/tblParagraphs/AiAutoAlignAndImport',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res.success && res.jobId) {
+                showToast(L.SentTaskBackgroundSuccess || 'Sent background task successfully!', 'info');
+                closeParagraphModal();
+                pollHangfireJob(res.jobId, storyId, chapId);
+            } else {
+                showToast(res.message || 'Failed to submit AI task!', 'error');
+            }
+        },
+        error: function (xhr) {
+            const msg = xhr.responseJSON ? xhr.responseJSON.message : (L.ErrConnectServer || 'Server connection error!');
+            showToast(msg, 'error');
+        },
+        complete: function () {
+            $btn.prop('disabled', false).html(L.ConfirmImport || 'Confirm Import');
+        }
+    });
 }

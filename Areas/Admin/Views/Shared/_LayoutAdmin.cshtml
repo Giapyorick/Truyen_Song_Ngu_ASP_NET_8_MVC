@@ -11,10 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@SharedLocalizer["AdminLayout_Title"]</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/admin/_AdminLayout.css" asp-append-version="true" />
-
 </head>
 <body class="flex h-screen overflow-hidden">
 
@@ -57,6 +57,13 @@
             <a asp-area="Admin" asp-controller="tblAdmins" asp-action="Admins" class="nav-link flex items-center p-3 rounded-lg">
                 <i class="fas fa-user-shield mr-3"></i> @SharedLocalizer["AdminLayout_Admins"]
             </a>
+            <a href="javascript:void(0);"
+               onclick="openAdminFileManagerModal()"
+               class="nav-link flex items-center p-3 rounded-lg hover:bg-teal-50 hover:text-teal-700 transition-all cursor-pointer"
+               title="@(SharedLocalizer["AdminLayout_FileManager"]?.Value ?? "Kho tệp dữ liệu")">
+                <i class="fa-solid fa-folder-open mr-3 text-cus"></i>
+                <span>@(SharedLocalizer["AdminLayout_FileManager"]?.Value ?? "Kho tệp dữ liệu")</span>
+            </a>
 
             <form asp-area="Admin" asp-controller="Auth" asp-action="Logout" method="post" class="inline m-2 w-full">
                 @Html.AntiForgeryToken()
@@ -68,230 +75,246 @@
     </aside>
 
     @RenderBody()
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <partial name="_FileManagerModalPartial" />
     @RenderSection("Scripts", required: false)
     <script>
-    window.adminLocalizer = Object.assign(window.adminLocalizer || {}, {
-        addMember: @Json.Serialize(SharedLocalizer["AdminUsers_AddMember"].Value),
-        updateMember: @Json.Serialize(SharedLocalizer["AdminUsers_UpdateMember"].Value),
-        keepPassword: @Json.Serialize(SharedLocalizer["AdminUsers_KeepPassword"].Value),
-        delete: @Json.Serialize(SharedLocalizer["AdminCommon_Delete"].Value),
-        dropOrClickImport: @Json.Serialize(SharedLocalizer["AdminCommon_DropOrClickImport"].Value),
-        noResults: @Json.Serialize(SharedLocalizer["AdminCommon_NoResults"].Value),
-        errorLoadingData: @Json.Serialize(SharedLocalizer["AdminCommon_ErrorLoadingData"].Value),
-        loading: @Json.Serialize(SharedLocalizer["AdminCommon_Loading"].Value),
-        processing: @Json.Serialize(SharedLocalizer["AdminCommon_Processing"].Value),
-        saveChanges: @Json.Serialize(SharedLocalizer["AdminCommon_SaveChanges"].Value),
-        confirmImport: @Json.Serialize(SharedLocalizer["AdminCommon_ConfirmImport"].Value),
-        pleaseChooseExcel: @Json.Serialize(SharedLocalizer["AdminCommon_PleaseChooseExcel"].Value),
-        selectCountry: @Json.Serialize(SharedLocalizer["AdminCommon_SelectCountry"].Value),
-        selectLanguages: @Json.Serialize(SharedLocalizer["AdminCommon_SelectLanguages"].Value)
-    });
+            window.adminLocalizer = Object.assign(window.adminLocalizer || {}, {
+                addMember: @Json.Serialize(SharedLocalizer["AdminUsers_AddMember"].Value),
+                updateMember: @Json.Serialize(SharedLocalizer["AdminUsers_UpdateMember"].Value),
+                keepPassword: @Json.Serialize(SharedLocalizer["AdminUsers_KeepPassword"].Value),
+                delete: @Json.Serialize(SharedLocalizer["AdminCommon_Delete"].Value),
+                dropOrClickImport: @Json.Serialize(SharedLocalizer["AdminCommon_DropOrClickImport"].Value),
+                noResults: @Json.Serialize(SharedLocalizer["AdminCommon_NoResults"].Value),
+                errorLoadingData: @Json.Serialize(SharedLocalizer["AdminCommon_ErrorLoadingData"].Value),
+                loading: @Json.Serialize(SharedLocalizer["AdminCommon_Loading"].Value),
+                processing: @Json.Serialize(SharedLocalizer["AdminCommon_Processing"].Value),
+                saveChanges: @Json.Serialize(SharedLocalizer["AdminCommon_SaveChanges"].Value),
+                confirmImport: @Json.Serialize(SharedLocalizer["AdminCommon_ConfirmImport"].Value),
+                pleaseChooseExcel: @Json.Serialize(SharedLocalizer["AdminCommon_PleaseChooseExcel"].Value),
+                selectCountry: @Json.Serialize(SharedLocalizer["AdminCommon_SelectCountry"].Value),
+                selectLanguages: @Json.Serialize(SharedLocalizer["AdminCommon_SelectLanguages"].Value),
+                selectStory: @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value),
+                selectChapter: @Json.Serialize(SharedLocalizer["Para_SelectChapter"].Value),
+                browse: @Json.Serialize(SharedLocalizer["AdminCommon_Browse"].Value),
+                chooseOrDropFile: @Json.Serialize(SharedLocalizer["AdminCommon_ChooseOrDropFile"].Value)
+                });
 
-    window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
-        // Table & Status
-        NotFoundAccounts: @Json.Serialize(SharedLocalizer["Admin_NotFoundAccounts"].Value),
-        NoDisplayName: @Json.Serialize(SharedLocalizer["Admin_NoDisplayName"].Value),
-        StatusActive: @Json.Serialize(SharedLocalizer["Admin_StatusActive"].Value),
-        StatusInactive: @Json.Serialize(SharedLocalizer["Admin_StatusInactive"].Value),
-        Never: @Json.Serialize(SharedLocalizer["Admin_Never"].Value),
-        TitleEditAccount: @Json.Serialize(SharedLocalizer["Admin_TitleEditAccount"].Value),
-        TitleDeleteAccount: @Json.Serialize(SharedLocalizer["Admin_TitleDeleteAccount"].Value),
+            window.ADMIN_LANG = Object.assign(window.ADMIN_LANG || {}, {
+                // Table & Status
+                NotFoundAccounts: @Json.Serialize(SharedLocalizer["Admin_NotFoundAccounts"].Value),
+                NoDisplayName: @Json.Serialize(SharedLocalizer["Admin_NoDisplayName"].Value),
+                StatusActive: @Json.Serialize(SharedLocalizer["Admin_StatusActive"].Value),
+                StatusInactive: @Json.Serialize(SharedLocalizer["Admin_StatusInactive"].Value),
+                Never: @Json.Serialize(SharedLocalizer["Admin_Never"].Value),
+                TitleEditAccount: @Json.Serialize(SharedLocalizer["Admin_TitleEditAccount"].Value),
+                TitleDeleteAccount: @Json.Serialize(SharedLocalizer["Admin_TitleDeleteAccount"].Value),
 
-        // Errors & Toasts
-        ErrLoadAccounts: @Json.Serialize(SharedLocalizer["Admin_ErrLoadAccounts"].Value),
-        ErrConnectServerLoad: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServerLoad"].Value),
-        ViewerNoPermissionDelete: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionDelete"].Value),
-        ViewerNoPermissionSave: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionSave"].Value),
-        ViewerNoPermissionModal: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionModal"].Value),
-        SelectAtLeastOne: @Json.Serialize(SharedLocalizer["Admin_SelectAtLeastOne"].Value),
-        ErrConnectDelete: @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value),
-        ErrConnectServer: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value),
-        CannotFetchInfo: @Json.Serialize(SharedLocalizer["Admin_CannotFetchInfo"].Value),
+                // Errors & Toasts
+                ErrLoadAccounts: @Json.Serialize(SharedLocalizer["Admin_ErrLoadAccounts"].Value),
+                ErrConnectServerLoad: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServerLoad"].Value),
+                ViewerNoPermissionDelete: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionDelete"].Value),
+                ViewerNoPermissionSave: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionSave"].Value),
+                ViewerNoPermissionModal: @Json.Serialize(SharedLocalizer["Admin_ViewerNoPermissionModal"].Value),
+                SelectAtLeastOne: @Json.Serialize(SharedLocalizer["Admin_SelectAtLeastOne"].Value),
+                ErrConnectDelete: @Json.Serialize(SharedLocalizer["Admin_ErrConnectDelete"].Value),
+                ErrConnectServer: @Json.Serialize(SharedLocalizer["Admin_ErrConnectServer"].Value),
+                CannotFetchInfo: @Json.Serialize(SharedLocalizer["Admin_CannotFetchInfo"].Value),
 
-        // Confirm Dialogs & Actions
-        ConfirmDeleteSingleTitle: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleMsg: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteSingleMsg"].Value),
-        ConfirmDeleteMultiTitle: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteMultiTitle"].Value),
-        ConfirmDeleteMultiMsg: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteMultiMsg"].Value),
-        ActionCannotUndo: @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value),
-        Processing: @Json.Serialize(SharedLocalizer["Admin_Processing"].Value),
-        SaveChanges: @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value),
-        BtnDeleteText: @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value),
+                // Confirm Dialogs & Actions
+                ConfirmDeleteSingleTitle: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteSingleMsg: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteSingleMsg"].Value),
+                ConfirmDeleteMultiTitle: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteMultiTitle"].Value),
+                ConfirmDeleteMultiMsg: @Json.Serialize(SharedLocalizer["Admin_ConfirmDeleteMultiMsg"].Value),
+                ActionCannotUndo: @Json.Serialize(SharedLocalizer["Admin_ActionCannotUndo"].Value),
+                Processing: @Json.Serialize(SharedLocalizer["Admin_Processing"].Value),
+                SaveChanges: @Json.Serialize(SharedLocalizer["Admin_SaveChanges"].Value),
+                BtnDeleteText: @Json.Serialize(SharedLocalizer["Admin_BtnDeleteText"].Value),
+                Browse: @Json.Serialize(SharedLocalizer["AdminCommon_Browse"].Value),
 
-        // Story Translation & AI
-        ReqSourceBeforeTranslate: @Json.Serialize(SharedLocalizer["Story_ReqSourceBeforeTranslate"].Value),
-        AiTranslatingStatus: @Json.Serialize(SharedLocalizer["Story_AiTranslatingStatus"].Value),
-        AiTranslateCompleted: @Json.Serialize(SharedLocalizer["Story_AiTranslateCompleted"].Value),
-        AiTranslateError: @Json.Serialize(SharedLocalizer["Story_AiTranslateError"].Value),
-        BtnAiTranslating: @Json.Serialize(SharedLocalizer["Story_BtnAiTranslating"].Value),
-        BtnAiTranslateDefault: @Json.Serialize(SharedLocalizer["Story_BtnAiTranslateDefault"].Value),
+                // Story Translation & AI
+                ReqSourceBeforeTranslate: @Json.Serialize(SharedLocalizer["Story_ReqSourceBeforeTranslate"].Value),
+                AiTranslatingStatus: @Json.Serialize(SharedLocalizer["Story_AiTranslatingStatus"].Value),
+                AiTranslateCompleted: @Json.Serialize(SharedLocalizer["Story_AiTranslateCompleted"].Value),
+                AiTranslateError: @Json.Serialize(SharedLocalizer["Story_AiTranslateError"].Value),
+                BtnAiTranslating: @Json.Serialize(SharedLocalizer["Story_BtnAiTranslating"].Value),
+                BtnAiTranslateDefault: @Json.Serialize(SharedLocalizer["Story_BtnAiTranslateDefault"].Value),
 
-        // Modal Form
-        ModalTitleAdd: @Json.Serialize(SharedLocalizer["Admin_ModalTitleAdd"].Value),
-        ModalTitleEdit: @Json.Serialize(SharedLocalizer["Admin_ModalTitleEdit"].Value),
-        PwdNoticeAdd: @Json.Serialize(SharedLocalizer["Admin_PwdNoticeAdd"].Value),
-        PwdNoticeEdit: @Json.Serialize(SharedLocalizer["Admin_PwdNoticeEdit"].Value),
-        GenderMale: @Json.Serialize(SharedLocalizer["AdminCommon_Male"].Value),
-        GenderFemale: @Json.Serialize(SharedLocalizer["AdminCommon_Female"].Value),
-        RoleAdmin: @Json.Serialize(SharedLocalizer["AdminCommon_AdminRole"].Value),
-        RoleViewer: @Json.Serialize(SharedLocalizer["AdminCommon_ViewerRole"].Value),
+                // Modal Form
+                ModalTitleAdd: @Json.Serialize(SharedLocalizer["Admin_ModalTitleAdd"].Value),
+                ModalTitleEdit: @Json.Serialize(SharedLocalizer["Admin_ModalTitleEdit"].Value),
+                PwdNoticeAdd: @Json.Serialize(SharedLocalizer["Admin_PwdNoticeAdd"].Value),
+                PwdNoticeEdit: @Json.Serialize(SharedLocalizer["Admin_PwdNoticeEdit"].Value),
+                GenderMale: @Json.Serialize(SharedLocalizer["AdminCommon_Male"].Value),
+                GenderFemale: @Json.Serialize(SharedLocalizer["AdminCommon_Female"].Value),
+                RoleAdmin: @Json.Serialize(SharedLocalizer["AdminCommon_AdminRole"].Value),
+                RoleViewer: @Json.Serialize(SharedLocalizer["AdminCommon_ViewerRole"].Value),
 
-        NotFoundAuthors: @Json.Serialize(SharedLocalizer["Author_NotFound"].Value),
-        ErrLoadAuthors: @Json.Serialize(SharedLocalizer["Author_ErrLoad"].Value),
-        TitleAddAuthor: @Json.Serialize(SharedLocalizer["Author_TitleAdd"].Value),
-        TitleEditAuthor: @Json.Serialize(SharedLocalizer["Author_TitleEdit"].Value),
-        SelectCountry: @Json.Serialize(SharedLocalizer["Author_SelectCountry"].Value),
-        DragDropExcel: @Json.Serialize(SharedLocalizer["Author_DragDropExcel"].Value),
-        ChooseExcelFile: @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value),
-        ConfirmImport: @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value),
-        ErrImport: @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value),
-        SelectAtLeastOneAuthor: @Json.Serialize(SharedLocalizer["Author_SelectAtLeastOne"].Value),
-        ConfirmDeleteSingleAuthor: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteSingle"].Value),
-        ConfirmDeleteSingleAuthorTitle: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteMultiAuthors: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteMulti"].Value),
-        ConfirmDeleteMultiAuthorsTitle: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteMultiTitle"].Value),
-        BlockedDeleteAuthor: @Json.Serialize(SharedLocalizer["Author_BlockedDelete"].Value),
-        DeletedAuthorsSuccess: @Json.Serialize(SharedLocalizer["Author_DeletedSuccess"].Value),
+                NotFoundAuthors: @Json.Serialize(SharedLocalizer["Author_NotFound"].Value),
+                ErrLoadAuthors: @Json.Serialize(SharedLocalizer["Author_ErrLoad"].Value),
+                TitleAddAuthor: @Json.Serialize(SharedLocalizer["Author_TitleAdd"].Value),
+                TitleEditAuthor: @Json.Serialize(SharedLocalizer["Author_TitleEdit"].Value),
+                SelectCountry: @Json.Serialize(SharedLocalizer["Author_SelectCountry"].Value),
+                DragDropExcel: @Json.Serialize(SharedLocalizer["Author_DragDropExcel"].Value),
+                ChooseExcelFile: @Json.Serialize(SharedLocalizer["Author_ChooseExcelFile"].Value),
+                ConfirmImport: @Json.Serialize(SharedLocalizer["Author_ConfirmImport"].Value),
+                ErrImport: @Json.Serialize(SharedLocalizer["Author_ErrImport"].Value),
+                SelectAtLeastOneAuthor: @Json.Serialize(SharedLocalizer["Author_SelectAtLeastOne"].Value),
+                ConfirmDeleteSingleAuthor: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteSingle"].Value),
+                ConfirmDeleteSingleAuthorTitle: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteMultiAuthors: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteMulti"].Value),
+                ConfirmDeleteMultiAuthorsTitle: @Json.Serialize(SharedLocalizer["Author_ConfirmDeleteMultiTitle"].Value),
+                BlockedDeleteAuthor: @Json.Serialize(SharedLocalizer["Author_BlockedDelete"].Value),
+                DeletedAuthorsSuccess: @Json.Serialize(SharedLocalizer["Author_DeletedSuccess"].Value),
 
-        NotFoundCategories: @Json.Serialize(SharedLocalizer["Category_NotFound"].Value),
-        ErrLoadCategories: @Json.Serialize(SharedLocalizer["Category_ErrLoad"].Value),
-        TitleAddCategory: @Json.Serialize(SharedLocalizer["Category_TitleAdd"].Value),
-        TitleEditCategory: @Json.Serialize(SharedLocalizer["Category_TitleEdit"].Value),
-        ConfirmDeleteSingleCategoryTitle: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleCategoryMsg: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleMsg"].Value),
-        ConfirmDeleteMultiCategoriesTitle: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiTitle"].Value),
-        ConfirmDeleteMultiCategoriesMsg: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiMsg"].Value),
-        SelectAtLeastOneCategory: @Json.Serialize(SharedLocalizer["Category_SelectAtLeastOne"].Value),
-        BlockedDeleteCategory: @Json.Serialize(SharedLocalizer["Category_BlockedDelete"].Value),
-        DeletedCategoriesSuccess: @Json.Serialize(SharedLocalizer["Category_DeletedSuccess"].Value),
-        DragDropExcelCategory: @Json.Serialize(SharedLocalizer["Category_DragDropExcel"].Value),
+                NotFoundCategories: @Json.Serialize(SharedLocalizer["Category_NotFound"].Value),
+                ErrLoadCategories: @Json.Serialize(SharedLocalizer["Category_ErrLoad"].Value),
+                TitleAddCategory: @Json.Serialize(SharedLocalizer["Category_TitleAdd"].Value),
+                TitleEditCategory: @Json.Serialize(SharedLocalizer["Category_TitleEdit"].Value),
+                ConfirmDeleteSingleCategoryTitle: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteSingleCategoryMsg: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteSingleMsg"].Value),
+                ConfirmDeleteMultiCategoriesTitle: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiTitle"].Value),
+                ConfirmDeleteMultiCategoriesMsg: @Json.Serialize(SharedLocalizer["Category_ConfirmDeleteMultiMsg"].Value),
+                SelectAtLeastOneCategory: @Json.Serialize(SharedLocalizer["Category_SelectAtLeastOne"].Value),
+                BlockedDeleteCategory: @Json.Serialize(SharedLocalizer["Category_BlockedDelete"].Value),
+                DeletedCategoriesSuccess: @Json.Serialize(SharedLocalizer["Category_DeletedSuccess"].Value),
+                DragDropExcelCategory: @Json.Serialize(SharedLocalizer["Category_DragDropExcel"].Value),
 
-        NotFoundChapters: @Json.Serialize(SharedLocalizer["Chapter_NotFound"].Value),
-        ErrLoadChapters: @Json.Serialize(SharedLocalizer["Chapter_ErrLoad"].Value),
-        TitleAddChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleAdd"].Value),
-        TitleEditChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleEdit"].Value),
-        ConfirmDeleteSingleChapterTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleChapterMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleMsg"].Value),
-        ConfirmDeleteMultiChaptersTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiTitle"].Value),
-        ConfirmDeleteMultiChaptersMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiMsg"].Value),
-        SelectAtLeastOneChapter: @Json.Serialize(SharedLocalizer["Chapter_SelectAtLeastOne"].Value),
-        BlockedDeleteChapter: @Json.Serialize(SharedLocalizer["Chapter_BlockedDelete"].Value),
-        DeletedChaptersSuccess: @Json.Serialize(SharedLocalizer["Chapter_DeletedSuccess"].Value),
-        FilterAllStories: @Json.Serialize(SharedLocalizer["Chapter_FilterAllStories"].Value),
-        SelectStory: @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value),
-        DragDropExcelChapter: @Json.Serialize(SharedLocalizer["Chapter_DragDropExcel"].Value),
-        NotFoundStories: @Json.Serialize(SharedLocalizer["Story_NotFound"].Value),
-        ErrLoadStories: @Json.Serialize(SharedLocalizer["Story_ErrLoad"].Value),
-        TitleAddStory: @Json.Serialize(SharedLocalizer["Story_TitleAdd"].Value),
-        TitleEditStory: @Json.Serialize(SharedLocalizer["Story_TitleEdit"].Value),
-        NoCategoriesSelected: @Json.Serialize(SharedLocalizer["Story_NoCategoriesSelected"].Value),
-        LangDefaultNotice: @Json.Serialize(SharedLocalizer["Story_LangDefaultNotice"].Value),
-        LangLockedNotice: @Json.Serialize(SharedLocalizer["Story_LangLockedNotice"].Value),
-        ReqSelectLang: @Json.Serialize(SharedLocalizer["Story_ReqSelectLang"].Value),
-        ConfirmDeleteSingleStoryTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleStoryMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleStoryMsg"].Value),
-        ConfirmDeleteMultiStoriesTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesTitle"].Value),
-        ConfirmDeleteMultiStoriesMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesMsg"].Value),
-        SelectAtLeastOneStory: @Json.Serialize(SharedLocalizer["Story_SelectAtLeastOne"].Value),
-        BlockedDeleteStory: @Json.Serialize(SharedLocalizer["Story_BlockedDelete"].Value),
-        DeletedStoriesSuccess: @Json.Serialize(SharedLocalizer["Story_DeletedSuccess"].Value),
-        MetricLoves: @Json.Serialize(SharedLocalizer["Story_MetricLoves"].Value),
-        MetricRates: @Json.Serialize(SharedLocalizer["Story_MetricRates"].Value),
-        MetricRated: @Json.Serialize(SharedLocalizer["Story_MetricRated"].Value),
-        MetricFollowers: @Json.Serialize(SharedLocalizer["Story_MetricFollowers"].Value),
-        FilterAllCategories: @Json.Serialize(SharedLocalizer["Story_FilterAllCategories"].Value),
-        SelectAuthor: @Json.Serialize(SharedLocalizer["Story_SelectAuthor"].Value),
-        SelectLanguagesPlaceholder: @Json.Serialize(SharedLocalizer["Story_SelectLanguagesPlaceholder"].Value),
-        DragDropExcelStory: @Json.Serialize(SharedLocalizer["Story_DragDropExcel"].Value),
+                NotFoundChapters: @Json.Serialize(SharedLocalizer["Chapter_NotFound"].Value),
+                ErrLoadChapters: @Json.Serialize(SharedLocalizer["Chapter_ErrLoad"].Value),
+                TitleAddChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleAdd"].Value),
+                TitleEditChapter: @Json.Serialize(SharedLocalizer["Chapter_TitleEdit"].Value),
+                ConfirmDeleteSingleChapterTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteSingleChapterMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteSingleMsg"].Value),
+                ConfirmDeleteMultiChaptersTitle: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiTitle"].Value),
+                ConfirmDeleteMultiChaptersMsg: @Json.Serialize(SharedLocalizer["Chapter_ConfirmDeleteMultiMsg"].Value),
+                SelectAtLeastOneChapter: @Json.Serialize(SharedLocalizer["Chapter_SelectAtLeastOne"].Value),
+                BlockedDeleteChapter: @Json.Serialize(SharedLocalizer["Chapter_BlockedDelete"].Value),
+                DeletedChaptersSuccess: @Json.Serialize(SharedLocalizer["Chapter_DeletedSuccess"].Value),
+                FilterAllStories: @Json.Serialize(SharedLocalizer["Chapter_FilterAllStories"].Value),
+                SelectStory: @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value),
+                DragDropExcelChapter: @Json.Serialize(SharedLocalizer["Chapter_DragDropExcel"].Value),
+                NotFoundStories: @Json.Serialize(SharedLocalizer["Story_NotFound"].Value),
+                ErrLoadStories: @Json.Serialize(SharedLocalizer["Story_ErrLoad"].Value),
+                TitleAddStory: @Json.Serialize(SharedLocalizer["Story_TitleAdd"].Value),
+                TitleEditStory: @Json.Serialize(SharedLocalizer["Story_TitleEdit"].Value),
+                NoCategoriesSelected: @Json.Serialize(SharedLocalizer["Story_NoCategoriesSelected"].Value),
+                LangDefaultNotice: @Json.Serialize(SharedLocalizer["Story_LangDefaultNotice"].Value),
+                LangLockedNotice: @Json.Serialize(SharedLocalizer["Story_LangLockedNotice"].Value),
+                ReqSelectLang: @Json.Serialize(SharedLocalizer["Story_ReqSelectLang"].Value),
+                ConfirmDeleteSingleStoryTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleStoryTitle"].Value),
+                ConfirmDeleteSingleStoryMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteSingleStoryMsg"].Value),
+                ConfirmDeleteMultiStoriesTitle: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesTitle"].Value),
+                ConfirmDeleteMultiStoriesMsg: @Json.Serialize(SharedLocalizer["Story_ConfirmDeleteMultiStoriesMsg"].Value),
+                SelectAtLeastOneStory: @Json.Serialize(SharedLocalizer["Story_SelectAtLeastOne"].Value),
+                BlockedDeleteStory: @Json.Serialize(SharedLocalizer["Story_BlockedDelete"].Value),
+                DeletedStoriesSuccess: @Json.Serialize(SharedLocalizer["Story_DeletedSuccess"].Value),
+                MetricLoves: @Json.Serialize(SharedLocalizer["Story_MetricLoves"].Value),
+                MetricRates: @Json.Serialize(SharedLocalizer["Story_MetricRates"].Value),
+                MetricRated: @Json.Serialize(SharedLocalizer["Story_MetricRated"].Value),
+                MetricFollowers: @Json.Serialize(SharedLocalizer["Story_MetricFollowers"].Value),
+                FilterAllCategories: @Json.Serialize(SharedLocalizer["Story_FilterAllCategories"].Value),
+                SelectAuthor: @Json.Serialize(SharedLocalizer["Story_SelectAuthor"].Value),
+                SelectLanguagesPlaceholder: @Json.Serialize(SharedLocalizer["Story_SelectLanguagesPlaceholder"].Value),
+                DragDropExcelStory: @Json.Serialize(SharedLocalizer["Story_DragDropExcel"].Value),
 
-        NotFoundUsers: @Json.Serialize(SharedLocalizer["User_NotFound"].Value),
-        ErrLoadUsers: @Json.Serialize(SharedLocalizer["User_ErrLoad"].Value),
-        TitleAddMember: @Json.Serialize(SharedLocalizer["User_TitleAddMember"].Value),
-        TitleEditMember: @Json.Serialize(SharedLocalizer["User_TitleEditMember"].Value),
-        PwdPlaceholderKeep: @Json.Serialize(SharedLocalizer["User_PwdPlaceholderKeep"].Value),
-        SelectAtLeastOneUser: @Json.Serialize(SharedLocalizer["User_SelectAtLeastOneUser"].Value),
-        ConfirmDeleteSingleUserTitle: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleUserMsg: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleMsg"].Value),
-        ConfirmDeleteMultiUsersTitle: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiUsersTitle"].Value),
-        ConfirmDeleteMultiUsersMsg: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiUsersMsg"].Value),
-        BlockedDeleteUser: @Json.Serialize(SharedLocalizer["User_BlockedDelete"].Value),
-        DeletedUsersSuccess: @Json.Serialize(SharedLocalizer["User_DeletedSuccess"].Value),
-        ErrDeleteUsersServer: @Json.Serialize(SharedLocalizer["User_ErrDeleteUsersServer"].Value),
-        DragDropExcelUser: @Json.Serialize(SharedLocalizer["User_DragDropExcel"].Value),
-        
-        NotFoundParagraphs: @Json.Serialize(SharedLocalizer["Para_NotFound"].Value),
-        ErrLoadParagraphs: @Json.Serialize(SharedLocalizer["Para_ErrLoad"].Value),
-        SelectAtLeastOnePara: @Json.Serialize(SharedLocalizer["Para_SelectAtLeastOne"].Value),
-        ConfirmDeleteMultiParasTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteMultiTitle"].Value),
-        ConfirmDeleteMultiParasMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteMultiMsg"].Value),
-        ConfirmDeleteSingleParaTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSingleTitle"].Value),
-        ConfirmDeleteSingleParaMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSingleMsg"].Value),
-        DeleteParaInvalidId: @Json.Serialize(SharedLocalizer["Para_DeleteInvalidId"].Value),
-        DeletedParasSuccess: @Json.Serialize(SharedLocalizer["Para_DeletedSuccess"].Value),
-        ErrDeleteParasServer: @Json.Serialize(SharedLocalizer["Para_ErrDeleteServer"].Value),
-        BlockTypeOpening: @Json.Serialize(SharedLocalizer["Para_BlockTypeOpening"].Value),
-        BlockTypeNew: @Json.Serialize(SharedLocalizer["Para_BlockTypeNew"].Value),
-        BlockTypeDialogue: @Json.Serialize(SharedLocalizer["Para_BlockTypeDialogue"].Value),
-        BlockTypeContinuous: @Json.Serialize(SharedLocalizer["Para_BlockTypeContinuous"].Value),
-        TitleInsertAfter: @Json.Serialize(SharedLocalizer["Para_TitleInsertAfter"].Value),
-        TitleEditPara: @Json.Serialize(SharedLocalizer["Para_TitleEdit"].Value),
-        TitleReadChapter: @Json.Serialize(SharedLocalizer["Para_TitleReadChapter"].Value),
-        TitleDeletePara: @Json.Serialize(SharedLocalizer["Para_TitleDelete"].Value),
-        UnsavedChangesTitle: @Json.Serialize(SharedLocalizer["Para_UnsavedTitle"].Value),
-        UnsavedChangesMsg: @Json.Serialize(SharedLocalizer["Para_UnsavedMsg"].Value),
-        BtnSaveAndExit: @Json.Serialize(SharedLocalizer["Para_BtnSaveAndExit"].Value),
-        BtnDiscardAndExit: @Json.Serialize(SharedLocalizer["Para_BtnDiscardAndExit"].Value),
-        BtnStayHere: @Json.Serialize(SharedLocalizer["Para_BtnStayHere"].Value),
-        ViewerNoPermissionSave: @Json.Serialize(SharedLocalizer["Para_ViewerNoSave"].Value),
-        SaveSuccessAll: @Json.Serialize(SharedLocalizer["Para_SaveSuccessAll"].Value),
-        SavingStatus: @Json.Serialize(SharedLocalizer["Para_SavingStatus"].Value),
-        ModifiedCountInfo: @Json.Serialize(SharedLocalizer["Para_ModifiedCountInfo"].Value),
-        NoParagraphsFoundChapter: @Json.Serialize(SharedLocalizer["Para_NoParasFoundChapter"].Value),
-        NoTextLang: @Json.Serialize(SharedLocalizer["Para_NoTextLang"].Value),
-        ReqSelectStoryAndChapter: @Json.Serialize(SharedLocalizer["Para_ReqSelectStoryAndChapter"].Value),
-        ReqEnglishSourceFile: @Json.Serialize(SharedLocalizer["Para_ReqEnglishSourceFile"].Value),
-        ReqAiOrFileTarget: @Json.Serialize(SharedLocalizer["Para_ReqAiOrFileTarget"].Value),
-        AiTranslateFromEn: @Json.Serialize(SharedLocalizer["Para_AiTranslateFromEn"].Value),
-        AiTranslatedActive: @Json.Serialize(SharedLocalizer["Para_AiTranslatedActive"].Value),
-        AiEnabledMsg: @Json.Serialize(SharedLocalizer["Para_AiEnabledMsg"].Value),
-        AiDisabledMsg: @Json.Serialize(SharedLocalizer["Para_AiDisabledMsg"].Value),
-        EnqueuingStatus: @Json.Serialize(SharedLocalizer["Para_EnqueuingStatus"].Value),
-        ImportJobProcessingMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobProcessing"].Value),
-        ImportJobSuccessMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobSuccess"].Value),
-        ImportJobFailedMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobFailed"].Value),
-        UnknownStory: @Json.Serialize(SharedLocalizer["Para_UnknownStory"].Value),
-        UnknownChapter: @Json.Serialize(SharedLocalizer["Para_UnknownChapter"].Value),
-        ParagraphsCountText: @Json.Serialize(SharedLocalizer["Para_ParagraphsCountText"].Value),
-        ErrLoadChapterContent: @Json.Serialize(SharedLocalizer["Para_ErrLoadChapterContent"].Value),
-        SelectParaToDelete: @Json.Serialize(SharedLocalizer["Para_SelectParaToDelete"].Value),
-        ConfirmDeleteSideParaTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSideParaTitle"].Value),
-        ConfirmDeleteSideParaMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSideParaMsg"].Value),
-        DeletedSideParaSuccess: @Json.Serialize(SharedLocalizer["Para_DeletedSideParaSuccess"].Value),
-        ErrDeleteSideParaServer: @Json.Serialize(SharedLocalizer["Para_ErrDeleteSideParaServer"].Value),
-        SelectParaToInsert: @Json.Serialize(SharedLocalizer["Para_SelectParaToInsert"].Value),
-        InvalidChapterSelected: @Json.Serialize(SharedLocalizer["Para_InvalidChapterSelected"].Value),
-        LoadingLangConfig: @Json.Serialize(SharedLocalizer["Para_LoadingLangConfig"].Value),
-        NoConfiguredLangFound: @Json.Serialize(SharedLocalizer["Para_NoConfiguredLangFound"].Value),
-        ReqEnViFields: @Json.Serialize(SharedLocalizer["Para_ReqEnViFields"].Value),
-        SelectOnlyImageFile: @Json.Serialize(SharedLocalizer["Para_SelectOnlyImageFile"].Value),
-        SelectParaBeforeAttachImg: @Json.Serialize(SharedLocalizer["Para_SelectParaBeforeAttachImg"].Value),
-        ExistingMediaWarningTitle: @Json.Serialize(SharedLocalizer["Para_ExistingMediaWarningTitle"].Value),
-        ExistingMediaWarningMsg: @Json.Serialize(SharedLocalizer["Para_ExistingMediaWarningMsg"].Value),
-        ReqAll3MultiStripImgs: @Json.Serialize(SharedLocalizer["Para_ReqAll3MultiStripImgs"].Value),
-        ReqChooseImgUpload: @Json.Serialize(SharedLocalizer["Para_ReqChooseImgUpload"].Value),
-        AttachIllustrationSuccess: @Json.Serialize(SharedLocalizer["Para_AttachIllustrationSuccess"].Value),
-        SelectParaToMerge: @Json.Serialize(SharedLocalizer["Para_SelectParaToMerge"].Value),
-        CannotMergeFirstPrev: @Json.Serialize(SharedLocalizer["Para_CannotMergeFirstPrev"].Value),
-        CannotMergeLastNext: @Json.Serialize(SharedLocalizer["Para_CannotMergeLastNext"].Value),
-        MergeConfirmTitle: @Json.Serialize(SharedLocalizer["Para_MergeConfirmTitle"].Value),
-        MergeConfirmMsg: @Json.Serialize(SharedLocalizer["Para_MergeConfirmMsg"].Value),
-        MergeImageWarningMsg: @Json.Serialize(SharedLocalizer["Para_MergeImageWarningMsg"].Value),
-        ErrMergeServer: @Json.Serialize(SharedLocalizer["Para_ErrMergeServer"].Value),
-        UnsavedBeforeUnloadMsg: @Json.Serialize(SharedLocalizer["Para_UnsavedBeforeUnloadMsg"].Value)
-    });
-</script>
+                NotFoundUsers: @Json.Serialize(SharedLocalizer["User_NotFound"].Value),
+                ErrLoadUsers: @Json.Serialize(SharedLocalizer["User_ErrLoad"].Value),
+                TitleAddMember: @Json.Serialize(SharedLocalizer["User_TitleAddMember"].Value),
+                TitleEditMember: @Json.Serialize(SharedLocalizer["User_TitleEditMember"].Value),
+                PwdPlaceholderKeep: @Json.Serialize(SharedLocalizer["User_PwdPlaceholderKeep"].Value),
+                SelectAtLeastOneUser: @Json.Serialize(SharedLocalizer["User_SelectAtLeastOneUser"].Value),
+                ConfirmDeleteSingleUserTitle: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteSingleUserMsg: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteSingleMsg"].Value),
+                ConfirmDeleteMultiUsersTitle: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiUsersTitle"].Value),
+                ConfirmDeleteMultiUsersMsg: @Json.Serialize(SharedLocalizer["User_ConfirmDeleteMultiUsersMsg"].Value),
+                BlockedDeleteUser: @Json.Serialize(SharedLocalizer["User_BlockedDelete"].Value),
+                DeletedUsersSuccess: @Json.Serialize(SharedLocalizer["User_DeletedSuccess"].Value),
+                ErrDeleteUsersServer: @Json.Serialize(SharedLocalizer["User_ErrDeleteUsersServer"].Value),
+                DragDropExcelUser: @Json.Serialize(SharedLocalizer["User_DragDropExcel"].Value),
+
+                NotFoundParagraphs: @Json.Serialize(SharedLocalizer["Para_NotFound"].Value),
+                ErrLoadParagraphs: @Json.Serialize(SharedLocalizer["Para_ErrLoad"].Value),
+                SelectAtLeastOnePara: @Json.Serialize(SharedLocalizer["Para_SelectAtLeastOne"].Value),
+                ConfirmDeleteMultiParasTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteMultiTitle"].Value),
+                ConfirmDeleteMultiParasMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteMultiMsg"].Value),
+                ConfirmDeleteSingleParaTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSingleTitle"].Value),
+                ConfirmDeleteSingleParaMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSingleMsg"].Value),
+                DeleteParaInvalidId: @Json.Serialize(SharedLocalizer["Para_DeleteInvalidId"].Value),
+                DeletedParasSuccess: @Json.Serialize(SharedLocalizer["Para_DeletedSuccess"].Value),
+                ErrDeleteParasServer: @Json.Serialize(SharedLocalizer["Para_ErrDeleteServer"].Value),
+                BlockTypeOpening: @Json.Serialize(SharedLocalizer["Para_BlockTypeOpening"].Value),
+                BlockTypeNew: @Json.Serialize(SharedLocalizer["Para_BlockTypeNew"].Value),
+                BlockTypeDialogue: @Json.Serialize(SharedLocalizer["Para_BlockTypeDialogue"].Value),
+                BlockTypeContinuous: @Json.Serialize(SharedLocalizer["Para_BlockTypeContinuous"].Value),
+                TitleInsertAfter: @Json.Serialize(SharedLocalizer["Para_TitleInsertAfter"].Value),
+                TitleEditPara: @Json.Serialize(SharedLocalizer["Para_TitleEdit"].Value),
+                TitleReadChapter: @Json.Serialize(SharedLocalizer["Para_TitleReadChapter"].Value),
+                TitleDeletePara: @Json.Serialize(SharedLocalizer["Para_TitleDelete"].Value),
+                UnsavedChangesTitle: @Json.Serialize(SharedLocalizer["Para_UnsavedTitle"].Value),
+                UnsavedChangesMsg: @Json.Serialize(SharedLocalizer["Para_UnsavedMsg"].Value),
+                BtnSaveAndExit: @Json.Serialize(SharedLocalizer["Para_BtnSaveAndExit"].Value),
+                BtnDiscardAndExit: @Json.Serialize(SharedLocalizer["Para_BtnDiscardAndExit"].Value),
+                BtnStayHere: @Json.Serialize(SharedLocalizer["Para_BtnStayHere"].Value),
+                ViewerNoPermissionSave: @Json.Serialize(SharedLocalizer["Para_ViewerNoSave"].Value),
+                SaveSuccessAll: @Json.Serialize(SharedLocalizer["Para_SaveSuccessAll"].Value),
+                SavingStatus: @Json.Serialize(SharedLocalizer["Para_SavingStatus"].Value),
+                ModifiedCountInfo: @Json.Serialize(SharedLocalizer["Para_ModifiedCountInfo"].Value),
+                NoParagraphsFoundChapter: @Json.Serialize(SharedLocalizer["Para_NoParasFoundChapter"].Value),
+                NoTextLang: @Json.Serialize(SharedLocalizer["Para_NoTextLang"].Value),
+                ReqSelectStoryAndChapter: @Json.Serialize(SharedLocalizer["Para_ReqSelectStoryAndChapter"].Value),
+                ReqEnglishSourceFile: @Json.Serialize(SharedLocalizer["Para_ReqEnglishSourceFile"].Value),
+                ReqAiOrFileTarget: @Json.Serialize(SharedLocalizer["Para_ReqAiOrFileTarget"].Value),
+                AiTranslateFromEn: @Json.Serialize(SharedLocalizer["Para_AiTranslateFromEn"].Value),
+                AiTranslatedActive: @Json.Serialize(SharedLocalizer["Para_AiTranslatedActive"].Value),
+                AiEnabledMsg: @Json.Serialize(SharedLocalizer["Para_AiEnabledMsg"].Value),
+                AiDisabledMsg: @Json.Serialize(SharedLocalizer["Para_AiDisabledMsg"].Value),
+                EnqueuingStatus: @Json.Serialize(SharedLocalizer["Para_EnqueuingStatus"].Value),
+                ImportJobProcessingMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobProcessing"].Value),
+                ImportJobSuccessMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobSuccess"].Value),
+                ImportJobFailedMsg: @Json.Serialize(SharedLocalizer["Para_ImportJobFailed"].Value),
+                UnknownStory: @Json.Serialize(SharedLocalizer["Para_UnknownStory"].Value),
+                UnknownChapter: @Json.Serialize(SharedLocalizer["Para_UnknownChapter"].Value),
+                ParagraphsCountText: @Json.Serialize(SharedLocalizer["Para_ParagraphsCountText"].Value),
+                ErrLoadChapterContent: @Json.Serialize(SharedLocalizer["Para_ErrLoadChapterContent"].Value),
+                SelectParaToDelete: @Json.Serialize(SharedLocalizer["Para_SelectParaToDelete"].Value),
+                ConfirmDeleteSideParaTitle: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSideParaTitle"].Value),
+                ConfirmDeleteSideParaMsg: @Json.Serialize(SharedLocalizer["Para_ConfirmDeleteSideParaMsg"].Value),
+                DeletedSideParaSuccess: @Json.Serialize(SharedLocalizer["Para_DeletedSideParaSuccess"].Value),
+                ErrDeleteSideParaServer: @Json.Serialize(SharedLocalizer["Para_ErrDeleteSideParaServer"].Value),
+                SelectParaToInsert: @Json.Serialize(SharedLocalizer["Para_SelectParaToInsert"].Value),
+                InvalidChapterSelected: @Json.Serialize(SharedLocalizer["Para_InvalidChapterSelected"].Value),
+                LoadingLangConfig: @Json.Serialize(SharedLocalizer["Para_LoadingLangConfig"].Value),
+                NoConfiguredLangFound: @Json.Serialize(SharedLocalizer["Para_NoConfiguredLangFound"].Value),
+                ReqEnViFields: @Json.Serialize(SharedLocalizer["Para_ReqEnViFields"].Value),
+                SelectOnlyImageFile: @Json.Serialize(SharedLocalizer["Para_SelectOnlyImageFile"].Value),
+                SelectParaBeforeAttachImg: @Json.Serialize(SharedLocalizer["Para_SelectParaBeforeAttachImg"].Value),
+                ExistingMediaWarningTitle: @Json.Serialize(SharedLocalizer["Para_ExistingMediaWarningTitle"].Value),
+                ExistingMediaWarningMsg: @Json.Serialize(SharedLocalizer["Para_ExistingMediaWarningMsg"].Value),
+                ReqAll3MultiStripImgs: @Json.Serialize(SharedLocalizer["Para_ReqAll3MultiStripImgs"].Value),
+                ReqChooseImgUpload: @Json.Serialize(SharedLocalizer["Para_ReqChooseImgUpload"].Value),
+                AttachIllustrationSuccess: @Json.Serialize(SharedLocalizer["Para_AttachIllustrationSuccess"].Value),
+                SelectParaToMerge: @Json.Serialize(SharedLocalizer["Para_SelectParaToMerge"].Value),
+                CannotMergeFirstPrev: @Json.Serialize(SharedLocalizer["Para_CannotMergeFirstPrev"].Value),
+                CannotMergeLastNext: @Json.Serialize(SharedLocalizer["Para_CannotMergeLastNext"].Value),
+                MergeConfirmTitle: @Json.Serialize(SharedLocalizer["Para_MergeConfirmTitle"].Value),
+                MergeConfirmMsg: @Json.Serialize(SharedLocalizer["Para_MergeConfirmMsg"].Value),
+                MergeImageWarningMsg: @Json.Serialize(SharedLocalizer["Para_MergeImageWarningMsg"].Value),
+                ErrMergeServer: @Json.Serialize(SharedLocalizer["Para_ErrMergeServer"].Value),
+                UnsavedBeforeUnloadMsg: @Json.Serialize(SharedLocalizer["Para_UnsavedBeforeUnloadMsg"].Value),
+                SelectStoryPlaceholder: @Json.Serialize(SharedLocalizer["Chapter_SelectStory"].Value),
+                SelectChapterPlaceholder: @Json.Serialize(SharedLocalizer["Para_SelectChapter"].Value),
+                UploadEnSourceFile: @Json.Serialize(SharedLocalizer["Para_UploadEnSourceFile"].Value),
+                FromStorageText: @Json.Serialize(SharedLocalizer["Para_FromStorageText"].Value),
+                ReqAiOrFileTargetMsg: @Json.Serialize(SharedLocalizer["Para_ReqAiOrFileTargetMsg"].Value),
+                AnalyzingSentenceStructure: @Json.Serialize(SharedLocalizer["Para_AnalyzingSentenceStructure"].Value),
+                MismatchedSentenceTitle: @Json.Serialize(SharedLocalizer["Para_MismatchedSentenceTitle"].Value),
+                MismatchedAskAiMsg: @Json.Serialize(SharedLocalizer["Para_MismatchedAskAiMsg"].Value),
+                BtnConfirmAiFormat: @Json.Serialize(SharedLocalizer["Para_BtnConfirmAiFormat"].Value),
+                BtnManualEditFile: @Json.Serialize(SharedLocalizer["Para_BtnManualEditFile"].Value),
+                SentTaskBackgroundSuccess: @Json.Serialize(SharedLocalizer["Para_SentTaskBackgroundSuccess"].Value),
+                FilterAllChapters: @Json.Serialize(SharedLocalizer["Para_FilterAllChapters"].Value)
+                });
+    </script>
     <script>
             function loadContent(url, element) {
                 $('.sidebar nav a, .nav-link').removeClass('active-nav');
@@ -315,7 +338,7 @@
                         $('#loader').hide();
                         $('#main-view').show();
                         if (typeof showToast === "function") {
-                        showToast('@SharedLocalizer["AdminLayout_LoadError"]', 'error');
+                            showToast('@SharedLocalizer["AdminLayout_LoadError"]', 'error');
                         }
                     }
                 });
@@ -352,101 +375,95 @@
                     });
                 }
             });
-        //Toast_Notification
-        function showToast(message, type = 'success', duration = 10000) {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
 
-            const toast = document.createElement('div');
-    
-            toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
-    
-            toast.innerHTML = `
-                <span class="toast-message">${message}</span>
-                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-            `;
+            function showToast(message, type = 'success', duration = 10000) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
 
-            container.appendChild(toast);
+                const toast = document.createElement('div');
 
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
+                toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
 
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => { toast.remove(); }, 500);
-            }, duration);
-        }
-        // CONFIRM UI
-        function customConfirm(message, title = "@SharedLocalizer["AdminLayout_ConfirmAction"]") {
-            return new Promise((resolve) => {
-                const overlay = document.getElementById('confirm-overlay');
-                const titleEl = document.getElementById('confirm-title');
-                const messageEl = document.getElementById('confirm-message');
-                const btnYes = document.getElementById('confirm-btn-yes');
-                const btnNo = document.getElementById('confirm-btn-no');
+                toast.innerHTML = `
+                            <span class="toast-message">${message}</span>
+                            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                        `;
 
-                titleEl.textContent = title;
-                messageEl.innerHTML = message;
+                container.appendChild(toast);
 
-                overlay.classList.add('open');
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
 
-                function cleanup(result) {
-                    overlay.classList.remove('open');
-                    btnYes.removeEventListener('click', onYes);
-                    btnNo.removeEventListener('click', onNo);
-                    resolve(result); 
-                }
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => { toast.remove(); }, 500);
+                }, duration);
+            }
 
-                function onYes() { cleanup(true); }
-                function onNo() { cleanup(false); }
+            function customConfirm(message, title = "@SharedLocalizer["AdminLayout_ConfirmAction"]") {
+                return new Promise((resolve) => {
+                    const overlay = document.getElementById('confirm-overlay');
+                    const titleEl = document.getElementById('confirm-title');
+                    const messageEl = document.getElementById('confirm-message');
+                    const btnYes = document.getElementById('confirm-btn-yes');
+                    const btnNo = document.getElementById('confirm-btn-no');
 
-                btnYes.addEventListener('click', onYes);
-                btnNo.addEventListener('click', onNo);
-            });
-        }
+                    titleEl.textContent = title;
+                    messageEl.innerHTML = message;
 
+                    overlay.classList.add('open');
+
+                    function cleanup(result) {
+                        overlay.classList.remove('open');
+                        btnYes.removeEventListener('click', onYes);
+                        btnNo.removeEventListener('click', onNo);
+                        resolve(result);
+                    }
+
+                    function onYes() { cleanup(true); }
+                    function onNo() { cleanup(false); }
+
+                    btnYes.addEventListener('click', onYes);
+                    btnNo.addEventListener('click', onNo);
+                });
+            }
     </script>
     <script>
-    // Biến toàn cục để các file JS khác có thể kiểm tra
-    window.IS_VIEWER_MODE = @(isViewer ? "true" : "false");
+            window.IS_VIEWER_MODE = @(isViewer ? "true" : "false");
 
-    $(document).ready(function () {
-        if (window.IS_VIEWER_MODE) {
-            // Danh sách các ID / Button thực hiện hành vi Thêm, Sửa, Xóa, Lưu
-            const restrictedSelectors = [
-                '#btnSave',
-                '#chapterEditorSaveButton',
-                '#btnConfirmInsertParagraph',
-                '#btnDeleteSelected',
-                '#btnImport',
-                '#btnConfirmUploadImg',
-                'button[onclick*="deleteParagraph"]',
-                'button[onclick*="handleMergeParagraph"]',
-                'button[onclick*="deleteFromCurrentEditorIndex"]',
-                'button[onclick*="openInsertParagraphModal"]',
-                'button[onclick*="deleteCategory"] '
-            ].join(',');
+            $(document).ready(function () {
+                if (window.IS_VIEWER_MODE) {
+                    const restrictedSelectors = [
+                        '#btnSave',
+                        '#chapterEditorSaveButton',
+                        '#btnConfirmInsertParagraph',
+                        '#btnDeleteSelected',
+                        '#btnImport',
+                        '#btnConfirmUploadImg',
+                        'button[onclick*="deleteParagraph"]',
+                        'button[onclick*="handleMergeParagraph"]',
+                        'button[onclick*="deleteFromCurrentEditorIndex"]',
+                        'button[onclick*="openInsertParagraphModal"]',
+                        'button[onclick*="deleteCategory"] '
+                    ].join(',');
 
-            // Chặn sự kiện click ở mức Capture để ngăn cả onclick inline lẫn event jQuery
-            document.addEventListener('click', function (e) {
-                const targetBtn = e.target.closest(restrictedSelectors);
+                    document.addEventListener('click', function (e) {
+                        const targetBtn = e.target.closest(restrictedSelectors);
 
-                if (targetBtn) {
-                    // Chặn hành động mặc định và dừng lan truyền sự kiện
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
+                        if (targetBtn) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
 
-                    // Hiển thị thông báo Toast lỗi
-                    if (typeof showToast === "function") {
-                        showToast("@SharedLocalizer["AdminLayout_ViewerReadOnlyNotice"]", "error", 4000);
-                    }
+                            if (typeof showToast === "function") {
+                                showToast("@SharedLocalizer["AdminLayout_ViewerReadOnlyNotice"]", "error", 4000);
+                            }
+                        }
+                    }, true);
                 }
-            }, true); // true = Capture phase (chặn trước khi các sự kiện khác chạy)
-        }
-    });
-</script>
+            });
+    </script>
 
     <div id="toast-container"></div>
     <div id="confirm-overlay">
@@ -460,6 +477,15 @@
         </div>
     </div>
 
-</body>
+    <button type="button"
+            onclick="openAdminFileManagerModal()"
+            class="fixed bottom-6 right-6 z-[9998] w-14 h-14 rounded-full btn-grad bg-teal-600 hover:bg-teal-700 flex items-center justify-center text-xl transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
+            title="@(SharedLocalizer["AdminLayout_FileManager"]?.Value ?? "Mở kho tệp dữ liệu")">
+        <i class="fa-solid fa-folder-open group-hover:rotate-12 text-main transition-transform"></i>
 
+        <span class="absolute right-16 bg-slate-800 text-white text-[11px] font-medium px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            @(SharedLocalizer["AdminLayout_FileManager"]?.Value ?? "Kho tệp dữ liệu")
+        </span>
+    </button>
+</body>
 </html>

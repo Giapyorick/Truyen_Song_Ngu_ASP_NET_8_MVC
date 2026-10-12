@@ -8,82 +8,106 @@
 
 <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-    <!-- 1. KHUNG THÔNG TIN CÁ NHÂN -->
-    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
-        <div class="absolute -right-16 -top-16 w-56 h-56 bg-teal-50 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- 1. KHUNG THÔNG TIN CÁ NHÂN (TỈ LỆ 7:3) -->
+    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-100 shadow-xs relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-teal-50/50 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
-            <!-- Avatar -->
-            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 border-teal-500/30 shadow-md shrink-0 bg-slate-50">
-                <img onclick="openImagePreview(this.src)" src="@userAvatar" alt="@Model.User.Name" class="w-full h-full object-cover cursor-pointer" onerror="this.src='/assets/image/placeholder.png';" />
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-10 gap-6 items-center relative z-10">
+            
+            <!-- CỘT 1: THÔNG TIN CÁ NHÂN (CHIẾM 7 CỘT / 10 CỘT) -->
+            <div class="md:col-span-7 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                <!-- Avatar -->
+                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-teal-500/20 shadow-xs shrink-0 bg-slate-50">
+                    <img onclick="openImagePreview(this.src)" 
+                         src="@userAvatar" 
+                         alt="@Model.User.Name" 
+                         class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300" 
+                         onerror="this.src='/assets/image/placeholder.png';" />
+                </div>
 
-            <!-- Chi tiết User -->
-            <div class="flex-1 text-center sm:text-left space-y-3">
-                <div>
-                    <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
-                        <h1 class="text-2xl sm:text-3xl font-black text-main tracking-tight">
-                            @(Model.User.Name ?? SharedLocalizer["Profile_NameNotUpdated"].Value)
-                        </h1>
+                <!-- Chi tiết User -->
+                <div class="flex-1 text-center sm:text-left space-y-2.5 min-w-0 w-full">
+                    <!-- Tên & Nút sửa -->
+                    <div>
+                        <div class="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
+                            <h1 class="text-lg sm:text-xl font-black text-main tracking-tight truncate max-w-full">
+                                @(Model.User.Name ?? SharedLocalizer["Profile_NameNotUpdated"].Value)
+                            </h1>
 
-                        <button type="button"
-                                onclick="openEditProfileModal()"
-                                class="px-3 py-1.5 bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-300 rounded-xl text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5 active:scale-95"
-                                title="@SharedLocalizer["Profile_EditProfile"]">
-                            <i class="fa-solid fa-user-pen text-[11px]"></i>
-                            <span>@SharedLocalizer["Btn_Edit"]</span>
-                        </button>
+                            <button type="button"
+                                    onclick="openEditProfileModal()"
+                                    class="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 border border-teal-200/60 text-main rounded-lg text-[11px] font-bold transition shadow-2xs inline-flex items-center gap-1 active:scale-95 cursor-pointer shrink-0">
+                                <i class="fa-solid text-main fa-user-pen text-[10px]"></i>
+                                <span>@SharedLocalizer["Btn_Edit"]</span>
+                            </button>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 font-medium flex items-center justify-center sm:justify-start gap-1 mt-0.5">
+                            <i class="fa-regular fa-calendar-check text-main text-[10px]"></i>
+                            <span>@SharedLocalizer["Profile_MemberSince"] @(Model.User.CreateAd?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_JoinedDateUnknown"].Value)</span>
+                        </p>
                     </div>
 
-                    <p class="text-xs text-slate-400 mt-1">
-                        @SharedLocalizer["Profile_MemberSince"] @(Model.User.CreateAd?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_JoinedDateUnknown"].Value)
-                    </p>
-                </div>
+                    <!-- Dải Badge Thông tin người dùng -->
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 text-[11px] text-slate-600 font-medium">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 max-w-full">
+                            <i class="fa-solid fa-envelope text-main text-[10px] shrink-0"></i>
+                            <span class="truncate">@(Model.User.Email ?? SharedLocalizer["Profile_NoEmail"].Value)</span>
+                        </span>
 
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-600 font-medium">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200">
-                        <i class="fa-solid fa-envelope text-teal-600"></i>
-                        <span>@(Model.User.Email ?? SharedLocalizer["Profile_NoEmail"].Value)</span>
-                    </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80">
+                            <i class="fa-solid fa-phone text-main text-[10px] shrink-0"></i>
+                            <span>@(Model.User.Phone ?? SharedLocalizer["Profile_NoPhone"].Value)</span>
+                        </span>
 
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200">
-                        <i class="fa-solid fa-phone text-teal-600"></i>
-                        <span>@(Model.User.Phone ?? SharedLocalizer["Profile_NoPhone"].Value)</span>
-                    </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80">
+                            <i class="fa-solid fa-venus-mars text-main text-[10px] shrink-0"></i>
+                            <span>
+                                @{
+                                    string genderDisplay = Model.User.Gender;
+                                    if (Model.User.Gender == "Male") genderDisplay = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Nam" : "Male";
+                                    else if (Model.User.Gender == "Female") genderDisplay = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Nữ" : "Female";
+                                    else if (string.IsNullOrEmpty(genderDisplay)) genderDisplay = SharedLocalizer["Profile_Other"].Value;
+                                }
+                                @genderDisplay
+                            </span>
+                        </span>
 
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200">
-                        <i class="fa-solid fa-venus-mars text-teal-600"></i>
-                        <span>@(Model.User.Gender ?? SharedLocalizer["Profile_Other"].Value)</span>
-                    </span>
-
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200">
-                        <i class="fa-solid fa-cake-candles text-teal-600"></i>
-                        <span>@(Model.User.DoB?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_DateNotUpdated"].Value)</span>
-                    </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80">
+                            <i class="fa-solid fa-cake-candles text-main text-[10px] shrink-0"></i>
+                            <span>@(Model.User.DoB?.ToString("dd/MM/yyyy") ?? SharedLocalizer["Profile_DateNotUpdated"].Value)</span>
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Thống kê -->
-            <div class="flex flex-wrap justify-center sm:justify-start gap-3 shrink-0">
-                <div class="stat-badge-grad stat-grad-teal">
-                    <span class="block text-xl font-black">@Model.FollowedStories.Count</span>
-                    <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">@SharedLocalizer["Profile_Following"]</span>
-                </div>
-                <div class="stat-badge-grad stat-grad-rose">
-                    <span class="block text-xl font-black">@Model.LikedStories.Count</span>
-                    <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">@SharedLocalizer["Profile_Liked"]</span>
-                </div>
-                <div class="stat-badge-grad stat-grad-amber">
-                    <span class="block text-xl font-black">@Model.ReadStories.Count</span>
-                    <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">@SharedLocalizer["Profile_Read"]</span>
-                </div>
-                <div class="stat-badge-grad stat-grad-indigo">
-                    <span class="block text-xl font-black" id="totalVocabCount">@Model.Vocabularies.Count</span>
-                    <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">
-                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Sổ trích dẫn" : "Lorebook")
-                    </span>
+            <!-- CỘT 2: BẢNG BADGE THỐNG KÊ (CHIẾM 3 CỘT / 10 CỘT) -->
+            <div class="md:col-span-3 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="stat-badge-small stat-grad-teal w-full">
+                        <span class="text-sm font-black mr-1">@Model.FollowedStories.Count</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight opacity-95">@SharedLocalizer["Profile_Following"]</span>
+                    </div>
+
+                    <div class="stat-badge-small stat-grad-rose w-full">
+                        <span class="text-sm font-black mr-1">@Model.LikedStories.Count</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight opacity-95">@SharedLocalizer["Profile_Liked"]</span>
+                    </div>
+
+                    <div class="stat-badge-small stat-grad-amber w-full">
+                        <span class="text-sm font-black mr-1">@Model.ReadStories.Count</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight opacity-95">@SharedLocalizer["Profile_Read"]</span>
+                    </div>
+
+                    <div class="stat-badge-small stat-grad-indigo w-full">
+                        <span class="text-sm font-black mr-1" id="totalVocabCount">@Model.Vocabularies.Count</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight opacity-95">
+                            @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Trích dẫn" : "Lorebook")
+                        </span>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -91,21 +115,32 @@
     <div class="space-y-6">
         <div class="flex items-center justify-between border-b border-slate-200 pb-3">
             <div class="flex flex-wrap gap-2 sm:gap-3">
-                <button type="button" onclick="switchProfileTab('followed', this)" class="profile-tab-btn active-tab px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
-                    <i class="fa-solid fa-bookmark text-main"></i>
+                <!-- 1. TAB THEO DÕI (TEAL) -->
+                <button type="button" onclick="switchProfileTab('followed', this)" 
+                        class="profile-tab-btn tab-teal active-tab px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all cursor-pointer">
+                    <i class="fa-solid fa-bookmark text-teal-500"></i>
                     <span>@SharedLocalizer["Profile_FollowingStories"] (@Model.FollowedStories.Count)</span>
                 </button>
-                <button type="button" onclick="switchProfileTab('liked', this)" class="profile-tab-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
-                    <i class="fa-solid fa-heart text-deny"></i>
+
+                <!-- 2. TAB THÍCH (ROSE/RED) -->
+                <button type="button" onclick="switchProfileTab('liked', this)" 
+                        class="profile-tab-btn tab-rose px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all cursor-pointer">
+                    <i class="fa-solid fa-heart text-rose-500"></i>
                     <span>@SharedLocalizer["Profile_LikedStories"] (@Model.LikedStories.Count)</span>
                 </button>
-                <button type="button" onclick="switchProfileTab('read', this)" class="profile-tab-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
-                    <i class="fa-solid fa-book-open-reader text-wait"></i>
+
+                <!-- 3. TAB ĐÃ ĐỌC (AMBER/YELLOW) -->
+                <button type="button" onclick="switchProfileTab('read', this)" 
+                        class="profile-tab-btn tab-amber px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all cursor-pointer">
+                    <i class="fa-solid fa-book-open-reader text-amber-500"></i>
                     <span>@SharedLocalizer["Profile_ReadStories"] (@Model.ReadStories.Count)</span>
                 </button>
-                <button type="button" onclick="switchProfileTab('vocab', this)" class="profile-tab-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all">
+
+                <!-- 4. TAB SỔ TRÍCH DẪN (INDIGO/PURPLE - DÙNG SHAREDLOCALIZER) -->
+                <button type="button" onclick="switchProfileTab('vocab', this)" 
+                        class="profile-tab-btn tab-indigo px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center gap-2 transition-all cursor-pointer">
                     <i class="fa-solid fa-book-bookmark text-indigo-500"></i>
-                    <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Sổ trích dẫn & Cốt truyện" : "Quotes & Lorebook") (@Model.Vocabularies.Count)</span>
+                    <span>@(SharedLocalizer["Profile_Lorebook"]?.Value ?? "Sổ trích dẫn & Cốt truyện") (@Model.Vocabularies.Count)</span>
                 </button>
             </div>
         </div>
@@ -164,7 +199,7 @@
             }
         </div>
 
-        <!-- 6. SỔ TAY TỪ VỰNG CÁ NHÂN (PILL BADGE GRADIENT & THU GỌN GIAO DIỆN) -->
+        <!-- 6. SỔ TAY TỪ VỰNG CÁ NHÂN (HỖ TRỢ SONG NGỮ) -->
         <div id="tabVocabSection" class="profile-tab-content hidden">
             @if (Model.Vocabularies.Any())
             {
@@ -177,7 +212,6 @@
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <div class="btn-grad-vocab bg-main text-xs sm:text-sm">
-                                        
                                         <span>@item.WordOrPhrase</span>
                                     </div>
 
@@ -185,15 +219,20 @@
                                     {
                                         <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
                                             <i class="fa-solid fa-book-open text-main"></i>
-                                            <span>@item.StoryTitle @(item.ChapterNumber.HasValue ? $"- Chương {item.ChapterNumber}" : "")</span>
+                                            <span>
+                                                @item.StoryTitle 
+                                                @(item.ChapterNumber.HasValue 
+                                                    ? $"- {(SharedLocalizer["Chapter_Prefix"]?.Value ?? "Chương")} {item.ChapterNumber}" 
+                                                    : "")
+                                            </span>
                                         </p>
                                     }
                                 </div>
 
                                 <button type="button"
                                         onclick="deleteVocabItem(@item.VocabId)"
-                                        class="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition active:scale-95"
-                                        title="Xóa từ này">
+                                        class="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition active:scale-95 cursor-pointer"
+                                        title="@(SharedLocalizer["Btn_Delete"]?.Value ?? "Xóa")">
                                     <i class="fa-solid fa-trash-can text-deny text-xs"></i>
                                 </button>
                             </div>
@@ -203,7 +242,8 @@
                             {
                                 <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 italic">
                                     <span class="font-bold not-italic text-slate-400 text-[10px] block uppercase tracking-wider mb-0.5">
-                                        <i class="fa-solid fa-quote-left text-teal-500 mr-1"></i> Ngữ cảnh gốc:
+                                        <i class="fa-solid fa-quote-left text-teal-500 mr-1"></i>
+                                        @(SharedLocalizer["Vocab_OriginalContext"]?.Value ?? "Ngữ cảnh gốc:")
                                     </span>
                                     "@item.ContextSentence"
                                 </div>
@@ -213,9 +253,11 @@
                             <div class="pt-0.5">
                                 <button type="button"
                                         onclick="toggleVocabDetail(@item.VocabId, this)"
-                                        class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 transition">
+                                        class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 transition cursor-pointer">
                                     <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
-                                    <span class="btn-toggle-label">Xem giải nghĩa</span>
+                                    <span class="btn-toggle-label">
+                                        @(SharedLocalizer["Vocab_ViewExplanation"]?.Value ?? "Xem giải nghĩa")
+                                    </span>
                                 </button>
                             </div>
 
@@ -226,7 +268,8 @@
                                 </div>
 
                                 <div class="text-[10px] text-slate-400 text-right font-medium">
-                                    <i class="fa-regular fa-clock mr-1"></i> Đã lưu: @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                    <i class="fa-regular fa-clock mr-1"></i> 
+                                    @(SharedLocalizer["Vocab_SavedAt"]?.Value ?? "Đã lưu"): @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                                 </div>
                             </div>
 
@@ -239,10 +282,10 @@
                 <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 space-y-2">
                     <i class="fa-solid fa-book-bookmark text-3xl text-slate-300"></i>
                     <p class="text-sm font-bold text-slate-600">
-                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Chưa có trích dẫn hoặc ghi chú nào" : "No saved quotes or lore notes yet")
+                        @(SharedLocalizer["Vocab_EmptyTitle"]?.Value ?? "Chưa có trích dẫn hoặc ghi chú nào")
                     </p>
-                    <p class="text-xs text-slate-400">
-                        @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Khi đọc truyện, hãy bôi đen đoạn tâm đắc và bấm \"Hỏi AI\" rồi chọn \"Lưu trích dẫn\" nhé!" : "Highlight compelling lines while reading, ask AI, and save them to your lorebook!")
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">
+                        @(SharedLocalizer["Vocab_EmptyHint"]?.Value ?? "Khi đọc truyện, hãy bôi đen đoạn tâm đắc và bấm \"Hỏi AI\" rồi chọn \"Lưu trích dẫn\" nhé!")
                     </p>
                 </div>
             }
@@ -539,6 +582,23 @@ color: #ffffff !important;
 color: #ffffff;
 font-size: 11px;
 }
+.stat-badge-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 12px;
+    color: #ffffff !important;
+    user-select: none;
+    cursor: default;
+    background-size: 200% auto;
+    transition: all 0.3s ease;
+}
+
+.stat-badge-small:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+}
 </style>
 
 @section Scripts {
@@ -664,18 +724,19 @@ font-size: 11px;
         });
 
         function toggleVocabDetail(vocabId, btnElem) {
-            const $detail = $(`#vocab-detail-${vocabId}`);
-            const $icon = $(btnElem).find('i');
-            const $label = $(btnElem).find('.btn-toggle-label');
+            const $detail =$(`#vocab-detail-${vocabId}`);
+            const $icon =$(btnElem).find('i');
+            const $label =$(btnElem).find('.btn-toggle-label');
 
-            if ($detail.hasClass('hidden')) {
-                $detail.removeClass('hidden').hide().slideDown(200);
-                $icon.addClass('rotate-180'); $label.text('Thu gọn');
+            const viewText = "@(SharedLocalizer["Vocab_ViewExplanation"]?.Value ?? "Xem giải nghĩa")";
+            const collapseText = "@(SharedLocalizer["Vocab_Collapse"]?.Value ?? "Thu gọn")";
+
+            if ($detail.hasClass('hidden')) {$detail.removeClass('hidden').hide().slideDown(200);
+                $icon.addClass('rotate-180');$label.text(collapseText);
             } else {
-                $detail.slideUp(200, function () {
-                    $detail.addClass('hidden');
+                $detail.slideUp(200, function () {$detail.addClass('hidden');
                 });
-                $icon.removeClass('rotate-180'); $label.text('Xem giải nghĩa');
+                $icon.removeClass('rotate-180');$label.text(viewText);
             }
         }
     </script>

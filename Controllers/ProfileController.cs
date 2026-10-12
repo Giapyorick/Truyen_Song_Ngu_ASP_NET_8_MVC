@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,7 +41,14 @@ namespace WebTruyenTranh.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // 1. Truy vấn truyện theo dõi
+            // Lấy ngôn ngữ hiện tại từ Culture (Ví dụ: "vi" hoặc "en")
+            var cultureCookie = Request.Cookies[".AspNetCore.Culture"];
+            bool isVi = string.IsNullOrEmpty(cultureCookie)
+                ? CultureInfo.CurrentCulture.Name.StartsWith("vi")
+                : cultureCookie.Contains("vi");
+            string langCode = isVi ? "vi" : "en";
+
+            // 1. Truy vấn truyện theo dõi (Đã hỗ trợ Song ngữ)
             var followedStories = await _context.TblUserFollowStories
                 .AsNoTracking()
                 .Where(f => f.UserId == userId)
@@ -48,6 +56,10 @@ namespace WebTruyenTranh.Controllers
                 .Select(s => new
                 {
                     Story = s,
+                    // Ưu tiên lấy tiêu đề từ bản dịch theo ngôn ngữ hiện tại
+                    DisplayTitle = isVi
+                        ? (s.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode.StartsWith("vi")).Title ?? s.Title)
+                        : s.Title,
                     Progress = _context.TblUserReadingProgresses
                         .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
                         .Select(p => new
@@ -67,13 +79,15 @@ namespace WebTruyenTranh.Controllers
                         {
                             ChapterId = ch.ChapterId,
                             ChapterNumber = ch.ChapterNumber,
-                            ChapterTitle = ch.Title
+                            ChapterTitle = isVi
+                                ? (_context.TblChapterTranslations.FirstOrDefault(ct => ct.ChapterId == ch.ChapterId && ct.LanguageCode.StartsWith("vi")).Title ?? ch.Title)
+                                : ch.Title
                         }).ToList()
                 })
                 .Select(x => new StoryListViewModel
                 {
                     StoryID = x.Story.StoryId,
-                    Title = x.Story.Title,
+                    Title = x.DisplayTitle,
                     Img = x.Story.Img,
                     Lang = x.Story.Lang,
                     Rate = x.Story.Rate,
@@ -86,7 +100,7 @@ namespace WebTruyenTranh.Controllers
                 })
                 .ToListAsync();
 
-            // 2. Truy vấn truyện đã like
+            // 2. Truy vấn truyện đã like (Đã hỗ trợ Song ngữ)
             var likedStories = await _context.TblUserLikings
                 .AsNoTracking()
                 .Where(l => l.UserId == userId && l.Liking > 0)
@@ -94,6 +108,9 @@ namespace WebTruyenTranh.Controllers
                 .Select(s => new
                 {
                     Story = s,
+                    DisplayTitle = isVi
+                        ? (s.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode.StartsWith("vi")).Title ?? s.Title)
+                        : s.Title,
                     Progress = _context.TblUserReadingProgresses
                         .Where(p => p.UserId == userId && p.StoryId == s.StoryId)
                         .Select(p => new
@@ -113,13 +130,15 @@ namespace WebTruyenTranh.Controllers
                         {
                             ChapterId = ch.ChapterId,
                             ChapterNumber = ch.ChapterNumber,
-                            ChapterTitle = ch.Title
+                            ChapterTitle = isVi
+                                ? (_context.TblChapterTranslations.FirstOrDefault(ct => ct.ChapterId == ch.ChapterId && ct.LanguageCode.StartsWith("vi")).Title ?? ch.Title)
+                                : ch.Title
                         }).ToList()
                 })
                 .Select(x => new StoryListViewModel
                 {
                     StoryID = x.Story.StoryId,
-                    Title = x.Story.Title,
+                    Title = x.DisplayTitle,
                     Img = x.Story.Img,
                     Lang = x.Story.Lang,
                     Rate = x.Story.Rate,
@@ -132,7 +151,7 @@ namespace WebTruyenTranh.Controllers
                 })
                 .ToListAsync();
 
-            // 3. Truy vấn truyện đã đọc
+            // 3. Truy vấn truyện đã đọc (Đã hỗ trợ Song ngữ)
             var readStories = await _context.TblUserReadingProgresses
                 .AsNoTracking()
                 .Where(rp => rp.UserId == userId)
@@ -144,6 +163,9 @@ namespace WebTruyenTranh.Controllers
                 .Select(x => new
                 {
                     Story = x.Story,
+                    DisplayTitle = isVi
+                        ? (x.Story.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode.StartsWith("vi")).Title ?? x.Story.Title)
+                        : x.Story.Title,
                     Progress = new
                     {
                         x.Progress.LastChapterId,
@@ -160,13 +182,15 @@ namespace WebTruyenTranh.Controllers
                         {
                             ChapterId = ch.ChapterId,
                             ChapterNumber = ch.ChapterNumber,
-                            ChapterTitle = ch.Title
+                            ChapterTitle = isVi
+                                ? (_context.TblChapterTranslations.FirstOrDefault(ct => ct.ChapterId == ch.ChapterId && ct.LanguageCode.StartsWith("vi")).Title ?? ch.Title)
+                                : ch.Title
                         }).ToList()
                 })
                 .Select(x => new StoryListViewModel
                 {
                     StoryID = x.Story.StoryId,
-                    Title = x.Story.Title,
+                    Title = x.DisplayTitle,
                     Img = x.Story.Img,
                     Lang = x.Story.Lang,
                     Rate = x.Story.Rate,
@@ -179,7 +203,7 @@ namespace WebTruyenTranh.Controllers
                 })
                 .ToListAsync();
 
-            // 4. Truy vấn danh sách từ vựng cá nhân từ tblUserVocabularies
+            // 4. Truy vấn danh sách từ vựng cá nhân (Đã hỗ trợ Song ngữ tiêu đề truyện)
             var vocabularies = await _context.TblUserVocabularies
                 .AsNoTracking()
                 .Where(v => v.UserId == userId)
@@ -192,7 +216,9 @@ namespace WebTruyenTranh.Controllers
                     ContextSentence = v.ContextSentence,
                     StoryTitle = _context.TblChapters
                         .Where(c => c.ChapterId == v.ChapterId)
-                        .Select(c => c.Story.Title)
+                        .Select(c => isVi
+                            ? (c.Story.TblStoryTranslations.FirstOrDefault(t => t.LanguageCode.StartsWith("vi")).Title ?? c.Story.Title)
+                            : c.Story.Title)
                         .FirstOrDefault(),
                     ChapterNumber = _context.TblChapters
                         .Where(c => c.ChapterId == v.ChapterId)
@@ -213,6 +239,7 @@ namespace WebTruyenTranh.Controllers
 
             return View(viewModel);
         }
+
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(UsersViewModel model)
         {
@@ -228,7 +255,6 @@ namespace WebTruyenTranh.Controllers
                 return Json(new { success = false, message = "User account not found!" });
             }
 
-            // 1. Kiểm tra Email nếu có thay đổi
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
                 string cleanEmail = model.Email.Trim().ToLower();
@@ -242,13 +268,11 @@ namespace WebTruyenTranh.Controllers
                 user.Email = cleanEmail;
             }
 
-            // 2. Cập nhật thông tin cơ bản
             if (!string.IsNullOrWhiteSpace(model.Name)) user.Name = model.Name.Trim();
             user.Phone = model.Phone?.Trim();
             user.DoB = model.DoB;
             user.Gender = model.Gender ?? "Male";
 
-            // 3. Đổi mật khẩu nếu người dùng nhập mật khẩu mới
             if (!string.IsNullOrWhiteSpace(model.Passwork))
             {
                 if (model.Passwork.Trim().Length < 6)
@@ -258,7 +282,6 @@ namespace WebTruyenTranh.Controllers
                 user.Passwork = PasswordHasher.Hash(model.Passwork.Trim());
             }
 
-            // 4. Xử lý ảnh đại diện nếu có tải file mới
             if (model.formFile != null && model.formFile.Length > 0)
             {
                 string folder = Path.Combine(_webHostEnvironment.WebRootPath, "assets", "image", "users");
@@ -272,7 +295,6 @@ namespace WebTruyenTranh.Controllers
                     await model.formFile.CopyToAsync(stream);
                 }
 
-                // Xóa ảnh cũ (nếu có)
                 if (!string.IsNullOrEmpty(user.Img))
                 {
                     string oldPath = Path.Combine(_webHostEnvironment.WebRootPath, user.Img.TrimStart('/'));
@@ -285,12 +307,12 @@ namespace WebTruyenTranh.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Cập nhật lại Session hiển thị
             HttpContext.Session.SetString("UserName", user.Name ?? "Reader");
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
 
             return Json(new { success = true, message = "Profile updated successfully!" });
         }
+
         [HttpPost]
         public async Task<IActionResult> DeleteVocabulary(int id)
         {
@@ -313,6 +335,5 @@ namespace WebTruyenTranh.Controllers
 
             return Json(new { success = true, message = "Đã xóa từ vựng khỏi sổ tay!" });
         }
-
     }
 }
