@@ -15,9 +15,31 @@
     if (statusRaw == "completed") { statusText = SharedLocalizer["Story_StatusCompleted"].Value; }
     else if (statusRaw == "posting") { statusText = SharedLocalizer["Story_StatusPosting"].Value; }
     else if (statusRaw.Contains("coming")) { statusText = SharedLocalizer["Story_StatusComingSoon"].Value; }
+
+    // Thẻ tiến độ đọc & nút Đọc tiếp
+    bool isVi = langPrefix == "vi";
+    int totalChapters = ViewBag.TotalChapters ?? 0;
+    int firstChapterId = ViewBag.FirstChapterId ?? 0;
+    int readChapterId = ViewBag.ReadChapterId ?? 0;
+    int readChapterNumber = ViewBag.ReadChapterNumber ?? 0;
+    int readChapterIndex = ViewBag.ReadChapterIndex ?? 0;
+    string readChapterTitle = ViewBag.ReadChapterTitle ?? "";
+    bool hasProgress = readChapterId > 0;
+    int readPercent = totalChapters > 0 ? (int)Math.Round(readChapterIndex * 100.0 / totalChapters) : 0;
+    int continueChapterId = hasProgress ? readChapterId : firstChapterId;
+    string chapterWord = SharedLocalizer["Story_Chapter"].Value;
+
+    // Bình luận: thông tin người đang đăng nhập (để hiện ô nhập hay nút đăng nhập)
+    int cmtUserId = Context.Session.GetInt32("UserId") ?? 0;
+    string cmtUserName = (ViewBag.CommentUserName as string) ?? Context.Session.GetString("UserName") ?? "";
+    string cmtInitial = string.IsNullOrWhiteSpace(cmtUserName) ? "?" : cmtUserName.Trim().Substring(0, 1).ToUpper();
+    // Ảnh đại diện: đường dẫn trong CSDL dạng "assets/image/users/..." -> thêm "/" đầu
+    string cmtImgRaw = (ViewBag.CommentUserImg as string) ?? "";
+    string cmtUserImg = string.IsNullOrWhiteSpace(cmtImgRaw) ? ""
+        : (cmtImgRaw.StartsWith("/") || cmtImgRaw.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? cmtImgRaw : "/" + cmtImgRaw);
 }
 
-<link rel="stylesheet" href="~/css/Index/storyDetail.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/home/story-detail.css" asp-append-version="true">
 <div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 85vh;">
     <div class="card border-0 shadow-xl overflow-hidden st-detail-card" style="border-radius: 32px; background: #ffffff; max-width: 1180px; width: 100%;">
         <div class="card-body p-4 p-lg-5">
@@ -52,18 +74,17 @@
 
                         <div class="st-info-col st-info-section">
                             <div class="card st-panel h-100">
-                                <div class="card-body d-flex flex-column p-4">
+                                <div class="card-body d-flex flex-column p-4 sd-card">
 
-                                    <!-- 1. PHẦN TIÊU ĐỀ & TRẠNG THÁI -->
-                                    <div class="mb-2">
-                                        <h3 class="fw-bold fs-4 text-cus mb-2">
-                                            <i class="fas text-cus fa-book me-1"></i> @SharedLocalizer["Nav_Genres"]
-                                        </h3>
-                                    </div>
+                                    <!-- ===== THẺ CHI TIẾT KIỂU "BOOK DETAIL" ===== -->
+                                    <!-- Nền mờ từ ảnh bìa phía trên -->
+                                    <div class="sd-backdrop" style="background-image: url('/@Model.Img');" aria-hidden="true"></div>
 
-                                    <!-- 2. PHẦN THỂ LOẠI (CATEGORIES) SONG NGỮ -->
-                                    <div class="mt-2 mb-3">
-                                        <div class="d-flex flex-wrap gap-1.5 st-category-wrapper">
+                                    <!-- 1. Tên truyện + tác giả + thể loại -->
+                                    <div class="sd-head">
+                                        <h1 class="sd-title">@Model.Title</h1>
+                                        <p class="sd-author">@(Model.Author?.AuthorName ?? "Unknown")</p>
+                                        <div class="sd-genres">
                                             @if (Model.TblCategoryOfStories != null && Model.TblCategoryOfStories.Any())
                                             {
                                                 foreach (var item in Model.TblCategoryOfStories)
@@ -73,75 +94,99 @@
                                                         var catName = item.Category.TblCategoryTranslations?
                                                             .FirstOrDefault(t => t.LanguageCode.StartsWith(langPrefix))?
                                                             .Name ?? item.Category.Name;
-
-                                                        <span class="badge st-badge-cat text-xs px-2.5 py-1.5 fw-semibold">
-                                                            <i class="fas fa-tags me-1 text-muted opacity-60"></i> @catName
-                                                        </span>
+                                                        <span class="sd-genre">@catName</span>
                                                     }
                                                 }
                                             }
                                             else
                                             {
-                                                <span class="text-muted small italic">@SharedLocalizer["Story_NoCategoriesSelected"]</span>
+                                                <span class="sd-genre sd-genre--empty">@SharedLocalizer["Story_NoCategoriesSelected"]</span>
                                             }
                                         </div>
                                     </div>
 
-                                    <hr class="text-muted opacity-10 my-2">
-
-                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-4 mt-2 w-100 st-stat-box-wrapper">
-
-                                        <!-- 1. ĐÁNH GIÁ -->
-                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap position-relative group" id="cardRate" style="border-color: #fde68a;">
-                                            <div class="st-stat-value text-wait fw-bold fs-6">
-                                                <span id="avgRate">@(Model.Rate != null ? Math.Round((double)Model.Rate).ToString("0") : "0")</span><small class="text-muted fs-xs">/5</small>
-                                            </div>
-
-                                            <div class="star-rating-box my-1" id="starRatingGroup" data-userrating="@userRating" data-current="@(Model.Rate != null ? Math.Round((double)Model.Rate) : 0)">
+                                    <!-- 2. Ba ô thống kê (giữ nguyên ID cho story-interaction.js) -->
+                                    <div class="sd-tiles">
+                                        <!-- Đánh giá -->
+                                        <div class="sd-tile sd-tile--rate" id="cardRate">
+                                            <span class="sd-tile-label">@(isVi ? "Đánh giá" : "Rating")</span>
+                                            <span class="sd-tile-value">
+                                                <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                                <span id="avgRate">@(Model.Rate != null ? Math.Round((double)Model.Rate).ToString("0") : "0")</span><small>/5</small>
+                                            </span>
+                                            <span class="star-rating-box sd-stars" id="starRatingGroup" data-userrating="@userRating" data-current="@(Model.Rate != null ? Math.Round((double)Model.Rate) : 0)"
+                                                  title="@(Model.CountRate ?? 0) @SharedLocalizer["Story_MetricRated"]">
                                                 <i class="fa-regular fa-star star-item" data-value="1" onclick="handleRate(@Model.StoryId, 1)"></i>
                                                 <i class="fa-regular fa-star star-item" data-value="2" onclick="handleRate(@Model.StoryId, 2)"></i>
                                                 <i class="fa-regular fa-star star-item" data-value="3" onclick="handleRate(@Model.StoryId, 3)"></i>
                                                 <i class="fa-regular fa-star star-item" data-value="4" onclick="handleRate(@Model.StoryId, 4)"></i>
                                                 <i class="fa-regular fa-star star-item" data-value="5" onclick="handleRate(@Model.StoryId, 5)"></i>
-                                            </div>
-
-                                            <div class="st-stat-label text-wait opacity-75" style="font-size: 0.7rem;">
-                                                <span id="countRate">@(Model.CountRate ?? 0)</span> @SharedLocalizer["Story_MetricRated"]
-                                            </div>
+                                            </span>
+                                            <span class="sd-tile-foot"><span id="countRate">@(Model.CountRate ?? 0)</span> @SharedLocalizer["Story_MetricRated"]</span>
                                         </div>
 
-                                        <!-- 2. LƯỢT THÍCH -->
-                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap interactive-card @(isLiked ? "active" : "")"
-                                             id="cardLike"
-                                             onclick="handleLike(@Model.StoryId)">
-                                            <div class="st-stat-value text-deny fw-bold fs-6">
-                                                <i class="@(isLiked ? "fa-solid" : "fa-regular") fa-heart text-deny" id="iconLike"></i>
+                                        <!-- Thích -->
+                                        <div class="sd-tile sd-tile--like interactive-card @(isLiked ? "active" : "")"
+                                             id="cardLike" role="button" tabindex="0" aria-pressed="@(isLiked ? "true" : "false")"
+                                             onclick="handleLike(@Model.StoryId)"
+                                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleLike(@Model.StoryId);}">
+                                            <span class="sd-tile-label">@SharedLocalizer["Story_Like"]</span>
+                                            <span class="sd-tile-value">
+                                                <morph-icon id="iconLike" class="st-morph" data-active="@(isLiked ? "true" : "false")" size="18" stroke-width="2.2" reduced-motion="user"></morph-icon>
                                                 <span id="likesCount">@(Model.Likes ?? 0)</span>
-                                            </div>
-                                            <div class="st-stat-label text-deny opacity-75" style="font-size: 0.7rem;" id="labelLike">
-                                                @(isLiked ? SharedLocalizer["Story_Liked"].Value : SharedLocalizer["Story_Like"].Value)
-                                            </div>
+                                            </span>
+                                            <span class="sd-tile-foot sd-tile-action" id="labelLike"
+                                                  data-on="@SharedLocalizer["Story_Liked"].Value" data-off="@SharedLocalizer["Story_Like"].Value">@(isLiked ? SharedLocalizer["Story_Liked"].Value : SharedLocalizer["Story_Like"].Value)</span>
                                         </div>
 
-                                        <!-- 3. THEO DÕI -->
-                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap interactive-card @(isFollowed ? "active" : "")"
-                                             id="cardFollow"
-                                             onclick="handleFollow(@Model.StoryId)">
-                                            <div class="st-stat-value text-accepted fw-bold fs-6">
-                                                <i class="@(isFollowed ? "fa-solid" : "fa-regular") fa-bookmark text-accepted" id="iconFollow"></i>
+                                        <!-- Theo dõi -->
+                                        <div class="sd-tile sd-tile--follow interactive-card @(isFollowed ? "active" : "")"
+                                             id="cardFollow" role="button" tabindex="0" aria-pressed="@(isFollowed ? "true" : "false")"
+                                             onclick="handleFollow(@Model.StoryId)"
+                                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleFollow(@Model.StoryId);}">
+                                            <span class="sd-tile-label">@SharedLocalizer["Story_Follow"]</span>
+                                            <span class="sd-tile-value">
+                                                <morph-icon id="iconFollow" class="st-morph" data-active="@(isFollowed ? "true" : "false")" size="18" stroke-width="2.2" reduced-motion="user"></morph-icon>
                                                 <span id="followersCount">@(Model.CountFolower ?? 0)</span>
-                                            </div>
-                                            <div class="st-stat-label text-accepted opacity-75" style="font-size: 0.7rem;" id="labelFollow">
-                                                @(isFollowed ? SharedLocalizer["Story_Following"].Value : SharedLocalizer["Story_Follow"].Value)
-                                            </div>
-                                        </div>
-
-                                        <!-- 4. KHỐI THÔNG SỐ KHÁC -->
-                                        <div class="st-stat-card flex-grow-1 p-2 text-center text-nowrap">
-                                            <div class="st-stat-value text-main fw-bold fs-6"><i class="fas fa-book-open text-main"></i> @SharedLocalizer["Story_ReadNow"]</div>
-                                            <div class="st-stat-label text-main opacity-75" style="font-size: 0.7rem;">@((Model.Likes ?? 0) + 120) @SharedLocalizer["Story_Reads"]</div>
+                                            </span>
+                                            <span class="sd-tile-foot sd-tile-action" id="labelFollow"
+                                                  data-on="@SharedLocalizer["Story_Following"].Value" data-off="@SharedLocalizer["Story_Follow"].Value">@(isFollowed ? SharedLocalizer["Story_Following"].Value : SharedLocalizer["Story_Follow"].Value)</span>
                                         </div>
                                     </div>
+
+                                    <!-- 3. Thẻ tiến độ đọc -->
+                                    <div class="sd-progress">
+                                        <p class="sd-progress-title">
+                                            @if (hasProgress)
+                                            {
+                                                <text>@chapterWord @readChapterNumber@(string.IsNullOrWhiteSpace(readChapterTitle) ? "" : " - " + readChapterTitle)</text>
+                                            }
+                                            else
+                                            {
+                                                <text>@(isVi ? "Bạn chưa đọc truyện này" : "You haven't started yet")</text>
+                                            }
+                                        </p>
+                                        <div class="sd-progress-meta">
+                                            <span>@chapterWord <b>@(hasProgress ? readChapterIndex : 0)</b> / @totalChapters</span>
+                                            <span>@readPercent%</span>
+                                        </div>
+                                        <div class="sd-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@readPercent">
+                                            <span style="width: @readPercent%;"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Nút đọc -->
+                                    @if (continueChapterId > 0)
+                                    {
+                                        <a class="sd-read-btn" href="/Paragraphs/Content?chapterId=@continueChapterId">
+                                            @(hasProgress ? (isVi ? "Đọc tiếp" : "Continue reading") : (isVi ? "Bắt đầu đọc" : "Start reading"))
+                                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="sd-cta sd-cta--disabled">@SharedLocalizer["Chapter_NoChaptersYet"]</span>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -152,92 +197,79 @@
             <!-- TAB DANH SÁCH CHƯƠNG -->
             <div class="st-lower-row mt-4 mt-lg-5">
                 <div class="st-glass-card st-chapters-container">
-                    <div class="st-tabs-header mb-4">
-                        <div class="st-tab-capsule">
-                            <i class="fa-solid fa-layer-group text-main"></i>
-                            <span class="text-main">@SharedLocalizer["Story_ChapterList"]</span>
-                        </div>
-                    </div>
-
+                    <!-- Tiêu đề "Danh sách chương" nằm trong component ChaptersList (cần tổng số chương) -->
                     <div id="chapters-panel">
                         @await Component.InvokeAsync("ChaptersList", new { storyId = Model.StoryId })
                     </div>
                 </div>
             </div>
+
+            <!-- BÌNH LUẬN (js/home/stories/story-comments.js – API: StoryCommentsController) -->
+            <section class="sd-section sd-comments" id="storyComments"
+                     data-story-id="@Model.StoryId" data-lang="@(isVi ? "vi" : "en")" aria-labelledby="sdCommentsTitle">
+                <div class="chap-header">
+                    <div class="chap-header-text">
+                        <h2 class="chap-header-title" id="sdCommentsTitle">@(isVi ? "Bình luận" : "Comments")</h2>
+                        <span class="chap-header-sub">@(isVi ? "Chia sẻ cảm nghĩ của bạn về truyện" : "Share your thoughts about this story")</span>
+                    </div>
+                    <div class="chap-header-count">
+                        <span class="sdc-count" data-comment-count>0</span>
+                        <span class="chap-header-sub">@(isVi ? "bình luận" : "comments")</span>
+                    </div>
+                </div>
+
+                @if (cmtUserId > 0)
+                {
+                    <form class="sdc-form" autocomplete="off">
+                        <span class="sdc-avatar">
+                            @if (!string.IsNullOrEmpty(cmtUserImg))
+                            {
+                                <img src="@cmtUserImg" alt="@cmtUserName" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                                <span class="sdc-avatar-fb" hidden>@cmtInitial</span>
+                            }
+                            else
+                            {
+                                <span class="sdc-avatar-fb">@cmtInitial</span>
+                            }
+                        </span>
+                        <div class="sdc-field">
+                            <label for="sdcInput" class="sr-only">@(isVi ? "Viết bình luận" : "Write a comment")</label>
+                            <textarea id="sdcInput" class="sdc-input" rows="2" maxlength="1000"
+                                      placeholder="@(isVi ? "Bạn nghĩ gì về truyện này?" : "What do you think about this story?")"></textarea>
+                            <div class="sdc-form-foot">
+                                <span class="sdc-hint">@(isVi ? "Ctrl + Enter để gửi · Hãy bình luận lịch sự, không tiết lộ nội dung" : "Ctrl + Enter to post · Be kind and avoid spoilers")</span>
+                                <span class="sdc-chars">0/1000</span>
+                                <button type="submit" class="sdc-submit btn-grad-cus" disabled>
+                                    <i class="fa-solid fa-paper-plane"></i> @(isVi ? "Gửi" : "Post")
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="sdc-guest">
+                        <i class="fa-regular fa-comment-dots"></i>
+                        <span>@(isVi ? "Đăng nhập để tham gia bình luận cùng mọi người." : "Sign in to join the conversation.")</span>
+                        <button type="button" class="sdc-login btn-grad-cus">@(isVi ? "Đăng nhập" : "Sign in")</button>
+                    </div>
+                }
+
+                <ul class="sdc-list" aria-live="polite"></ul>
+                <button type="button" class="sdc-more" hidden>
+                    <i class="fa-solid fa-chevron-down"></i> @(isVi ? "Xem thêm bình luận" : "Load more comments")
+                </button>
+            </section>
+
+            <!-- TRUYỆN LIÊN QUAN (cùng thể loại) -->
+            @await Component.InvokeAsync("RelatedStories", new { storyId = Model.StoryId })
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="~/js/stories/stories-interaction.js" asp-append-version="true"></script>
+    <script src="~/js/home/stories/story-interaction.js" asp-append-version="true"></script>
+    <script src="~/js/home/stories/story-comments.js" asp-append-version="true"></script>
+    <!-- Icon biến hình cho nút Thích / Theo dõi (morphicons) -->
+    <script type="module" src="~/js/home/stories/story-icons.js" asp-append-version="true"></script>
 }   
-<style>
-    /* Khung cơ bản cho các card */
-    .st-stat-card {
-        background: #ffffff !important;
-        border-radius: 14px;
-        transition: all 0.25s ease;
-        user-select: none;
-    }
-
-    .interactive-card {
-        cursor: pointer;
-    }
-
-        .interactive-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-        }
-
-        .interactive-card:active {
-            transform: scale(0.97);
-        }
-
-    /* --- TRẠNG THÁI ACTIVE: NỀN FULL MÀU GRADIENT, CHỮ TRẮNG --- */
-
-    /* 1. Lượt thích (Deny gradient) */
-    #cardLike.active {
-        background: linear-gradient(135deg, #F45C43, #EB3349) !important;
-        border-color: transparent !important;
-        box-shadow: 0 4px 14px rgba(235, 51, 73, 0.35);
-    }
-
-        #cardLike.active .st-stat-value,
-        #cardLike.active .st-stat-label,
-        #cardLike.active i {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-        }
-
-    /* 2. Theo dõi (Accepted gradient) */
-    #cardFollow.active {
-        background: linear-gradient(135deg, #93F9B9, #1D976C) !important;
-        border-color: transparent !important;
-        box-shadow: 0 4px 14px rgba(29, 151, 108, 0.35);
-    }
-
-        #cardFollow.active .st-stat-value,
-        #cardFollow.active .st-stat-label,
-        #cardFollow.active i {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-        }
-
-    /* --- NGÔI SAO --- */
-    .star-rating-box {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .star-item {
-        font-size: 0.95rem;
-        color: #f59e0b;
-        cursor: pointer;
-        transition: transform 0.15s ease, color 0.15s ease;
-    }
-
-        .star-item:hover {
-            transform: scale(1.2);
-        }
-</style>

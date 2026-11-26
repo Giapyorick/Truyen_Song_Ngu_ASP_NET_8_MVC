@@ -1,0 +1,1088 @@
+/* ======================================================================
+   HOME - TRANG ĐỌC TRUYỆN | Views/Paragraphs/Content.cshtml
+   ====================================================================== */
+:root {
+	--bg-color: #fcfaf7; /* Màu giấy nhẹ cho đỡ mỏi mắt */
+	--text-color: #1a202c;
+	--accent-color: #3b82f6;
+	--highlight-color: #ebf2ff;
+}
+
+body {
+	background-color: #f3f4f6;
+}
+
+/* ==========================================================================
+   1. GIAO DIỆN ĐỌC TRUYỆN (READING WRAPPER & TEXT SEGMENTS)
+   ========================================================================== */
+.reading-wrapper {
+	max-width: 800px;
+	margin: 40px auto;
+	background: var(--bg-color);
+	padding: 50px 60px;
+	border-radius: 16px;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+	min-height: 80vh;
+}
+
+.reading-header {
+	border-bottom: 1px solid #e5e7eb;
+	margin-bottom: 30px;
+	padding-bottom: 10px;
+	display: flex;
+	justify-content: center;
+}
+
+.hint {
+	font-size: 0.85rem;
+	color: #9ca3af;
+	font-style: italic;
+}
+
+.reading-content {
+	font-family: 'Lora', serif;
+	font-size: 1.25rem;
+	line-height: 2;
+	color: var(--text-color);
+	text-align: justify;
+}
+
+.text-segment {
+	padding: 2px 4px;
+	border-radius: 4px;
+	display: inline;
+	user-select: text;
+	-webkit-user-select: text;
+	cursor: text;
+	transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+	.text-segment:hover {
+		background-color: var(--highlight-color);
+		color: var(--accent-color);
+	}
+
+	.text-segment.is-translated {
+		color: #059669;
+		background-color: #ecfdf5;
+		font-family: 'Lora', serif;
+		font-size: 1.25rem;
+	}
+
+	.text-segment:active {
+		transform: scale(0.98);
+	}
+
+.toolbar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+
+.btn-modern {
+	background: #fff;
+	border: 1px solid #d1d5db;
+	padding: 8px 20px;
+	border-radius: 99px;
+	font-weight: 600;
+	color: #374151;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+	.btn-modern:hover {
+		background: #f9fafb;
+		border-color: #3b82f6;
+		color: #3b82f6;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+	}
+
+	.btn-modern:active {
+		transform: translateY(0);
+	}
+
+.btn-fixed {
+	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	z-index: 1000;
+	background: #3b82f6;
+	color: white;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 50px;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+	.btn-fixed:hover {
+		background: #2563eb;
+		transform: translateY(-3px) scale(1.05);
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-fixed:active {
+		transform: scale(0.95);
+	}
+
+	.btn-fixed.active {
+		background: #10b981;
+	}
+
+/* ==========================================================================
+   2. KHUNG CHAT AI CŨ (FALLBACK NẾU CÓ DÙNG)
+   ========================================================================== */
+.ai-chatbox {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	width: 300px;
+	font-family: system-ui, sans-serif;
+	z-index: 2000;
+}
+
+.ai-chat-header {
+	background: #2563eb;
+	color: #fff;
+	padding: 10px;
+	border-radius: 10px 10px 0 0;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.ai-chat-body {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-top: none;
+	border-radius: 0 0 10px 10px;
+	display: flex;
+	flex-direction: column;
+	height: 320px;
+}
+
+	.ai-chat-body.hidden {
+		display: none;
+	}
+
+.ai-chat-messages {
+	flex: 1;
+	padding: 10px;
+	overflow-y: auto;
+	font-size: 13px;
+}
+
+.ai-msg-user {
+	text-align: right;
+	margin-bottom: 8px;
+}
+
+.ai-msg-ai {
+	text-align: left;
+	margin-bottom: 8px;
+	background: #f1f5f9;
+	padding: 6px 8px;
+	border-radius: 6px;
+}
+
+.ai-chat-input {
+	display: flex;
+	border-top: 1px solid #eee;
+}
+
+	.ai-chat-input input {
+		flex: 1;
+		padding: 8px;
+		border: none;
+		outline: none;
+	}
+
+	.ai-chat-input button {
+		padding: 8px 12px;
+		border: none;
+		background: #2563eb;
+		color: #fff;
+		cursor: pointer;
+	}
+
+/* ==========================================================================
+   3. TYPOGRAPHY TIN NHẮN STREAMING AI (TỐI ƯU KHOẢNG CÁCH SÁT NHAU)
+   ========================================================================== */
+@keyframes fadeInMsg {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fadeInMsg 0.25s ease-out forwards;
+}
+
+.ai-content {
+	font-size: 13px !important;
+	line-height: 1.5 !important;
+	color: #334155 !important;
+}
+
+	/* Tiêu đề mục chứa badge */
+	.ai-content h3 {
+		margin-top: 8px !important;
+		margin-bottom: 4px !important;
+		padding: 0 !important;
+		border-bottom: none !important;
+		line-height: 1.2 !important;
+	}
+
+		.ai-content h3:first-child {
+			margin-top: 0 !important;
+		}
+
+	/* Đoạn văn bản */
+	.ai-content p {
+		margin-top: 0 !important;
+		margin-bottom: 6px !important;
+	}
+
+		.ai-content p:last-child {
+			margin-bottom: 0 !important;
+		}
+
+	/* Danh sách gạch đầu dòng sát lại liền mạch */
+	.ai-content ul {
+		list-style-type: none !important;
+		padding-left: 0 !important;
+		margin-top: 4px !important;
+		margin-bottom: 6px !important;
+	}
+
+	.ai-content li {
+		position: relative;
+		padding-left: 14px !important;
+		margin-top: 2px !important;
+		margin-bottom: 3px !important; /* Khoảng cách sát lại tự nhiên */
+		line-height: 1.45 !important;
+	}
+
+		.ai-content li::before {
+			content: "•";
+			position: absolute;
+			left: 2px;
+			top: 0;
+			color: #14b8a6;
+			font-size: 13px;
+			font-weight: bold;
+		}
+
+	.ai-content strong {
+		color: #0d9488 !important;
+		font-weight: 700 !important;
+	}
+
+	.ai-content blockquote {
+		border-left: 3px solid #50C9C3;
+		padding-left: 10px;
+		margin: 6px 0;
+		font-style: italic;
+		color: #64748b;
+		background-color: #f8fafc;
+		border-radius: 0 8px 8px 0;
+	}
+
+	/* Bảng dữ liệu từ vựng trong Chatbox */
+	.ai-content table {
+		width: 100% !important;
+		max-width: 100% !important;
+		border-collapse: separate !important;
+		border-spacing: 0 !important;
+		margin: 8px 0 !important;
+		font-size: 11.5px !important;
+		border: 1px solid #e2e8f0 !important;
+		border-radius: 12px !important;
+		overflow: hidden !important;
+		background-color: #ffffff !important;
+	}
+
+	.ai-content th {
+		background: #f8fafc !important;
+		color: #0f766e !important;
+		font-weight: 700 !important;
+		padding: 6px 10px !important;
+		border-bottom: 1px solid #e2e8f0 !important;
+		text-align: left !important;
+	}
+
+	.ai-content td {
+		padding: 6px 10px !important;
+		border-bottom: 1px solid #f1f5f9 !important;
+		color: #334155 !important;
+		line-height: 1.45 !important;
+		vertical-align: top !important;
+		word-break: break-word !important;
+	}
+
+	.ai-content tr:last-child td {
+		border-bottom: none !important;
+	}
+
+/* ==========================================================================
+   4. NỀN GRADIENT XÁM BẠC CHO TIN NHẮN AI (.btn-grad-gray)
+   ========================================================================== */
+.btn-grad-gray {
+	background-image: linear-gradient(to right, #f8f9fa 0%, #e9ecef 51%, #f8f9fa 100%);
+	background-size: 200% auto;
+	color: #334155;
+	transition: all 0.5s ease;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+	.btn-grad-gray:hover {
+		background-position: right center;
+		color: #1e293b;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+		border-color: #cbd5e1;
+		text-decoration: none;
+	}
+
+/* ==========================================================================
+   5. HỆ THỐNG PILL-BADGE CHUẨN (BO TRÒN, NỀN GRADIENT, CHỮ & ICON TRẮNG)
+   ========================================================================== */
+.badge-pill {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 5px !important;
+	padding: 4px 11px !important;
+	border-radius: 9999px !important;
+	font-size: 11px !important;
+	font-weight: 800 !important;
+	color: #ffffff !important;
+	line-height: 1 !important;
+	letter-spacing: -0.01em !important;
+	border: none !important;
+	user-select: none !important;
+	transition: all 0.3s ease !important;
+	margin: 4px 0 2px 0 !important;
+}
+
+	.badge-pill i {
+		color: #ffffff !important;
+		font-size: 10px !important;
+	}
+
+	.badge-pill.bg-main {
+		background: linear-gradient(to right, #50C9C3 0%, #96DEDA 100%) !important;
+		box-shadow: 0 3px 10px rgba(80, 201, 195, 0.35) !important;
+	}
+
+	.badge-pill.bg-cus {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+		box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3) !important;
+	}
+
+	.badge-pill.bg-info {
+		background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important;
+		box-shadow: 0 3px 10px rgba(0, 198, 255, 0.3) !important;
+	}
+
+	.badge-pill.bg-wait {
+		background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%) !important;
+		box-shadow: 0 3px 10px rgba(255, 128, 8, 0.3) !important;
+	}
+
+	.badge-pill.bg-accepted {
+		background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+		box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3) !important;
+	}
+
+	.badge-pill.bg-deny {
+		background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%) !important;
+		box-shadow: 0 3px 10px rgba(235, 51, 73, 0.3) !important;
+	}
+
+/* ==========================================================================
+   6. NÚT CHIPS CHỌN CHẾ ĐỘ & THANH CUỘN CHATBOX
+   ========================================================================== */
+.ai-action-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border-radius: 9999px;
+	font-size: 11.5px;
+	font-weight: 700;
+	color: #475569;
+	background: #f1f5f9;
+	border: 1px solid #e2e8f0;
+	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+	.ai-action-chip:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+
+.ai-chip.active {
+	background-color: #f0fdfa !important;
+	color: #0f766e !important;
+	border-color: #99f6e4 !important;
+	box-shadow: 0 2px 6px -1px rgba(15, 118, 110, 0.15) !important;
+}
+
+#chat-history::-webkit-scrollbar {
+	width: 5px;
+}
+
+#chat-history::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+#chat-history::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 10px;
+}
+
+	#chat-history::-webkit-scrollbar-thumb:hover {
+		background: #94a3b8;
+	}
+
+/* ==========================================================================
+   7. DẢI ẢNH STRIP TRÊN TRANG READING
+   ========================================================================== */
+.strip-gallery-wrapper {
+	position: relative;
+	width: 100%;
+	margin: 2rem 0;
+}
+
+.strip-gallery-slider {
+	display: flex;
+	gap: 12px;
+	height: 520px;
+	width: 100%;
+	overflow-x: auto;
+	scroll-behavior: smooth;
+	padding: 6px 0;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+	.strip-gallery-slider::-webkit-scrollbar {
+		display: none;
+	}
+
+.strip-panel-card {
+	height: 100%;
+	border-radius: 1.25rem;
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+	background-repeat: no-repeat;
+	flex-shrink: 0;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+	.strip-panel-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.35);
+	}
+
+.strip-nav-btn {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.65);
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+	z-index: 20;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+	.strip-nav-btn:hover {
+		background-color: rgba(0, 0, 0, 0.9);
+		transform: translateY(-50%) scale(1.08);
+	}
+
+	.strip-nav-btn.prev {
+		left: 12px;
+	}
+
+	.strip-nav-btn.next {
+		right: 12px;
+	}
+
+@media (max-width: 640px) {
+	.strip-gallery-slider {
+		height: 380px !important;
+	}
+
+	.strip-panel-card {
+		width: calc((100% - 12px) / 1.8) !important;
+	}
+}
+
+/* ======================================================================
+   HOME - COMPONENT ĐỌC (Word / Excel / Reading view partials)
+   ====================================================================== */
+/* Phông chữ & định dạng bài đọc */
+.reading-content {
+line-height: 2 !important;
+font-family: 'Lora', serif !important;
+text-align: justify;
+}
+
+/* Các khối đoạn văn theo BlockType */
+.reading-content .para-block-start {
+margin-top: 1.5rem !important;
+display: block !important;
+text-indent: 1cm !important;
+clear: both !important;
+}
+
+.reading-content .para-block-indent {
+margin-top: 1.25rem !important;
+text-indent: 1cm !important;
+display: block !important;
+clear: both !important;
+}
+
+.reading-content .para-block-dialogue {
+margin-top: 0.75rem !important;
+display: block !important;
+text-indent: 1cm !important;
+clear: both !important;
+}
+
+.reading-content .para-block-dialogue::before {
+content: "- " !important;
+font-weight: bold !important;
+color: inherit !important;
+}
+
+/* Định dạng câu inline */
+.reading-content .text-segment {
+display: inline !important;
+cursor: pointer !important;
+background-color: transparent !important;
+border-radius: 4px !important;
+text-indent: 0 !important;
+}
+
+.reading-content .text-segment.is-translated {
+color: inherit !important;
+}
+
+.reading-content .text-segment p {
+display: inline !important;
+margin: 0 !important;
+padding: 0 !important;
+}
+
+/* Khung hiển thị ảnh minh họa */
+.story-illustration-block {
+display: block !important;
+margin: 2rem auto !important;
+text-align: center !important;
+text-indent: 0 !important;
+width: 100% !important;
+clear: both !important;
+}
+
+.story-illustration-block img {
+display: block !important;
+max-width: 90% !important;
+max-height: 550px !important;
+margin: 0 auto !important;
+border-radius: 16px !important;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+border: 1px solid #e5e7eb !important;
+object-fit: contain !important;
+}
+
+.story-illustration-caption {
+margin-top: 10px !important;
+font-size: 14px !important;
+font-weight: 500 !important;
+font-style: italic !important;
+display: flex !important;
+align-items: center !important;
+justify-content: center !important;
+gap: 6px !important;
+text-indent: 0 !important;
+color: #64748b;
+}
+
+.story-illustration-caption i {
+font-size: 12px !important;
+color: #0d9488 !important;
+}
+
+/* Lớp phủ Focus Mode */
+#focusModeOverlay {
+z-index: -1 !important;
+pointer-events: none;
+scrollbar-width: none !important;
+-ms-overflow-style: none !important;
+}
+
+#focusModeOverlay::-webkit-scrollbar,
+#fixedBottomBar::-webkit-scrollbar {
+display: none !important;
+}
+
+#focusModeOverlay.block {
+z-index: 1000 !important;
+pointer-events: auto;
+}
+
+#rightActionControls, #chat-box {
+z-index: 9999 !important;
+}
+
+/* Theme Biến thể */
+#themeSelectorGroup button {
+width: 24px !important;
+height: 24px !important;
+flex-shrink: 0 !important;
+border-radius: 50% !important;
+}
+
+#themeSelectorGroup button[data-theme="light"] {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+#themeSelectorGroup button[data-theme="sepia"] {
+    background-color: #f4ecd8 !important;
+    border: 1px solid rgba(180, 83, 9, 0.3) !important;
+}
+
+#themeSelectorGroup button[data-theme="dark"] {
+    background-color: #1e293b !important;
+    border: 1px solid #475569 !important;
+}
+#focusModeOverlay.theme-light {
+background-color: #f1f5f9;
+}
+
+#focusModeOverlay.theme-light #focusContentContainer,
+#mainWrapper.theme-light {
+color: #1e293b !important;
+}
+
+#mainWrapper.theme-light .text-segment {
+color: #1e293b !important;
+}
+
+#focusModeOverlay.theme-sepia {
+background-color: #eaddca;
+}
+
+#focusModeOverlay.theme-sepia #focusContentContainer,
+#mainWrapper.theme-sepia {
+background-color: #fdf6e3 !important;
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia .text-segment {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia .story-illustration-caption {
+color: #786248 !important;
+}
+
+.theme-sepia #fixedBottomBar {
+background-color: rgba(244, 236, 216, 0.95) !important;
+border-color: #e4dcbc !important;
+}
+
+.theme-sepia #fixedBottomBar div {
+background-color: #fbf7ee !important;
+border-color: #e4dcbc !important;
+color: #433422 !important;
+}
+
+.theme-sepia #chapterSelect, .theme-sepia #fixedBottomBar button {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia #storyChapterHeader {
+background-color: #f4ecd8 !important;
+border-color: #e4dcbc !important;
+}
+
+#mainWrapper.theme-sepia #txtStoryTitle {
+color: #433422 !important;
+}
+
+#mainWrapper.theme-sepia #txtChapterTitle {
+color: #854d0e !important;
+}
+
+#focusModeOverlay.theme-dark {
+background-color: #020617;
+}
+
+#focusModeOverlay.theme-dark #focusContentContainer,
+#mainWrapper.theme-dark {
+background-color: #1e293b !important;
+color: #f1f5f9 !important;
+border: 1px solid #334155;
+}
+
+#mainWrapper.theme-dark .text-segment {
+color: #f1f5f9 !important;
+}
+
+#mainWrapper.theme-dark .story-illustration-block img {
+border-color: #334155 !important;
+}
+
+#mainWrapper.theme-dark .story-illustration-caption {
+color: #94a3b8 !important;
+}
+
+.theme-dark #fixedBottomBar {
+background-color: rgba(30, 41, 59, 0.95) !important;
+border-color: #334155 !important;
+}
+
+.theme-dark #fixedBottomBar div {
+background-color: #0f172a !important;
+border-color: #334155 !important;
+color: #f1f5f9 !important;
+}
+
+.theme-dark #chapterSelect, .theme-dark #fixedBottomBar button {
+color: #f1f5f9 !important;
+}
+
+.theme-dark .hint-bar {
+background-color: #1e293b !important;
+border-color: #334155 !important;
+}
+
+#mainWrapper.theme-dark #storyChapterHeader {
+background-color: #0f172a !important;
+border-color: #1e293b !important;
+}
+
+#mainWrapper.theme-dark #txtStoryTitle {
+color: #f8fafc !important;
+}
+
+#mainWrapper.theme-dark #txtChapterTitle {
+color: #38bdf8 !important;
+}
+
+/* ==========================================================================
+   1. THANH ĐIỀU KHIỂN CHÍNH (#fixedBottomBar)
+   ========================================================================== */
+#fixedBottomBar {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 20px !important;
+    transform: translateX(-50%) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.4) inset !important;
+    /* Transition mượt mà cả khi mở và tắt Focus Mode */
+    transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1), bottom 0.45s cubic-bezier(0.25, 1, 0.5, 1), transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), padding 0.35s ease, border-radius 0.35s ease, gap 0.35s ease, background 0.3s ease !important;
+    will-change: left, bottom, transform;
+}
+    #fixedBottomBar select {
+        background: transparent !important;
+        border: none !important;
+        color: #0f766e !important;
+        -webkit-text-fill-color: #0f766e !important;
+        font-weight: 700 !important;
+        outline: none !important;
+        cursor: pointer;
+    }
+        /* Chỉ giữ nền trắng bên trong menu dropdown khi bấm mở danh sách */
+        #fixedBottomBar select option {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+    /* Các capsule con bên trong thanh bar */
+    #fixedBottomBar > div {
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        transition: background 0.2s ease !important;
+    }
+
+    /* Màu Gradient cho chữ & icon nút */
+    #fixedBottomBar button:not(#themeSelectorGroup button),
+    #fixedBottomBar button:not(#themeSelectorGroup button) i,
+    #fixedBottomBar span,
+    #fixedBottomBar select {
+        background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        font-weight: 700 !important;
+        display: inline-block;
+    }
+
+/* Định dạng riêng cho ô hiển thị kích cỡ chữ: giữ viền ngăn cách nhưng chữ ăn màu gradient ở trên */
+#fontSizeDisplay {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    padding: 0 8px !important;
+    line-height: 1 !important;
+}
+
+        /* 2. Danh sách tùy chọn khi click bung ra (Option popup) */
+        #fixedBottomBar select option {
+            /* Menu bung của OS cần màu chữ đặc và nền rõ ràng để không bị lỗi tàng hình */
+            background-color: #ffffff !important;
+            color: #2fb5af !important; /* Màu xanh ngọc đồng bộ với dải gradient #50C9C3 */
+            -webkit-text-fill-color: #2fb5af !important;
+            font-weight: 600 !important;
+            padding: 6px 10px !important;
+        }
+    /* Khôi phục màu nền đặc và loại bỏ clip-text cho 3 nút theme */
+    #fixedBottomBar #themeSelectorGroup button {
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: initial !important;
+        display: inline-block !important;
+        opacity: 1 !important;
+    }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="light"] {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+        }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="sepia"] {
+            background: #f4ecd8 !important;
+            background-color: #f4ecd8 !important;
+            border: 1.5px solid #d4c5a9 !important;
+        }
+
+        #fixedBottomBar #themeSelectorGroup button[data-theme="dark"] {
+            background: #1e293b !important;
+            background-color: #1e293b !important;
+            border: 1.5px solid #475569 !important;
+        }
+
+        /* Ngăn hover làm biến màu nền của nút theme */
+        #fixedBottomBar #themeSelectorGroup button:hover {
+            box-shadow: 0 0 0 2px rgba(80, 201, 195, 0.6) !important;
+            transform: scale(1.1);
+        }
+
+#fontSizeDisplay {
+    color: #0f766e !important;
+    -webkit-text-fill-color: #0f766e !important;
+    font-weight: 700 !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* FIX LỖI MẤT CHỮ: Khi hover chỉ làm sáng nền, KHÔNG đổi background của button */
+#fixedBottomBar button:hover {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ==========================================================================
+   2. CỤM NÚT HÀNH ĐỘNG BÊN PHẢI (#rightActionControls)
+   ========================================================================== */
+#rightActionControls {
+    bottom: 20px !important;
+    right: 20px !important;
+    transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    will-change: bottom, right;
+}
+
+    #rightActionControls button {
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(8px) saturate(140%) !important;
+        -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.65) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.4) inset !important;
+        transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease !important;
+    }
+
+        /* Hover các nút action: chỉ làm sáng nền và nảy nhẹ */
+        #rightActionControls button:hover {
+            background: rgba(255, 255, 255, 0.45) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18) !important;
+        }
+
+/* Chữ gradient của các nút action */
+#btnFocusMode .btn-text {
+    background: linear-gradient(135deg, #FF8008, #FFC837);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+}
+
+#btnTranslateAll .btn-text {
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   3. TRẠNG THÁI FOCUS MODE: DI CHUYỂN MƯỢT MÀ, XẾP DỌC BÊN PHẢI
+   ========================================================================== */
+
+/* Thanh điều hướng dạt sang mép phải và dựng dọc ở phía trên */
+#fixedBottomBar.focus-layout-active {
+    left: calc(100% - 20px) !important;
+    right: auto !important;
+    bottom: 210px !important;
+    transform: translateX(-100%) !important;
+    flex-direction: column !important; /* Chỉ xếp các capsule lớn theo chiều dọc */
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 22px !important;
+    width: max-content !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+    /* Các capsule con bên trong: LUÔN GIỮ HÀNG NGANG (row) */
+    #fixedBottomBar.focus-layout-active > div {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        padding: 4px 8px !important;
+    }
+
+    /* ÉP CỤM ĐIỀU HƯỚNG CHƯƠNG & THEME NẰM NGANG HOÀN TOÀN */
+    #fixedBottomBar.focus-layout-active #chapterNavigation,
+    #fixedBottomBar.focus-layout-active #themeSelectorGroup,
+    #fixedBottomBar.focus-layout-active #languageSelectorGroup {
+        flex-direction: row !important;
+        gap: 6px !important;
+    }
+
+    #fixedBottomBar.focus-layout-active #chapterSelect {
+        max-width: 95px !important;
+    }
+
+    /* 3 nút màu theme luôn nằm ngang ngay ngắn */
+    #fixedBottomBar.focus-layout-active #themeSelectorGroup {
+        justify-content: center !important;
+    }
+
+/* Cụm nút Action xếp dọc ở góc dưới bên phải, nối tiếp ngay bên dưới thanh bar */
+#rightActionControls.focus-layout-active {
+    bottom: 20px !important;
+    right: 20px !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 10px !important;
+}
+
+    #rightActionControls.focus-layout-active button {
+        width: fit-content !important;
+    }
+
+/* ==========================================================================
+   4. THEME SEPIA & DARK MODE
+   ========================================================================== */
+.theme-sepia #fixedBottomBar,
+.theme-sepia #rightActionControls button {
+    background: rgba(244, 236, 216, 0.4) !important;
+    border-color: rgba(228, 220, 188, 0.8) !important;
+}
+
+    .theme-sepia #fixedBottomBar button,
+    .theme-sepia #fixedBottomBar select,
+    .theme-sepia #fixedBottomBar span {
+        -webkit-text-fill-color: #634728 !important;
+        color: #634728 !important;
+    }
+
+.theme-dark #fixedBottomBar,
+.theme-dark #rightActionControls button {
+    background: rgba(15, 23, 42, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+    .theme-dark #fixedBottomBar button,
+    .theme-dark #fixedBottomBar select,
+    .theme-dark #fixedBottomBar span {
+        -webkit-text-fill-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+    }
+
+/* ======================================================================
+   HOME - TRANG ĐỌC (bổ sung, trước đây nằm trong <style> của Content.cshtml)
+   ====================================================================== */
+    /* 1. Giải phóng toàn bộ thẻ cha của Layout khi chứa trang đọc truyện */
+
+.main-container:has(#mainWrapper) {
+display: block !important;
+width: 100% !important;
+max-width: 100% !important;
+padding: 0 1rem !important; /* Bỏ lề 5% quá lớn của layout cũ */
+margin: 0 auto !important;
+}
+
+.main-container:has(#mainWrapper) .primary-content {
+display: block !important;
+width: 100% !important;
+max-width: 100% !important;
+}
+
+.main-container:has(#mainWrapper) .hot-sidebar {
+display: none !important;
+}
+
+    /* 2. Ép chiều ngang khung đọc truyện (#mainWrapper) nở rộng ra */
+
+#mainWrapper {
+max-width: 1100px !important; /* Bạn có thể tăng lên 1200px nếu muốn rộng hơn */
+width: 100% !important;
+margin: 0 auto !important; /* Căn giữa màn hình */
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Thêm viền bóng nhẹ cho trang sách nổi bật */
+}
+
+/* 3. Đảm bảo phần nội dung chữ bên trong tận dụng trọn vẹn bề ngang */
+#paragraphList {
+width: 100% !important;
+max-width: 100% !important;
+padding: 2.5rem 3rem !important; /* Canh lề 2 bên trang sách vừa vặn */
+box-sizing: border-box !important;
+}

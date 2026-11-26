@@ -7,46 +7,55 @@
 @if (Model != null && Model.Any())
 {
     bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
-    string hotTrendText = isVi ? "Hot Trend" : "Hot Trend";
-    string readNowText = isVi ? "Đọc ngay" : "Read now";
-    string followText = isVi ? "Theo dõi" : "Follow";
-    string followingText = isVi ? "Đang theo dõi" : "Following";
+    string hotTrendText = "Hot Trend";
 
-    <section class="hero-slideshow">
+    Func<HeroBannerViewModel, string> getImg = it => string.IsNullOrEmpty(it.Img)
+        ? "/assets/image/placeholder.png"
+        : (it.Img.StartsWith("/") ? it.Img : "/" + it.Img);
+
+    <!-- HERO ẢNH TRÀN VIỀN – CSS: wwwroot/css/home/hero-banner.css -->
+    <section class="hero-slideshow hero-cinema">
         <div class="slides-container">
             @for (int i = 0; i < Model.Count; i++)
             {
                 var item = Model[i];
-                var imgSrc = string.IsNullOrEmpty(item.Img) ? "/assets/image/placeholder.png" : (item.Img.StartsWith("/") ? item.Img : "/" + item.Img);
+                var imgSrc = getImg(item);
 
                 <div class="slide @(i == 0 ? "active" : "")">
-                    <div class="banner-overlay"></div>
-                    <div class="banner-content">
-                        <span class="badge">@hotTrendText</span>
-                        <h1 class="banner-title text-main">@item.Title</h1>
-                        <p class="banner-desc" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                    <!-- Cả slide là một link tới trang chi tiết truyện -->
+                    <a class="hero-link" href="/Stories/Detail?id=@item.StoryId" aria-label="@item.Title">
+                    <!-- Lớp nền: cùng ảnh nhưng làm mờ (tạo chiều sâu) -->
+                    <img class="hero-img-blur" src="@imgSrc" alt="" aria-hidden="true" onerror="this.src='/assets/image/placeholder.png';" />
+                    <!-- Lớp trước: ảnh rõ nét, mờ dần ra các cạnh -->
+                    <img class="hero-img" src="@imgSrc" alt="@item.Title" loading="@(i == 0 ? "eager" : "lazy")" onerror="this.src='/assets/image/placeholder.png';" />
+                    <div class="hero-shade" aria-hidden="true"></div>
+
+                    <!-- Góc trên trái: tiêu đề lớn -->
+                    <div class="hero-top">
+                        <span class="hero-badge">@hotTrendText</span>
+                        <h1 class="hero-title">@item.Title</h1>
+                    </div>
+
+                    <!-- Góc dưới phải: mô tả -->
+                    <div class="hero-bottom">
+                        <p class="hero-desc">
                             @(!string.IsNullOrWhiteSpace(item.Description) ? item.Description : item.Title)
-                        </p>                        
-                        <div class="banner-actions">
-                            <a href="/Stories/Detail?id=@item.StoryId" class="btn-grad">@readNowText</a>
-                            <a href="javascript:void(0)" 
-                               onclick="toggleHeroFollow(@item.StoryId, this)" 
-                               class="btn-grad-trans hero-follow-btn">
-                                @(item.IsFollowed ? followingText : followText)
-                            </a>
-                        </div>
+                        </p>
                     </div>
-                    <div class="banner-visual">
-                        <img src="@imgSrc" alt="@item.Title" onerror="this.src='/assets/image/placeholder.png';" />
-                    </div>
+                    </a>
                 </div>
             }
         </div>
 
-        <div class="slide-dots">
+        <!-- Tab trắng khoét ở cạnh dưới: tên các truyện (giữ class .slide-dots/.dot để JS cũ chạy được) -->
+        <div class="slide-dots hero-notch">
             @for (int i = 0; i < Model.Count; i++)
             {
-                <span class="dot @(i == 0 ? "active" : "")"></span>
+                var item = Model[i];
+                <span class="dot @(i == 0 ? "active" : "")" title="@item.Title">
+                    <img src="@getImg(item)" alt="" onerror="this.src='/assets/image/placeholder.png';" />
+                    <span class="dot-name">@item.Title</span>
+                </span>
             }
         </div>
     </section>

@@ -1,7 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Localization
 @using WebTruyenTranh.ViewModels
+@using Microsoft.Extensions.Configuration
+@using Microsoft.Extensions.Hosting
 @inject IStringLocalizer<SharedResource> SharedLocalizer
+@inject Microsoft.Extensions.Configuration.IConfiguration AppConfig
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnv
 
 @{
     int currentUserId = Context.Session.GetInt32("UserId") ?? 0;
@@ -10,13 +14,57 @@
     var currentCulture = requestCultureFeature?.RequestCulture.UICulture.Name ?? "vi-VN";
     // Lấy URL hiện tại bao gồm cả Query String (ví dụ: /Stories/Detail?id=71)
     var returnUrl = string.Concat(Context.Request.Path, Context.Request.QueryString);
-}
 
+    // --- Dùng cho giao diện mobile (css/home/mobile.css) ---
+    string mController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    bool mIsVi = currentCulture.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    bool mIsReading = mController.Equals("Paragraphs", StringComparison.OrdinalIgnoreCase);
+    Func<string, string> mTabActive = c => mController.Equals(c, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+
+    // --- Google AdSense (cấu hình trong appsettings.json > "GoogleAdSense") ---
+    var adCfg = AppConfig.GetSection("GoogleAdSense");
+    string adClient = adCfg["ClientId"] ?? "";
+    bool adEnabled = adCfg.GetValue<bool>("Enabled") && adClient.StartsWith("ca-pub-") && !adClient.EndsWith("0000000000000000");
+    bool adPreview = !adEnabled && HostEnv.IsDevelopment();   // máy dev: hiện khung giữ chỗ để xem bố cục
+    // Chỉ đặt quảng cáo ở trang có nội dung (AdSense không cho đặt ở trang đăng nhập, lỗi, trang trống...)
+    string[] adPages = { "Home", "Stories", "Categories", "Rankings" };
+    // Không đặt quảng cáo ở các trang thông tin (Giới thiệu / Liên hệ / Chính sách)
+    string mAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string[] adExcludedActions = { "About", "Contact", "Privacy" };
+    bool adOnThisPage = (adEnabled || adPreview) && !mIsReading
+                        && adPages.Any(p => p.Equals(mController, StringComparison.OrdinalIgnoreCase))
+                        && !adExcludedActions.Any(a => a.Equals(mAction, StringComparison.OrdinalIgnoreCase));
+    string adLabel = mIsVi ? "Quảng cáo" : "Advertisement";
+    string adTopSlot = adCfg["TopBannerSlot"] ?? "";
+    string adFeedSlot = adCfg["InFeedSlot"] ?? "";
+    int adRows = adCfg.GetValue<int?>("RowsBetweenFeedAds") ?? 4;
+
+    // --- Chế độ sáng / tối (css/home/dark-theme.css + js/home/common/theme-toggle.js) ---
+    // Bật ở mọi trang người đọc, TRỪ trang đọc truyện (đã có theme sáng/sepia/tối riêng).
+    // Trang nào muốn tắt: đặt ViewBag.DarkModeReady = false trong view.
+    bool themeReady = (ViewBag.DarkModeReady as bool?) ?? !mIsReading;
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" @(themeReady ? "data-theme-ready" : "")>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @if (themeReady)
+    {
+        <!-- Áp chế độ tối TRƯỚC khi trang hiện ra để không bị nháy trắng (lựa chọn lưu ở localStorage "site-theme") -->
+        <script>
+            (function () {
+                try {
+                    var t = localStorage.getItem('site-theme');
+                    if (t !== 'dark' && t !== 'light') {
+                        t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    }
+                    if (t === 'dark') document.documentElement.classList.add('dark');
+                } catch (e) { }
+            })();
+        </script>
+        <meta name="color-scheme" content="light dark">
+    }
     <title>Bilingual Manga</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,8 +72,27 @@
     <!-- CSS Modal Auth, Select2 & Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-    <link rel="stylesheet" href="~/css/auth/auth-modal.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/_Layout.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/home/auth-modal.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/home/layout.css" asp-append-version="true">
+    <!-- Giao diện mobile: chỉ có tác dụng ở màn hình nhỏ -->
+    <link rel="stylesheet" href="~/css/home/mobile.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/home/hero-banner.css" asp-append-version="true">
+    <!-- Hiệu ứng nút gradient dùng chung (chỉ hiệu ứng, giữ màu cũ) -->
+    <link rel="stylesheet" href="~/css/buttons-fx.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/home/ads.css" asp-append-version="true">
+    <!-- Nút trái tim "Ủng hộ" + hộp mã QR -->
+    <link rel="stylesheet" href="~/css/home/donate.css" asp-append-version="true">
+    @if (themeReady)
+    {
+        <!-- Chế độ tối: chỉ có tác dụng khi <html> có class "dark" -->
+        <link rel="stylesheet" href="~/css/home/dark-theme.css" asp-append-version="true">
+    }
+
+    @if (adEnabled && adOnThisPage)
+    {
+        <!-- Google AdSense -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adClient" crossorigin="anonymous"></script>
+    }
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -34,7 +101,7 @@
             }
     </script>
 </head>
-<body class="bg-white">
+<body class="bg-white @(mIsReading ? "m-reading" : "")">
 
 <header class="app-header">
     <!-- Logo -->
@@ -160,6 +227,36 @@
 
     <!-- KHU VỰC TÀI KHOẢN GÓC PHẢI -->
     <div class="header-actions">
+        <!-- Nút ủng hộ tác giả (hộp: Views/Shared/_DonateModalPartial.cshtml, JS: js/home/common/donate.js) -->
+        <button type="button" class="donate-btn" data-donate-open
+                title="@(mIsVi ? "Ủng hộ tác giả" : "Support the author")"
+                aria-label="@(mIsVi ? "Ủng hộ tác giả" : "Support the author")" aria-haspopup="dialog" aria-controls="donateModal">
+            <i class="fa-solid fa-heart" aria-hidden="true"></i>
+        </button>
+        @if (themeReady)
+        {
+            <!-- Nút chuyển sáng / tối (js/home/common/theme-toggle.js) -->
+            <button type="button" id="btnThemeToggle" class="theme-toggle"
+                    aria-pressed="false"
+                    data-label-dark="@(mIsVi ? "Chuyển sang giao diện tối" : "Switch to dark mode")"
+                    data-label-light="@(mIsVi ? "Chuyển sang giao diện sáng" : "Switch to light mode")"
+                    title="@(mIsVi ? "Chuyển sang giao diện tối" : "Switch to dark mode")"
+                    aria-label="@(mIsVi ? "Chuyển sang giao diện tối" : "Switch to dark mode")">
+                <i class="fa-solid fa-moon theme-icon-moon" aria-hidden="true"></i>
+                <i class="fa-solid fa-sun theme-icon-sun" aria-hidden="true"></i>
+            </button>
+        }
+        <!-- MOBILE: nút tìm kiếm + đổi ngôn ngữ (menu chính bị ẩn trên điện thoại) -->
+        <button type="button" id="btnMobileSearch" class="m-only m-icon-btn" aria-label="@SharedLocalizer["Nav_SearchTooltip"]" aria-expanded="false" aria-controls="mobileSearchBar">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        </button>
+        <form asp-area="" asp-controller="Language" asp-action="SetLanguage" method="post" class="m-only m-lang-form">
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <button type="submit" name="culture" value="@(mIsVi ? "en-US" : "vi-VN")" class="m-icon-btn" title="@(mIsVi ? "English" : "Tiếng Việt")" aria-label="@(mIsVi ? "Switch to English" : "Chuyển sang Tiếng Việt")">
+                @(mIsVi ? "EN" : "VI")
+            </button>
+        </form>
+
         @if (currentUserId > 0)
         {
             <!-- ĐÃ ĐĂNG NHẬP -->
@@ -187,9 +284,50 @@
     </div>
 </header>
 
+<!-- MOBILE: thanh tìm kiếm (ô type="search" được infinite-scroll.js lắng nghe để lọc truyện) -->
+<div id="mobileSearchBar" class="m-search-bar">
+    <div class="m-search-field">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" id="mobileSearchInput" autocomplete="off" aria-label="@SharedLocalizer["Nav_SearchPlaceholder"]" placeholder="@SharedLocalizer["Nav_SearchPlaceholder"]" />
+        <button type="button" id="btnCloseMobileSearch" aria-label="Close">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>
+
     @await Component.InvokeAsync("HeroSlideshow")
 
-    <main role="main" class="w-full main-container">
+    @if (adOnThisPage)
+    {
+        <!-- QUẢNG CÁO 1: thanh ngang dưới Hero (CSS: css/home/ads.css) -->
+        <div class="ad-slot ad-slot--banner">
+            <span class="ad-label">@adLabel</span>
+            @if (adEnabled && !string.IsNullOrWhiteSpace(adTopSlot))
+            {
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="@adClient"
+                     data-ad-slot="@adTopSlot"
+                     data-ad-format="horizontal"
+                     data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            }
+            else if (adPreview)
+            {
+                <div class="ad-placeholder">728 × 90 · Top banner</div>
+            }
+        </div>
+
+        <!-- Cấu hình cho quảng cáo chèn giữa lưới truyện (js/home/common/feed-ads.js) -->
+        <div id="adConfig" hidden
+             data-enabled="@(adEnabled ? "true" : "false")"
+             data-client="@adClient"
+             data-slot="@adFeedSlot"
+             data-rows="@adRows"
+             data-label="@adLabel"></div>
+    }
+
+    <main role="main" class="w-full main-container page-@mController.ToLowerInvariant()">
         <section class="primary-content">
             @RenderBody()
         </section>
@@ -204,6 +342,37 @@
 
     <!-- NẠP MODAL ĐĂNG NHẬP / ĐĂNG KÝ VÀO ĐÂY ĐỂ TRANG NÀO CŨNG DÙNG ĐƯỢC -->
     @await Html.PartialAsync("_AuthModalsPartial", new UsersViewModel())
+
+    <!-- HỘP ỦNG HỘ (mã QR + số tài khoản) -->
+    @await Html.PartialAsync("_DonateModalPartial")
+
+    <!-- MOBILE: thanh điều hướng dưới đáy (ẩn trên desktop, xem css/home/mobile.css) -->
+    <nav class="m-tabbar" aria-label="Menu">
+        <a asp-controller="Home" asp-action="Index" class="m-tab @mTabActive("Home")">
+            <i class="fa-solid fa-house" aria-hidden="true"></i><span>@SharedLocalizer["Nav_Home"]</span>
+        </a>
+        <a asp-controller="Categories" asp-action="Index" class="m-tab @mTabActive("Categories")">
+            <i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>@SharedLocalizer["Nav_Categories"]</span>
+        </a>
+        <a asp-controller="Rankings" asp-action="Index" class="m-tab @mTabActive("Rankings")">
+            <i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span>@SharedLocalizer["Nav_Rankings"]</span>
+        </a>
+        <a asp-controller="Community" asp-action="Index" class="m-tab @mTabActive("Community")">
+            <i class="fa-solid fa-users" aria-hidden="true"></i><span>@SharedLocalizer["Nav_Community"]</span>
+        </a>
+        @if (currentUserId > 0)
+        {
+            <a asp-controller="Profile" asp-action="Index" class="m-tab @mTabActive("Profile")">
+                <i class="fa-solid fa-circle-user" aria-hidden="true"></i><span>@SharedLocalizer["Nav_Profile"]</span>
+            </a>
+        }
+        else
+        {
+            <button type="button" class="m-tab" onclick="openLoginModal()">
+                <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i><span>@SharedLocalizer["Nav_SignIn"]</span>
+            </button>
+        }
+    </nav>
 
     <footer class="app-footer">
         <div class="footer-glow"></div>
@@ -231,7 +400,8 @@
                         <li><a href="/"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Home"]</a></li>
                         <li><a href="/Stories"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_MangaList"]</a></li>
                         <li><a href="/Profile"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Library"]</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Rankings"]</a></li>
+                        <li><a href="/Rankings"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Rankings"]</a></li>
+                        <li><a href="/about"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_AboutUs"]</a></li>
                     </ul>
                 </div>
 
@@ -240,9 +410,9 @@
                     <h4 class="col-title">@SharedLocalizer["Footer_Policies"]</h4>
                     <ul class="footer-links">
                         <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Terms"]</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Privacy"]</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_CopyrightNotices"]</a></li>
-                        <li><a href="#"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_ReaderSupport"]</a></li>
+                        <li><a href="/privacy"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Privacy"]</a></li>
+                        <li><a href="/contact"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_CopyrightNotices"]</a></li>
+                        <li><a href="/contact"><i class="fa-solid fa-angle-right"></i> @SharedLocalizer["Footer_Contact"]</a></li>
                     </ul>
                 </div>
 
@@ -289,8 +459,14 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="~/js/auth/auth-modal.js" asp-append-version="true"></script>
-    <script src="~/js/infinite_scroll.js" asp-append-version="true"></script>
+    <script src="~/js/home/common/auth-modal.js" asp-append-version="true"></script>
+    <script src="~/js/home/common/infinite-scroll.js" asp-append-version="true"></script>
+    <script src="~/js/home/common/feed-ads.js" asp-append-version="true"></script>
+    <script src="~/js/home/common/donate.js" asp-append-version="true"></script>
+    @if (themeReady)
+    {
+        <script src="~/js/home/common/theme-toggle.js" asp-append-version="true"></script>
+    }
 
     @RenderSection("Scripts", required: false)
 
@@ -488,6 +664,25 @@
             }, 300);
         });
 
+        // --- E. MOBILE: bật/tắt thanh tìm kiếm ---
+        const $mSearchBar = $('#mobileSearchBar');
+        const $mSearchBtn = $('#btnMobileSearch');
+        const $mSearchInput = $('#mobileSearchInput');
+
+        function toggleMobileSearch(open) {
+            $mSearchBar.toggleClass('is-open', open);
+            $mSearchBtn.attr('aria-expanded', open ? 'true' : 'false');
+            if (open) {
+                $mSearchInput.trigger('focus');
+            } else if ($mSearchInput.val().trim().length > 0) {
+                $mSearchInput.val('');
+                if (typeof onSearchStory === 'function') onSearchStory('');
+            }
+        }
+
+        $mSearchBtn.on('click', function () { toggleMobileSearch(!$mSearchBar.hasClass('is-open')); });
+        $('#btnCloseMobileSearch').on('click', function () { toggleMobileSearch(false); });
+
         function performLiveSearch(keyword) {
             const $grid =$('#mainStoryGrid');
             if ($grid.length === 0) return;
@@ -571,330 +766,5 @@
     };
 </script>
 
-    <style>
-            body {
-                background-color: #ffffff !important;
-                color: #334155 !important;
-            }
-
-            .text-info-btn {
-                background: none;
-                border: 1px solid #667eea;
-                padding: 5px 15px;
-                border-radius: 20px;
-                cursor: pointer;
-                font-weight: 600;
-                color: #4f46e5;
-                transition: all 0.3s ease;
-            }
-
-                .text-info-btn:hover {
-                    background: #4f46e5;
-                    color: #ffffff;
-                }
-
-            .hero-slideshow {
-                position: relative;
-                margin: 2rem 5%;
-                height: 400px;
-                border-radius: 24px;
-                overflow: hidden;
-                background: #f8fafc;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-                border: 1px solid #f1f5f9;
-            }
-
-            .slides-container {
-                position: relative;
-                width: 100%;
-                height: 100%;
-            }
-
-            .slide {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 1s ease-in-out, visibility 1s;
-                display: flex;
-                align-items: center;
-            }
-
-                .slide.active {
-                    opacity: 1;
-                    visibility: visible;
-                }
-
-            .banner-overlay {
-                position: absolute;
-                inset: 0;
-                background: linear-gradient(to right, #ffffff 45%, rgba(255, 255, 255, 0.2) 100%);
-                z-index: 2;
-            }
-
-            .banner-content {
-                position: relative;
-                z-index: 3;
-                padding-left: 4rem;
-                max-width: 500px;
-                transform: translateY(20px);
-                transition: 0.8s all ease;
-                opacity: 0;
-            }
-
-            .slide.active .banner-content {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            .badge {
-                background: #e0e7ff;
-                color: #4f46e5;
-                padding: 6px 12px;
-                border-radius: 20px;
-                font-size: 0.85rem;
-                font-weight: 700;
-                display: inline-block;
-                margin-bottom: 1rem;
-            }
-
-            .banner-title {
-                font-size: 2.8rem;
-                font-weight: 800;
-                color: #0f172a;
-                line-height: 1.2;
-                margin-bottom: 1rem;
-            }
-
-            .banner-desc {
-                color: #475569;
-                font-size: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .banner-actions {
-                display: flex;
-                gap: 12px;
-            }
-
-            .btn-main {
-                background: #4f46e5;
-                color: white !important;
-                padding: 12px 28px;
-                border-radius: 12px;
-                font-weight: 600;
-                box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
-                transition: 0.3s;
-            }
-
-                .btn-main:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-                }
-
-            .btn-sub {
-                background: #ffffff;
-                color: #475569 !important;
-                border: 1px solid #cbd5e1;
-                padding: 12px 28px;
-                border-radius: 12px;
-                font-weight: 600;
-                transition: 0.3s;
-            }
-
-                .btn-sub:hover {
-                    background: #f8fafc;
-                    border-color: #94a3b8;
-                }
-
-            .banner-visual {
-                position: absolute;
-                right: 0;
-                top: 0;
-                width: 60%;
-                height: 100%;
-                z-index: 1;
-            }
-
-                .banner-visual img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-
-            .slide-dots {
-                position: absolute;
-                bottom: 25px;
-                left: 4rem;
-                z-index: 4;
-                display: flex;
-                gap: 8px;
-            }
-
-            .dot {
-                width: 8px;
-                height: 8px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 50%;
-                cursor: pointer;
-                transition: 0.3s;
-            }
-
-                .dot.active {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    width: 24px;
-                    border-radius: 10px;
-                }
-
-            .hot-sidebar {
-                background-color: #ffffff;
-                border-radius: 12px;
-                padding: 16px;
-                box-shadow: 0 4px 12px rgba(80, 201, 195, 0.15);
-                max-width: 360px;
-                border: 1px solid rgba(80, 201, 195, 0.2);
-            }
-
-            /* Tiêu đề: Giữ nguyên màu gradient gốc nổi bật nhất */
-            .sidebar-title {
-                font-size: 1.1rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                margin-bottom: 16px;
-                padding-bottom: 8px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                /* Dùng gradient cho chữ */
-                background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                /* Viền dưới dùng gradient */
-                border-bottom: 2px solid transparent;
-                border-image: linear-gradient(to right, #50C9C3, #96DEDA) 1;
-            }
-
-            .hot-list {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .hot-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 8px;
-                border-radius: 8px;
-                transition: background-color 0.2s ease, transform 0.2s ease;
-            }
-
-                /* Khi hover chuyển sang màu ánh teal mờ nhẹ */
-                .hot-item:hover {
-                    background-color: rgba(80, 201, 195, 0.08);
-                    transform: translateX(4px);
-                }
-
-                /* Kiểu dáng chung cho huy hiệu thứ hạng */
-                .hot-item .rank {
-                    font-size: 1rem;
-                    font-weight: 800;
-                    min-width: 28px;
-                    height: 28px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 50%;
-                    background-color: #f1f5f9;
-                    color: #64748b;
-                    flex-shrink: 0;
-                    transition: all 0.3s ease;
-                }
-
-                /* Top 1: Màu rõ nét nhất (Đậm nhất theo bảng màu) */
-                .hot-item:nth-child(1) .rank {
-                    background: linear-gradient(135deg, #50C9C3 0%, #96DEDA 100%);
-                    color: #ffffff;
-                    box-shadow: 0 2px 8px rgba(80, 201, 195, 0.4);
-                }
-
-                /* Top 2: Mờ dần (Giảm độ đậm và độ mờ opacity còn ~75%) */
-                .hot-item:nth-child(2) .rank {
-                    background: linear-gradient(135deg, rgba(80, 201, 195, 0.75) 0%, rgba(150, 222, 218, 0.75) 100%);
-                    color: #ffffff;
-                    box-shadow: 0 2px 6px rgba(80, 201, 195, 0.25);
-                }
-
-                /* Top 3: Mờ hơn nữa (Độ mờ opacity còn ~50%) */
-                .hot-item:nth-child(3) .rank {
-                    background: linear-gradient(135deg, rgba(80, 201, 195, 0.5) 0%, rgba(150, 222, 218, 0.5) 100%);
-                    color: #ffffff;
-                    box-shadow: 0 2px 4px rgba(80, 201, 195, 0.15);
-                }
-
-                /* Top 4 trở đi: Rất nhạt, hòa với nền */
-                .hot-item:nth-child(n+4) .rank {
-                    background-color: rgba(80, 201, 195, 0.15);
-                    color: #50C9C3;
-                }
-
-            .hot-item-img {
-                width: 50px;
-                height: 65px;
-                flex-shrink: 0;
-                overflow: hidden;
-                border-radius: 6px;
-            }
-
-                .hot-item-img img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    transition: transform 0.3s ease;
-                }
-
-            .hot-item:hover .hot-item-img img {
-                transform: scale(1.08);
-            }
-
-            .hot-item-info {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                gap: 3px;
-                overflow: hidden;
-            }
-
-            .hot-item-title {
-                font-size: 0.95rem;
-                font-weight: 600;
-                color: #2b2b2b;
-                text-decoration: none;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                transition: color 0.2s ease;
-            }
-
-                .hot-item-title:hover {
-                    color: #e63946;
-                }
-
-            .hot-item-author {
-                font-size: 0.8rem;
-                color: #6c757d;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .hot-item-view {
-                font-size: 0.75rem;
-                color: #8c8c8c;
-            }
-    </style>
 </body>
 </html>

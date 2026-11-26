@@ -1,0 +1,774 @@
+/* ======================================================================
+   HOME - GIAO DIỆN MOBILE | wwwroot/css/home/mobile.css
+   ----------------------------------------------------------------------
+   Chỉ chứa quy tắc cho màn hình nhỏ, KHÔNG đổi giao diện desktop.
+   Dựa trên màu & kiểu sẵn có của layout.css (gradient ngọc #50C9C3 → #96DEDA,
+   kính trắng mờ). Nạp SAU layout.css trong _Layout.cshtml.
+
+   MỤC LỤC
+     1. Ẩn các khối chỉ dành cho mobile khi ở desktop
+     2. Tablet (≤ 1024px): khung trang, hero, lưới truyện
+     3. Điện thoại (≤ 768px): header, thanh tìm kiếm, thanh tab dưới
+     4. Điện thoại: trang chủ (hero, card truyện, Hot trong tuần)
+     5. Điện thoại: chi tiết truyện
+     6. Điện thoại: trang đọc truyện & chat AI
+     7. Điện thoại: thể loại, xếp hạng, cộng đồng, hồ sơ, modal
+     8. Điện thoại nhỏ (≤ 400px)
+     9. Giảm chuyển động
+   ====================================================================== */
+
+/* ==========================================================================
+1. ẨN CÁC KHỐI CHỈ DÀNH CHO MOBILE KHI Ở DESKTOP
+========================================================================== */
+.m-only,
+.m-tabbar,
+.m-search-bar {
+    display: none !important;
+}
+
+/* ==========================================================================
+2. TABLET (≤ 1024px)
+========================================================================== */
+@media (max-width: 1024px) {
+    /* minmax(0, 1fr): cột không bị phần tử rộng bên trong (vd. hàng Hot cuộn ngang) kéo giãn
+       → hết lỗi tràn ngang làm card truyện bị phóng to */
+    .main-container {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 24px;
+        padding: 0 4% 2rem;
+    }
+
+    .primary-content,
+    .hot-sidebar,
+    .hot-list {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .hot-sidebar {
+        max-width: none;
+        margin-top: 0;
+    }
+
+    .story-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .hero-slideshow {
+        margin: 1.25rem 4%;
+        height: 360px;
+    }
+
+    .banner-content {
+        padding-left: 2.5rem;
+    }
+
+    .banner-title {
+        font-size: 2.1rem;
+    }
+
+    .slide-dots {
+        left: 2.5rem;
+    }
+}
+
+/* ==========================================================================
+3. ĐIỆN THOẠI (≤ 768px): header, thanh tìm kiếm, thanh tab dưới
+========================================================================== */
+@media (max-width: 768px) {
+    .m-only {
+        display: inline-flex !important;
+    }
+
+    .m-hide {
+        display: none !important;
+    }
+
+    body {
+        /* Chừa chỗ cho thanh tab dưới đáy */
+        padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+
+    /* --- Header gọn --- */
+    .app-header {
+        padding: 0.6rem 12px 0.6rem 14px;
+        gap: 8px;
+    }
+
+    .logo-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+
+    .logo-title {
+        font-size: 1.1rem;
+    }
+
+    .logo-sub {
+        font-size: 0.95rem;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Nút icon tròn trên header (tìm kiếm, ngôn ngữ, tài khoản) */
+    .m-icon-btn {
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.35);
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .m-icon-btn:active {
+        transform: scale(0.95);
+    }
+
+    .m-icon-btn--white {
+        background: #ffffff;
+        color: #2fb5af;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .m-lang-form {
+        display: inline-flex;
+    }
+
+    /* Nút đăng nhập & khu tài khoản: thu gọn còn icon */
+    .btn-header-login {
+        padding: 0;
+        width: 42px;
+        height: 42px;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    .btn-header-login span,
+    .header-actions a[href*="Profile"] span {
+        display: none;
+    }
+
+    .header-actions a[href*="Profile"] {
+        padding: 0 !important;
+        width: 42px;
+        height: 42px;
+        justify-content: center;
+    }
+
+    .header-actions a[href*="Logout"] {
+        width: 42px;
+        height: 42px;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* --- Thanh tìm kiếm mở từ header --- */
+    .m-search-bar {
+        position: sticky;
+        top: 62px;
+        z-index: 998;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.85);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        backdrop-filter: blur(14px) saturate(160%);
+        border-bottom: 1px solid rgba(80, 201, 195, 0.25);
+        box-shadow: 0 6px 16px rgba(80, 201, 195, 0.12);
+    }
+
+    .m-search-bar.is-open {
+        display: block !important;
+    }
+
+    .m-search-field {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .m-search-field > i {
+        position: absolute;
+        left: 15px;
+        color: #2fb5af;
+        pointer-events: none;
+    }
+
+    .m-search-field input {
+        width: 100%;
+        height: 44px;
+        padding: 0 48px 0 40px;
+        border-radius: 999px;
+        border: 1px solid #96DEDA;
+        background: #ffffff;
+        font-size: 16px; /* 16px để iOS không tự phóng to */
+        color: #1e293b;
+        outline: none;
+    }
+
+    .m-search-field input:focus {
+        border-color: #50C9C3;
+        box-shadow: 0 0 0 3px rgba(80, 201, 195, 0.25);
+    }
+
+    .m-search-field button {
+        position: absolute;
+        right: 2px;
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+
+    /* --- Thanh tab dưới đáy: kính trắng, tab đang chọn ăn gradient ngọc như menu desktop --- */
+    .m-tabbar {
+        position: fixed;
+        z-index: 1005;
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        height: 64px;
+        padding: 6px;
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        align-items: center;
+        gap: 2px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.82);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 30px rgba(80, 201, 195, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .m-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        height: 52px;
+        min-width: 0;
+        border: 0;
+        border-radius: 16px;
+        background: transparent;
+        color: #64748b;
+        font-family: inherit;
+        font-size: 10.5px;
+        font-weight: 600;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+
+    .m-tab i {
+        font-size: 1.1rem;
+        color: #94a3b8;
+    }
+
+    .m-tab span {
+        max-width: 100%;
+        padding: 0 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .m-tab.active {
+        color: #ffffff;
+        font-weight: 700;
+        background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+        background-size: 200% auto;
+        box-shadow: 0 4px 12px rgba(80, 201, 195, 0.4);
+    }
+
+    .m-tab.active i {
+        color: #ffffff;
+    }
+
+    .m-tab:active {
+        transform: scale(0.95);
+    }
+
+    /* Toast hiện ngay dưới header, rộng hết màn hình */
+    #toast-container {
+        top: 70px;
+        left: 12px;
+        right: 12px;
+    }
+
+    .toast-notification {
+        min-width: 0;
+        max-width: none;
+    }
+
+    /* Ô nhập 16px để iOS không tự phóng to khi chạm */
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input:not([type]),
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ==========================================================================
+4. ĐIỆN THOẠI: TRANG CHỦ (hero, card truyện, Hot trong tuần)
+========================================================================== */
+@media (max-width: 768px) {
+    .main-container {
+        gap: 20px;
+        padding: 0 14px 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* --- Hero: ảnh tràn nền, chữ nằm dưới trên nền trắng mờ --- */
+    .hero-slideshow {
+        margin: 14px;
+        height: 430px;
+        border-radius: 22px;
+    }
+
+    .slide {
+        align-items: flex-end;
+    }
+
+    .banner-visual {
+        width: 100%;
+    }
+
+    .banner-overlay {
+        background: linear-gradient(to top, #ffffff 34%, rgba(255, 255, 255, 0.75) 52%, rgba(255, 255, 255, 0) 78%);
+    }
+
+    .banner-content {
+        max-width: none;
+        width: 100%;
+        padding: 0 18px 46px;
+    }
+
+    .badge {
+        margin-bottom: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .banner-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.4rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .banner-desc {
+        font-size: 0.875rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .banner-actions {
+        gap: 10px;
+    }
+
+    .banner-actions .btn-grad,
+    .banner-actions .btn-grad-trans {
+        margin: 0;
+        padding: 12px 18px;
+        flex: 1;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .slide-dots {
+        left: 18px;
+        bottom: 18px;
+    }
+
+    /* --- Lưới truyện 2 cột --- */
+    .story-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .story-card {
+        border-radius: 16px !important;
+    }
+
+    .story-card .cover-box {
+        height: auto !important;
+        aspect-ratio: 3 / 4;
+        border-radius: 14px 14px 10px 10px !important;
+    }
+
+    /* Card gọn: chỉ giữ chương mới nhất */
+    .latest-chapters-list {
+        height: auto !important;
+    }
+
+    .latest-chapters-list a:nth-child(n + 2) {
+        display: none !important;
+    }
+
+    .story-card .action-buttons a {
+        min-height: 36px;
+    }
+
+    /* --- Hot trong tuần: chiếm hết chiều ngang --- */
+    .hot-sidebar {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .hot-item:hover {
+        transform: none;
+    }
+
+    /* Trang chủ: đưa "Hot trong tuần" lên trên & cuộn ngang
+       (vì danh sách truyện cuộn vô hạn nên ở dưới sẽ không bao giờ tới) */
+    .page-home .hot-sidebar {
+        order: -1;
+    }
+
+    .page-home .hot-list {
+        flex-direction: row;
+        gap: 12px;
+        margin: 0 -14px;
+        padding: 0 14px 6px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .page-home .hot-list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .page-home .hot-item {
+        position: relative;
+        flex: none;
+        width: 118px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding: 0;
+        scroll-snap-align: start;
+    }
+
+    .page-home .hot-item .rank {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        z-index: 2;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+    }
+
+    .page-home .hot-item:nth-child(n + 4) .rank {
+        background-color: #ffffff;
+    }
+
+    .page-home .hot-item-img {
+        width: 118px;
+        height: 158px;
+        border-radius: 12px;
+    }
+
+    .page-home .hot-item-title {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        font-size: 0.82rem;
+    }
+
+    .page-home .hot-item-author {
+        display: none;
+    }
+
+    /* Trang thể loại / xếp hạng / cộng đồng cuộn vô hạn: ẩn sidebar trên điện thoại */
+    .page-categories .hot-sidebar,
+    .page-rankings .hot-sidebar,
+    .page-community .hot-sidebar {
+        display: none;
+    }
+
+    /* --- Footer --- */
+    .app-footer {
+        margin-top: 2.5rem;
+        padding-top: 3rem;
+    }
+}
+
+/* ==========================================================================
+5. ĐIỆN THOẠI: CHI TIẾT TRUYỆN
+========================================================================== */
+@media (max-width: 768px) {
+    body .st-detail-card {
+        border-radius: 22px !important;
+    }
+
+    body .st-detail-card > .card-body {
+        padding: 12px !important;
+    }
+
+    body .st-top-row {
+        gap: 12px;
+    }
+
+    body .st-image-wrapper {
+        height: 380px !important;
+    }
+
+    /* Không có hover trên điện thoại: luôn hiện tên & mô tả trên ảnh */
+    body .st-image-overlay {
+        opacity: 1;
+        align-items: flex-end !important;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.05) 100%);
+    }
+
+    body .st-overlay-content {
+        transform: none;
+    }
+
+    body .st-overlay-title {
+        font-size: 1.15rem;
+    }
+
+    body .st-description-scroll {
+        max-height: 130px;
+    }
+
+    /* 4 ô thống kê: lưới 2x2, không tràn ngang */
+    body .st-stat-box-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px !important;
+    }
+
+    body .st-stat-card {
+        margin: 0;
+        white-space: normal !important;
+    }
+
+    body .st-stat-card:hover,
+    body .interactive-card:hover,
+    body .st-image-wrapper:hover .st-main-img {
+        transform: none;
+    }
+
+    body .star-item {
+        font-size: 1.15rem;
+        padding: 3px;
+    }
+
+    body .st-chapters-container {
+        padding: 16px 12px;
+    }
+}
+
+/* ==========================================================================
+6. ĐIỆN THOẠI: TRANG ĐỌC TRUYỆN & CHAT AI
+   Thanh công cụ trải hết chiều ngang (cuộn ngang được), cụm nút phải xếp dọc
+   phía trên, chỉ hiện icon. Trang đọc ẩn thanh tab dưới đáy.
+========================================================================== */
+@media (max-width: 768px) {
+    body.m-reading {
+        padding-bottom: 0;
+    }
+
+    body.m-reading .m-tabbar {
+        display: none !important;
+    }
+
+    body .reading-wrapper {
+        margin: 12px auto;
+        padding: 0;
+        border-radius: 18px;
+    }
+
+    body #storyChapterHeader {
+        padding: 18px 16px;
+    }
+
+    body #paragraphList {
+        padding: 20px 18px 150px !important;
+    }
+
+    body #fixedBottomBar,
+    body #fixedBottomBar.focus-layout-active {
+        left: 8px !important;
+        right: 8px !important;
+        top: auto !important;
+        bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+        transform: none !important;
+        max-width: none !important;
+        width: auto !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding: 6px !important;
+        border-radius: 18px !important;
+        overflow-x: auto !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    body #fixedBottomBar button:not(#themeSelectorGroup button) {
+        min-width: 38px;
+        min-height: 38px;
+    }
+
+    body #fixedBottomBar #themeSelectorGroup button {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    body #rightActionControls {
+        right: 10px !important;
+        bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px !important;
+    }
+
+    body #rightActionControls button {
+        width: 48px;
+        height: 48px;
+        padding: 0 !important;
+        justify-content: center;
+    }
+
+    body #btnFocusMode .btn-text,
+    body #btnTranslateAll .btn-text {
+        display: none;
+    }
+
+    body #chat-box {
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+        height: 70vh !important;
+    }
+
+    body #focusContentContainer {
+        padding: 22px 18px 150px !important;
+        border-radius: 20px;
+    }
+}
+
+/* ==========================================================================
+7. ĐIỆN THOẠI: THỂ LOẠI, XẾP HẠNG, CỘNG ĐỒNG, HỒ SƠ, MODAL
+========================================================================== */
+@media (max-width: 768px) {
+    /* Hàng nút thể loại / xếp hạng / tab hồ sơ: cuộn ngang thay vì xuống nhiều dòng */
+    body #categoryTabContainer,
+    body #rankBtnContainer {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        margin: 0 -1.25rem;
+        padding: 2px 1.25rem 6px;
+        scrollbar-width: none;
+    }
+
+    body #categoryTabContainer::-webkit-scrollbar,
+    body #rankBtnContainer::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Tab trong trang hồ sơ (khung không có id nên dùng :has) */
+    body div:has(> .profile-tab-btn) {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        margin: 0 -14px;
+        padding: 2px 14px 6px;
+        scrollbar-width: none;
+    }
+
+    body .profile-tab-btn {
+        flex: none;
+        white-space: nowrap;
+    }
+
+    body .cat-pill,
+    body .rank-btn {
+        flex: none;
+        min-height: 42px;
+        white-space: nowrap;
+    }
+
+    body .cat-pill:hover,
+    body .rank-btn:hover {
+        transform: none;
+    }
+
+    /* Cộng đồng: bỏ margin 10px sẵn có của .btn-grad và cho đầu bài viết xuống dòng, tránh tràn ngang */
+    body .page-community .btn-grad {
+        margin: 0;
+    }
+
+    body .page-community .post-card .justify-between {
+        flex-wrap: wrap;
+    }
+
+    body .page-community .post-card .justify-end {
+        justify-content: flex-start;
+    }
+
+    /* Modal đăng nhập / đăng ký / sửa hồ sơ: chừa lề 2 bên, cuộn được khi form dài */
+    body [id$="ModalOverlay"] > [id$="ModalContent"] {
+        width: calc(100% - 24px) !important;
+        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+    }
+}
+
+/* ==========================================================================
+8. ĐIỆN THOẠI NHỎ (≤ 400px)
+========================================================================== */
+@media (max-width: 400px) {
+    .logo-text .logo-sub {
+        display: none;
+    }
+
+    .m-tab {
+        font-size: 10px;
+    }
+
+    .hero-slideshow {
+        height: 400px;
+    }
+}
+
+/* ==========================================================================
+9. GIẢM CHUYỂN ĐỘNG
+========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .m-icon-btn,
+    .m-tab {
+        transition: none;
+    }
+}

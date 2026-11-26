@@ -65,6 +65,11 @@ builder.Services.AddHttpClient<IAiTranslationService, GeminiTranslationService>(
 builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped<MangaTranslatorService>();
 builder.Services.AddScoped<IParagraphAiProcessingService, ParagraphAiProcessingService>();
+// AI dịch khi import câu/đoạn – chọn model Groq / Claude (API key: "Groq:ApiKey", "Anthropic:ApiKey")
+builder.Services.AddHttpClient<IAiCompletionService, AiCompletionService>();
+// Audio ElevenLabs (API key: User Secrets "ElevenLabs:ApiKey")
+builder.Services.AddHttpClient<IElevenLabsService, ElevenLabsService>();
+builder.Services.AddScoped<IParagraphAudioService, ParagraphAudioService>();
 
 // 4. LƯU SESSION VÀO SQL SERVER (BẢNG TblSessionCache)
 builder.Services.AddDistributedSqlServerCache(options =>

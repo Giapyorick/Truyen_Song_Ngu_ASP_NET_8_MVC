@@ -1,0 +1,141 @@
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    Func<string, string, string> T = (vi, en) => isVi ? vi : en;
+    ViewData["Title"] = T("Kiểm duyệt cộng đồng", "Community moderation");
+}
+
+<link rel="stylesheet" href="~/css/admin/moderation.css" asp-append-version="true" />
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+    <div class="mod-page">
+        <!-- Tiêu đề -->
+        <div class="mod-head">
+            <div>
+                <h2 class="mod-title">@T("Kiểm duyệt cộng đồng", "Community moderation")</h2>
+                <p class="mod-sub">@T("Xử lý báo cáo vi phạm, ẩn hoặc xóa bài viết và bình luận ở trang Cộng đồng.", "Handle reports and hide or delete community posts and comments.")</p>
+            </div>
+            <button type="button" class="mod-refresh" onclick="Moderation.reload()" title="@T("Tải lại", "Refresh")">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+
+        <!-- Thống kê nhanh -->
+        <div class="mod-stats">
+            <button type="button" class="mod-stat mod-stat--warn" onclick="Moderation.switchTab('reports')">
+                <span class="mod-stat-icon"><i class="fa-solid fa-flag"></i></span>
+                <span><b id="statPending">–</b><small>@T("Nội dung bị báo cáo chờ xử lý", "Reported items pending")</small></span>
+            </button>
+            <button type="button" class="mod-stat" onclick="Moderation.switchTab('posts')">
+                <span class="mod-stat-icon"><i class="fa-solid fa-newspaper"></i></span>
+                <span><b id="statPosts">–</b><small>@T("Bài viết", "Posts") · <span id="statHiddenPosts">0</span> @T("đã ẩn", "hidden")</small></span>
+            </button>
+            <button type="button" class="mod-stat" onclick="Moderation.switchTab('comments')">
+                <span class="mod-stat-icon"><i class="fa-solid fa-comments"></i></span>
+                <span><b id="statComments">–</b><small>@T("Bình luận", "Comments") · <span id="statHiddenComments">0</span> @T("đã ẩn", "hidden")</small></span>
+            </button>
+        </div>
+
+        <div class="mod-card">
+            <!-- Tab -->
+            <div class="mod-tabs" role="tablist">
+                <button type="button" role="tab" class="mod-tab is-active" data-tab="reports" aria-selected="true">
+                    <i class="fa-solid fa-flag"></i> @T("Báo cáo", "Reports") <span class="mod-badge" id="tabBadgeReports" hidden>0</span>
+                </button>
+                <button type="button" role="tab" class="mod-tab" data-tab="posts" aria-selected="false">
+                    <i class="fa-solid fa-newspaper"></i> @T("Bài viết", "Posts")
+                </button>
+                <button type="button" role="tab" class="mod-tab" data-tab="comments" aria-selected="false">
+                    <i class="fa-solid fa-comments"></i> @T("Bình luận", "Comments")
+                </button>
+            </div>
+
+            <!-- Thanh lọc -->
+            <div class="mod-toolbar">
+                <div class="mod-search" data-for="posts comments">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="modSearch" placeholder="@T("Tìm theo nội dung hoặc tên người viết...", "Search content or author...")" />
+                </div>
+                <select id="modStory" data-for="posts comments" aria-label="@T("Lọc theo truyện", "Filter by story")">
+                    <option value="">@T("Tất cả truyện", "All stories")</option>
+                </select>
+                <select id="modVisibility" data-for="posts comments" aria-label="@T("Trạng thái", "Status")">
+                    <option value="all">@T("Tất cả", "All")</option>
+                    <option value="visible">@T("Đang hiện", "Visible")</option>
+                    <option value="hidden">@T("Đã ẩn", "Hidden")</option>
+                </select>
+                <select id="modReportStatus" data-for="reports" aria-label="@T("Trạng thái báo cáo", "Report status")">
+                    <option value="pending">@T("Chờ xử lý", "Pending")</option>
+                    <option value="resolved">@T("Đã xử lý", "Resolved")</option>
+                    <option value="dismissed">@T("Đã bỏ qua", "Dismissed")</option>
+                </select>
+            </div>
+
+            <!-- Danh sách -->
+            <div id="modList" class="mod-list" aria-live="polite"></div>
+            <div id="modPagination" class="mod-pagination"></div>
+        </div>
+    </div>
+</main>
+
+<!-- Hộp nhập lý do ẩn -->
+<div id="hideModal" class="mod-modal" hidden role="dialog" aria-modal="true" aria-labelledby="hideModalTitle">
+    <div class="mod-modal-backdrop" data-close></div>
+    <div class="mod-modal-box">
+        <h3 id="hideModalTitle">@T("Ẩn nội dung", "Hide content")</h3>
+        <p class="mod-modal-desc">@T("Nội dung sẽ biến mất khỏi trang Cộng đồng ngay lập tức. Bạn có thể hiện lại bất cứ lúc nào.", "The content disappears from the community page immediately. You can restore it at any time.")</p>
+        <div class="mod-reason-presets">
+            <button type="button" data-reason="@T("Spam / quảng cáo", "Spam / advertising")">@T("Spam", "Spam")</button>
+            <button type="button" data-reason="@T("Ngôn từ xúc phạm", "Offensive language")">@T("Xúc phạm", "Offensive")</button>
+            <button type="button" data-reason="@T("Spoiler không cảnh báo", "Unmarked spoiler")">Spoiler</button>
+            <button type="button" data-reason="@T("Nội dung không phù hợp", "Inappropriate content")">@T("Không phù hợp", "Inappropriate")</button>
+        </div>
+        <label class="mod-field">
+            <span>@T("Lý do (chỉ quản trị viên thấy)", "Reason (visible to admins only)")</span>
+            <input type="text" id="hideReason" maxlength="200" />
+        </label>
+        <div class="mod-modal-actions">
+            <button type="button" class="mod-btn btn-grad-cus" data-close>@T("Hủy", "Cancel")</button>
+            <button type="button" class="mod-btn btn-grad-wait" id="hideConfirm"><i class="fa-solid fa-eye-slash"></i> @T("Ẩn", "Hide")</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.MOD_LANG = {
+            isVi: @(isVi ? "true" : "false"),
+            empty: @Json.Serialize(T("Không có nội dung nào.", "Nothing here.")),
+            emptyReports: @Json.Serialize(T("Không có báo cáo nào. Cộng đồng đang rất ổn!", "No reports. The community looks healthy!")),
+            loadError: @Json.Serialize(T("Không tải được dữ liệu.", "Could not load data.")),
+            post: @Json.Serialize(T("Bài viết", "Post")),
+            comment: @Json.Serialize(T("Bình luận", "Comment")),
+            reply: @Json.Serialize(T("Phản hồi", "Reply")),
+            hidden: @Json.Serialize(T("Đã ẩn", "Hidden")),
+            spoiler: "Spoiler",
+            reports: @Json.Serialize(T("báo cáo", "reports")),
+            likes: @Json.Serialize(T("thích", "likes")),
+            comments: @Json.Serialize(T("bình luận", "comments")),
+            replies: @Json.Serialize(T("phản hồi", "replies")),
+            inPost: @Json.Serialize(T("Trong bài:", "In post:")),
+            deletedContent: @Json.Serialize(T("Nội dung đã bị xóa", "Content was deleted")),
+            hide: @Json.Serialize(T("Ẩn", "Hide")),
+            unhide: @Json.Serialize(T("Hiện lại", "Restore")),
+            del: @Json.Serialize(T("Xóa", "Delete")),
+            dismiss: @Json.Serialize(T("Không vi phạm", "Not a violation")),
+            confirmDeleteTitle: @Json.Serialize(T("Xóa vĩnh viễn?", "Delete permanently?")),
+            confirmDeletePost: @Json.Serialize(T("Bài viết cùng toàn bộ bình luận, lượt thích và báo cáo sẽ bị xóa. Không thể khôi phục.", "The post with all its comments, likes and reports will be deleted. This cannot be undone.")),
+            confirmDeleteComment: @Json.Serialize(T("Bình luận cùng các phản hồi bên dưới sẽ bị xóa. Không thể khôi phục.", "The comment and its replies will be deleted. This cannot be undone.")),
+            reasons: {
+                spam: @Json.Serialize(T("Spam", "Spam")),
+                offensive: @Json.Serialize(T("Xúc phạm", "Offensive")),
+                spoiler: "Spoiler",
+                inappropriate: @Json.Serialize(T("Không phù hợp", "Inappropriate")),
+                other: @Json.Serialize(T("Khác", "Other"))
+            },
+            prev: @Json.Serialize(T("Trước", "Prev")),
+            next: @Json.Serialize(T("Sau", "Next"))
+        };
+    </script>
+    <script src="~/js/admin/moderation/moderation.js" asp-append-version="true"></script>
+}

@@ -1,4 +1,5 @@
-﻿@model WebTruyenTranh.ViewModels.UsersViewModel
+﻿@using WebTruyenTranh.ViewModels
+@model WebTruyenTranh.ViewModels.UsersViewModel
 
 @* 1. MODAL ĐĂNG NHẬP *@
 <div id="loginModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[999] transition-all duration-300">
@@ -194,33 +195,30 @@
     </div>
 </div>
 
-@* 3. MODAL XÁC THỰC MÃ OTP EMAIL (ĐÃ ĐỒNG BỘ NGHỆ THUẬT VỚI HỆ THỐNG) *@
+@* 3. MODAL XÁC THỰC MÃ OTP EMAIL *@
 <div id="otpModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[1000] transition-all duration-300">
     <div id="otpModalContent" class="bg-white w-full max-w-md rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300 ease-out relative">
-        
-        <!-- Header Modal -->
         <div class="p-6 border-b border-gray-100 relative bg-gradient-to-r from-gray-50 to-white text-center">
             <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-xs">
                 <i class="fa-solid fa-envelope-circle-check"></i>
             </div>
             <h3 class="text-xl font-extrabold text-cus">
-                @(SharedLocalizer["Auth_VerifyEmailTitle"]?.Value ?? "Xác thực Gmail")
+                @SharedLocalizer["Auth_VerifyEmailTitle"]
             </h3>
             <p class="text-xs text-gray-400 mt-1 leading-relaxed px-4">
-                @(SharedLocalizer["Auth_OtpSentNotice"]?.Value ?? "Mã xác thực 6 chữ số đã được gửi đến:")<br>
+                @SharedLocalizer["Auth_OtpSentNotice"]<br>
                 <strong id="otpDisplayEmail" class="text-teal-600 font-bold break-all"></strong>
             </p>
-            
+
             <button type="button" onclick="closeOtpModal()" class="absolute right-5 top-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-rose-50 hover:text-rose-500 transition-all text-xl cursor-pointer">
                 &times;
             </button>
         </div>
 
-        <!-- Body Form -->
         <div class="p-6 space-y-5">
             <div class="space-y-1.5 text-center">
                 <label class="text-[11px] font-bold text-cus uppercase">
-                    @(SharedLocalizer["Auth_EnterOtpLabel"]?.Value ?? "Nhập mã OTP 6 số")
+                    @SharedLocalizer["Auth_EnterOtpLabel"]
                 </label>
                 <div class="relative max-w-xs mx-auto">
                     <input type="text" id="regOtpInput" maxlength="6" autocomplete="off"
@@ -233,30 +231,29 @@
             <div class="flex items-center justify-center text-xs h-6">
                 <span id="otpCountdownText" class="text-gray-400 font-medium flex items-center gap-1">
                     <i class="fa-regular fa-clock text-teal-500"></i>
-                    <span>Resend code in 60s</span>
+                    <span id="otpTimerVal"></span>
                 </span>
                 <button type="button" id="btnResendOtp" onclick="resendOtpCode()" class="font-bold text-teal-600 hover:text-teal-700 hover:underline hidden cursor-pointer transition">
                     <i class="fa-solid fa-rotate-right mr-1"></i>
-                    @(SharedLocalizer["Auth_ResendCode"]?.Value ?? "Gửi lại mã")
+                    @SharedLocalizer["Auth_ResendCode"]
                 </button>
             </div>
 
             <!-- Nút Hành động -->
             <div class="pt-1 flex items-center gap-3">
                 <button type="button" onclick="closeOtpModal()" class="w-1/3 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer">
-                    @(SharedLocalizer["Btn_Cancel"]?.Value ?? "Hủy")
+                    @SharedLocalizer["Btn_Cancel"]
                 </button>
                 <button type="button" onclick="submitFinalRegistration()" id="btnVerifyOtpSubmit"
                         class="w-2/3 py-3 btn-grad text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg hover:shadow-teal-200 active:scale-95 transition-all cursor-pointer">
-                    @(SharedLocalizer["Auth_ConfirmAndCreate"]?.Value ?? "Xác nhận & Tạo")
+                    @SharedLocalizer["Auth_ConfirmAndCreate"]
                 </button>
             </div>
         </div>
-
     </div>
 </div>
 
-@* 4. MODAL FORGOT PASSWORD & FORCE CHANGE PASSWORD (GIỮ NGUYÊN) *@
+@* 4. MODAL FORGOT PASSWORD *@
 <div id="forgotModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden items-center justify-center z-[999] transition-all duration-300">
     <div id="forgotModalContent" class="bg-white w-full max-w-md rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden transform translate-y-10 opacity-0 transition-all duration-300 ease-out">
         <div class="p-6 border-b border-gray-100 relative bg-gradient-to-r from-gray-50 to-white text-center">
@@ -292,10 +289,23 @@
     </div>
 </div>
 
+@* DICTIONARY LẠI TOÀN BỘ CHUỖI CLIENT-SIDE JAVASCRIPT *@
 <script>
+    window.AUTH_LANG = {
+        FillRequiredFields: @Json.Serialize(SharedLocalizer["Auth_FillRequiredFields"].Value),
+        PasswordMinLength: @Json.Serialize(SharedLocalizer["Auth_PasswordMinLength"].Value),
+        PasswordMismatch: @Json.Serialize(SharedLocalizer["Auth_PasswordMismatch"].Value),
+        SendingOtp: @Json.Serialize(SharedLocalizer["Auth_SendingOtp"]?.Value ?? "Sending OTP..."),
+        NetworkError: @Json.Serialize(SharedLocalizer["Auth_NetworkError"]?.Value ?? "Cannot connect to server!"),
+        RegisterAccountBtn: @Json.Serialize(SharedLocalizer["Auth_RegisterAccount"].Value),
+        ResendCodeIn: @Json.Serialize(SharedLocalizer["Auth_ResendCodeIn"]?.Value ?? "Resend code in {0}s"),
+        EnterOtpSixDigits: @Json.Serialize(SharedLocalizer["Auth_EnterOtpSixDigits"]?.Value ?? "Please enter the 6-digit OTP code!"),
+        CreatingAccount: @Json.Serialize(SharedLocalizer["Auth_CreatingAccount"]?.Value ?? "Creating..."),
+        ConfirmAndCreateBtn: @Json.Serialize(SharedLocalizer["Auth_ConfirmAndCreate"].Value)
+    };
+
     let otpTimerInterval = null;
 
-    // 1. Kiểm tra tính hợp lệ của Form Đăng ký & Gửi OTP đến Gmail
     function initiateRegistration() {
         const name = $('#regName').val().trim();
         const email = $('#regEmail').val().trim();
@@ -304,22 +314,22 @@
         const captchaAnswer = $('#registerCaptchaInput').val().trim();
 
         if (!name || !email || !password || !captchaAnswer) {
-            showToast("@(SharedLocalizer["Auth_FillRequiredFields"]?.Value ?? "Please fill in all required fields!")", "error");
+            showToast(window.AUTH_LANG.FillRequiredFields, "error");
             return;
         }
 
         if (password.length < 6) {
-            showToast("@(SharedLocalizer["Auth_PasswordMinLength"]?.Value ?? "Password must be at least 6 characters!")", "error");
+            showToast(window.AUTH_LANG.PasswordMinLength, "error");
             return;
         }
 
         if (password !== confirmPassword) {
-            showToast("@(SharedLocalizer["Auth_PasswordMismatch"]?.Value ?? "Confirm password does not match!")", "error");
+            showToast(window.AUTH_LANG.PasswordMismatch, "error");
             return;
         }
 
-        const $btn =$('#btnRegisterSubmit');
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Sending OTP...');
+        const $btn = $('#btnRegisterSubmit');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> ' + window.AUTH_LANG.SendingOtp);
 
         $.ajax({
             url: '/Login/SendRegisterOtp',
@@ -332,20 +342,19 @@
                     openOtpModal();
                     startOtpTimer(60);
                 } else {
-                    showToast(res.message || "Failed to send OTP", "error");
+                    showToast(res.message, "error");
                     if (res.needNewCaptcha) refreshRegisterCaptcha();
                 }
             },
             error: function () {
-                showToast("Cannot connect to server!", "error");
+                showToast(window.AUTH_LANG.NetworkError, "error");
             },
             complete: function () {
-                $btn.prop('disabled', false).html("@SharedLocalizer["Auth_RegisterAccount"]");
+                $btn.prop('disabled', false).html(window.AUTH_LANG.RegisterAccountBtn);
             }
         });
     }
 
-    // 2. Mở / Đóng Modal OTP
     function openOtpModal() {
         const $overlay = $('#otpModalOverlay');
         const $content = $('#otpModalContent');
@@ -356,7 +365,6 @@
         $('#regOtpInput').val('').focus();
     }
 
-    // Đóng Modal OTP
     function closeOtpModal() {
         const $overlay = $('#otpModalOverlay');
         const $content = $('#otpModalContent');
@@ -367,18 +375,18 @@
         if (otpTimerInterval) clearInterval(otpTimerInterval);
     }
 
-    // 3. Đếm ngược gửi lại OTP
     function startOtpTimer(seconds) {
         let counter = seconds;
         $('#btnResendOtp').addClass('hidden');
-        $('#otpCountdownText').removeClass('hidden').text(`Resend code in ${counter}s`);
+        $('#otpCountdownText').removeClass('hidden');
+        $('#otpTimerVal').text(window.AUTH_LANG.ResendCodeIn.replace("{0}", counter));
 
         if (otpTimerInterval) clearInterval(otpTimerInterval);
 
         otpTimerInterval = setInterval(() => {
             counter--;
             if (counter > 0) {
-                $('#otpCountdownText').text(`Resend code in ${counter}s`);
+                $('#otpTimerVal').text(window.AUTH_LANG.ResendCodeIn.replace("{0}", counter));
             } else {
                 clearInterval(otpTimerInterval);
                 $('#otpCountdownText').addClass('hidden');
@@ -406,19 +414,18 @@
         });
     }
 
-    // 4. Gửi Form Đăng ký kèm Mã OTP xác nhận
     function submitFinalRegistration() {
         const otpCode = $('#regOtpInput').val().trim();
         if (!otpCode || otpCode.length < 6) {
-            showToast("Please enter the 6-digit OTP code!", "error");
+            showToast(window.AUTH_LANG.EnterOtpSixDigits, "error");
             return;
         }
 
         const formData = new FormData(document.getElementById('registerForm'));
         formData.append('otpCode', otpCode);
 
-        const $btn =$('#btnVerifyOtpSubmit');
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Creating...');
+        const $btn = $('#btnVerifyOtpSubmit');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> ' + window.AUTH_LANG.CreatingAccount);
 
         $.ajax({
             url: '/Login/Register',
@@ -433,14 +440,14 @@
                     closeRegisterModal();
                     setTimeout(() => openLoginModal(), 600);
                 } else {
-                    showToast(res.message || "Registration failed!", "error");
+                    showToast(res.message, "error");
                 }
             },
             error: function () {
-                showToast("System error during registration!", "error");
+                showToast(window.AUTH_LANG.NetworkError, "error");
             },
             complete: function () {
-                $btn.prop('disabled', false).html("@(SharedLocalizer["Auth_ConfirmAndCreate"]?.Value ?? "Confirm & Create")");
+                $btn.prop('disabled', false).html(window.AUTH_LANG.ConfirmAndCreateBtn);
             }
         });
     }

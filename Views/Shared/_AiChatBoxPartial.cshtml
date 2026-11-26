@@ -5,7 +5,7 @@
      data-http-error="@SharedLocalizer["SharedChat_HttpError"]"
      data-connection-error="@SharedLocalizer["SharedChat_ConnectionError"]">
 
-    <!-- Header Chatbox tái sử dụng btn-grad -->
+    <!-- Header Chatbox -->
     <div class="btn-grad px-5 py-3.5 flex justify-between items-center shadow-md select-none">
         <div class="flex items-center gap-3">
             <div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
@@ -15,11 +15,10 @@
             </h3>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Nút dọn dẹp lịch sử -->
-            <button type="button" onclick="clearChatHistory()" title="Xóa lịch sử chat" class="hover:bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center transition">
+            <button type="button" onclick="clearChatHistory()" title="@SharedLocalizer["SharedChat_ClearHistory"]" class="hover:bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center transition">
                 <i class="fa-regular fa-trash-can text-xs"></i>
             </button>
-            <button type="button" onclick="toggleChat()" class="hover:bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center transition hover:rotate-90">
+            <button type="button" onclick="toggleChat()" title="@SharedLocalizer["Btn_Close"]" class="hover:bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center transition hover:rotate-90">
                 <i class="fa-solid fa-xmark text-sm font-bold"></i>
             </button>
         </div>
@@ -27,7 +26,6 @@
 
     <!-- Khung lịch sử tin nhắn -->
     <div id="chat-history" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#f8f9fa]">
-        <!-- TÁI SỬ DỤNG CHUẨN btn-grad-gray CHO TIN NHẮN CHÀO MỪNG -->
         <div class="flex justify-start">
             <div class="btn-grad-gray border border-gray-200 text-gray-800 p-4 rounded-2xl rounded-tl-none max-w-[90%] text-xs sm:text-[13px] shadow-sm leading-relaxed whitespace-pre-line line-height-relaxed">
                 @SharedLocalizer["SharedChat_Welcome"]
@@ -37,42 +35,35 @@
 
     <!-- Footer nhập liệu và thanh Actions -->
     <div class="p-4 bg-white border-t border-gray-100 space-y-2.5">
-        <!-- Thanh Action Chips nhanh -->
+        <!-- Thanh Action Chips -->
         <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
-            <!-- Nhóm phân tích Toàn Chương (Bấm phát chạy ngay không cần bôi đen) -->
-            <button type="button" onclick="triggerChapterAnalysis('Summary', this)"
-                    class="ai-action-chip">
+            <button type="button" onclick="triggerChapterAnalysis('Summary', this)" class="ai-action-chip">
                 <i class="fa-solid fa-bolt"></i>
-                <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Tóm tắt chương" : "Chapter Summary")</span>
+                <span>@SharedLocalizer["Ai_Action_ChapterSummary"]</span>
             </button>
 
-            <button type="button" onclick="triggerChapterAnalysis('Feelings', this)"
-                    class="ai-action-chip active badge-pill bg-main">
+            <button type="button" onclick="triggerChapterAnalysis('Feelings', this)" class="ai-action-chip active badge-pill bg-main">
                 <i class="fa-solid fa-book-open-reader"></i>
-                <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Cảm nhận" : "Impression")</span>
+                <span>@SharedLocalizer["Ai_Action_Impression"]</span>
             </button>
 
-            <button type="button" onclick="triggerChapterAnalysis('Lore', this)"
-                    class="ai-action-chip">
+            <button type="button" onclick="triggerChapterAnalysis('Lore', this)" class="ai-action-chip">
                 <i class="fa-solid fa-compass"></i>
-                <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Giải mã Lore" : "Lore Decode")</span>
+                <span>@SharedLocalizer["Ai_Action_LoreDecode"]</span>
             </button>
 
-            <!-- Nhóm phân tích đoạn văn bôi đen -->
-            <button type="button" onclick="setModeAndTrigger('Explain')"
-                    class="ai-action-chip">
+            <button type="button" onclick="setModeAndTrigger('Explain')" class="ai-action-chip">
                 <i class="fa-solid fa-lightbulb"></i>
-                <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Giải thích đoạn" : "Explain")</span>
+                <span>@SharedLocalizer["Ai_Action_ExplainPassage"]</span>
             </button>
 
-            <button type="button" onclick="setModeAndTrigger('Grammar')"
-                    class="ai-action-chip">
+            <button type="button" onclick="setModeAndTrigger('Grammar')" class="ai-action-chip">
                 <i class="fa-solid fa-layer-group"></i>
-                <span>@(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Ngữ pháp" : "Grammar")</span>
+                <span>@SharedLocalizer["Ai_Action_Grammar"]</span>
             </button>
         </div>
 
-        <!-- Ô nhập văn bản kèm nút gửi sử dụng btn-grad -->
+        <!-- Ô nhập văn bản -->
         <div class="relative flex items-center">
             <textarea id="user-input" rows="2"
                       class="w-full pl-3.5 pr-12 py-2.5 bg-gray-50 border border-gray-200 text-black rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white resize-none transition-all text-xs sm:text-[13px] leading-relaxed"
@@ -85,3 +76,16 @@
         </div>
     </div>
 </div>
+
+@* Dictionary bản dịch Client-Side JS *@
+<script>
+    window.AI_LANG = {
+        SaveQuote: @Json.Serialize(SharedLocalizer["Ai_SaveQuote"].Value),
+        Copy: @Json.Serialize(SharedLocalizer["Ai_Copy"].Value),
+        CopiedToClipboard: @Json.Serialize(SharedLocalizer["Ai_CopiedToClipboard"].Value),
+        NetworkErrorSave: @Json.Serialize(SharedLocalizer["Ai_NetworkErrorSave"].Value),
+        ReqSummary: @Json.Serialize(SharedLocalizer["Ai_ReqSummary"].Value),
+        ReqLore: @Json.Serialize(SharedLocalizer["Ai_ReqLore"].Value),
+        ReqImpression: @Json.Serialize(SharedLocalizer["Ai_ReqImpression"].Value)
+    };
+</script>

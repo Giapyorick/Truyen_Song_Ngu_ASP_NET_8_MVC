@@ -1,6 +1,133 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    Func<string, string, string> T = (vi, en) => isVi ? vi : en;
+    string siteName = ViewBag.SiteName ?? "BilingualManga";
+    string contactEmail = ViewBag.ContactEmail ?? "";
+    ViewData["Title"] = T("Chính sách quyền riêng tư", "Privacy Policy");
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<link rel="stylesheet" href="~/css/home/static-pages.css" asp-append-version="true">
+
+<article class="sp-page">
+    <div class="sp-head">
+        <h1 class="sp-title">@T("Chính sách quyền riêng tư", "Privacy Policy")</h1>
+        <span class="sp-sub">@T("Cập nhật lần cuối: 22/11/2026", "Last updated: 22 November 2026")</span>
+    </div>
+
+    <p class="sp-lead">
+        @T($"Chính sách này giải thích {siteName} thu thập những thông tin gì, dùng chúng ra sao và bạn có những quyền gì. Khi sử dụng trang, bạn đồng ý với các nội dung dưới đây.",
+           $"This policy explains what information {siteName} collects, how we use it and what choices you have. By using the site you agree to the practices described below.")
+    </p>
+
+    <!-- Mục lục -->
+    <nav class="sp-toc" aria-label="@T("Mục lục", "Contents")">
+        <span class="sp-toc-title">@T("Mục lục", "Contents")</span>
+        <ol>
+            <li><a href="#collect">@T("Thông tin chúng tôi thu thập", "Information we collect")</a></li>
+            <li><a href="#use">@T("Cách chúng tôi sử dụng thông tin", "How we use information")</a></li>
+            <li><a href="#cookies">@T("Cookie", "Cookies")</a></li>
+            <li><a href="#ads">@T("Quảng cáo của Google", "Google advertising")</a></li>
+            <li><a href="#ai">@T("Tính năng dịch & trợ lý AI", "Translation & AI assistant")</a></li>
+            <li><a href="#share">@T("Chia sẻ thông tin", "Sharing information")</a></li>
+            <li><a href="#keep">@T("Lưu trữ & bảo mật", "Retention & security")</a></li>
+            <li><a href="#rights">@T("Quyền của bạn", "Your rights")</a></li>
+            <li><a href="#children">@T("Trẻ em", "Children")</a></li>
+            <li><a href="#changes">@T("Thay đổi chính sách & liên hệ", "Changes & contact")</a></li>
+        </ol>
+    </nav>
+
+    <section class="sp-section" id="collect">
+        <h2>1. @T("Thông tin chúng tôi thu thập", "Information we collect")</h2>
+        <ul class="sp-list">
+            <li><b>@T("Tài khoản:", "Account:")</b> @T("tên đăng nhập, email, tên hiển thị và mật khẩu (lưu dưới dạng mã hóa một chiều, không ai đọc được) khi bạn đăng ký.", "username, email, display name and password (stored as a one-way hash that no one can read) when you register.")</li>
+            <li><b>@T("Hoạt động đọc:", "Reading activity:")</b> @T("truyện đã thích, theo dõi, đánh giá, bình luận và chương bạn đang đọc dở.", "stories you like, follow, rate or comment on, and where you left off reading.")</li>
+            <li><b>@T("Liên hệ:", "Contact:")</b> @T("họ tên, email và nội dung khi bạn gửi form liên hệ.", "your name, email and message when you use the contact form.")</li>
+            <li><b>@T("Dữ liệu kỹ thuật:", "Technical data:")</b> @T("địa chỉ IP, loại trình duyệt, thiết bị, trang đã xem và thời gian truy cập – được ghi tự động trong nhật ký máy chủ.", "IP address, browser type, device, pages viewed and time of visit – recorded automatically in server logs.")</li>
+        </ul>
+    </section>
+
+    <section class="sp-section" id="use">
+        <h2>2. @T("Cách chúng tôi sử dụng thông tin", "How we use information")</h2>
+        <ul class="sp-list">
+            <li>@T("Cung cấp tính năng: đăng nhập, lưu tiến độ đọc, thích, theo dõi và gợi ý truyện.", "To run the service: sign-in, saving reading progress, likes, follows and recommendations.")</li>
+            <li>@T("Trả lời câu hỏi và yêu cầu hỗ trợ của bạn.", "To answer your questions and support requests.")</li>
+            <li>@T("Hiển thị quảng cáo giúp duy trì trang miễn phí (xem mục 4).", "To show ads that keep the site free (see section 4).")</li>
+            <li>@T("Phát hiện gian lận, spam và bảo vệ an toàn hệ thống.", "To detect fraud and spam and keep the site secure.")</li>
+        </ul>
+        <p>@T("Chúng tôi không bán thông tin cá nhân của bạn.", "We do not sell your personal information.")</p>
+    </section>
+
+    <section class="sp-section" id="cookies">
+        <h2>3. @T("Cookie", "Cookies")</h2>
+        <p>@T("Cookie là tệp nhỏ được lưu trên trình duyệt. Chúng tôi dùng:", "Cookies are small files stored by your browser. We use:")</p>
+        <ul class="sp-list">
+            <li><b>@T("Cookie cần thiết:", "Essential cookies:")</b> @T("giữ phiên đăng nhập và bảo vệ form (chống giả mạo yêu cầu).", "to keep you signed in and protect forms against request forgery.")</li>
+            <li><b>@T("Cookie tùy chọn:", "Preference cookies:")</b> @T("ghi nhớ ngôn ngữ giao diện bạn chọn (Tiếng Việt / English).", "to remember the interface language you chose (Vietnamese / English).")</li>
+            <li><b>@T("Cookie quảng cáo:", "Advertising cookies:")</b> @T("do Google và các đối tác đặt để hiển thị và đo lường quảng cáo (mục 4).", "set by Google and its partners to serve and measure ads (section 4).")</li>
+        </ul>
+        <p>@T("Bạn có thể chặn hoặc xóa cookie trong cài đặt trình duyệt; khi đó một số tính năng như đăng nhập có thể không hoạt động.", "You can block or delete cookies in your browser settings; some features such as signing in may then stop working.")</p>
+    </section>
+
+    <section class="sp-section sp-section--highlight" id="ads">
+        <h2>4. @T("Quảng cáo của Google", "Google advertising")</h2>
+        <p>@T("Trang sử dụng Google AdSense để hiển thị quảng cáo.", "This site uses Google AdSense to display advertising.")</p>
+        <ul class="sp-list">
+            <li>@T("Các nhà cung cấp bên thứ ba, bao gồm Google, sử dụng cookie để phân phát quảng cáo dựa trên những lần bạn truy cập trước đây vào trang này hoặc các trang web khác.",
+                   "Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.")</li>
+            <li>@T("Việc Google sử dụng cookie quảng cáo cho phép Google và các đối tác phân phát quảng cáo cho bạn dựa trên lượt truy cập của bạn vào trang này và/hoặc các trang khác trên Internet.",
+                   "Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.")</li>
+            <li>@T("Bạn có thể tắt quảng cáo được cá nhân hóa tại", "You may opt out of personalised advertising by visiting")
+                <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>,
+                @T("hoặc từ chối cookie quảng cáo cá nhân hóa của các nhà cung cấp bên thứ ba tại", "or opt out of third-party vendors' use of cookies for personalised advertising at")
+                <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener">www.aboutads.info</a>.</li>
+            <li>@T("Tìm hiểu cách Google sử dụng dữ liệu khi bạn dùng các trang web của đối tác:", "Learn how Google uses data when you use partner sites:")
+                <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a>.</li>
+        </ul>
+        <p>@T("Với người dùng ở Khu vực Kinh tế Châu Âu (EEA), Vương quốc Anh và Thụy Sĩ, chúng tôi sẽ xin sự đồng ý trước khi dùng cookie quảng cáo, thông qua công cụ quản lý đồng ý được Google chứng nhận.",
+              "For users in the European Economic Area (EEA), the UK and Switzerland, we ask for consent before using advertising cookies through a Google-certified consent management platform.")</p>
+    </section>
+
+    <section class="sp-section" id="ai">
+        <h2>5. @T("Tính năng dịch & trợ lý AI", "Translation & AI assistant")</h2>
+        <p>@T("Khi bạn dùng tính năng dịch hoặc trò chuyện với trợ lý AI, đoạn văn bản bạn chọn và câu hỏi của bạn được gửi tới nhà cung cấp dịch vụ AI để tạo câu trả lời. Vui lòng không nhập thông tin cá nhân nhạy cảm vào khung trò chuyện.",
+              "When you use translation or chat with the AI assistant, the text you select and your question are sent to our AI service provider to generate a response. Please don't enter sensitive personal information into the chat.")</p>
+    </section>
+
+    <section class="sp-section" id="share">
+        <h2>6. @T("Chia sẻ thông tin", "Sharing information")</h2>
+        <p>@T("Chúng tôi chỉ chia sẻ thông tin với: nhà cung cấp dịch vụ giúp vận hành trang (máy chủ, email, AI, quảng cáo) trong phạm vi cần thiết; hoặc cơ quan có thẩm quyền khi pháp luật yêu cầu.",
+              "We only share information with service providers that help run the site (hosting, email, AI, advertising) to the extent necessary, or with authorities when required by law.")</p>
+    </section>
+
+    <section class="sp-section" id="keep">
+        <h2>7. @T("Lưu trữ & bảo mật", "Retention & security")</h2>
+        <p>@T("Dữ liệu tài khoản được giữ trong thời gian tài khoản còn hoạt động. Tin nhắn liên hệ được giữ tối đa 12 tháng. Chúng tôi dùng kết nối mã hóa (HTTPS) và mã hóa một chiều mật khẩu, nhưng không có hệ thống nào an toàn tuyệt đối.",
+              "Account data is kept while your account is active. Contact messages are kept for up to 12 months. We use encrypted connections (HTTPS) and hashed passwords, but no system is completely secure.")</p>
+    </section>
+
+    <section class="sp-section" id="rights">
+        <h2>8. @T("Quyền của bạn", "Your rights")</h2>
+        <p>@T("Bạn có quyền xem, sửa hoặc yêu cầu xóa thông tin cá nhân và tài khoản của mình. Hãy gửi yêu cầu qua trang", "You can access, correct or ask us to delete your personal information and account. Send your request through the")
+           <a href="/contact">@T("Liên hệ", "Contact page")</a>@T(", chúng tôi sẽ xử lý trong vòng 30 ngày.", "; we will respond within 30 days.")</p>
+    </section>
+
+    <section class="sp-section" id="children">
+        <h2>9. @T("Trẻ em", "Children")</h2>
+        <p>@T("Trang không dành cho trẻ em dưới 13 tuổi và chúng tôi không cố ý thu thập thông tin của trẻ dưới 13 tuổi. Nếu bạn cho rằng một trẻ đã cung cấp thông tin cho chúng tôi, hãy liên hệ để chúng tôi xóa.",
+              "The site is not intended for children under 13 and we do not knowingly collect their information. If you believe a child has given us information, contact us and we will delete it.")</p>
+    </section>
+
+    <section class="sp-section" id="changes">
+        <h2>10. @T("Thay đổi chính sách & liên hệ", "Changes & contact")</h2>
+        <p>@T("Chúng tôi có thể cập nhật chính sách này; ngày cập nhật được ghi ở đầu trang. Mọi thắc mắc xin gửi về", "We may update this policy; the date at the top shows the latest revision. Questions? Write to")
+           @if (!string.IsNullOrWhiteSpace(contactEmail))
+           {
+               <a href="mailto:@contactEmail">@contactEmail</a>
+           }
+           else
+           {
+               <a href="/contact">@T("trang Liên hệ", "our Contact page")</a>
+           }.
+        </p>
+    </section>
+</article>

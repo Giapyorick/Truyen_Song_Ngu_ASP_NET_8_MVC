@@ -1,0 +1,363 @@
+/* ==========================================================================
+   HERO ẢNH TRÀN VIỀN + TAB KHOÉT Ở CẠNH DƯỚI
+   - Nạp SAU mobile.css; mọi selector nằm dưới .hero-cinema để ghi đè
+     style hero cũ trong layout.css / mobile.css.
+   - Cả slide là link tới trang chi tiết truyện (.hero-link).
+   ========================================================================== */
+
+.hero-slideshow.hero-cinema {
+    --hc-notch-bg: #ffffff;   /* phải trùng màu nền trang */
+    --hc-radius: 28px;
+    --hc-notch-h: 54px;
+
+    position: relative;
+    margin: 2rem 5%;
+    height: 480px;
+    border-radius: var(--hc-radius);
+    overflow: hidden;
+    background: #0f172a;
+    border: none;
+    box-shadow: none;
+}
+
+.hero-cinema .slides-container {
+    position: absolute;
+    inset: 0;
+}
+
+.hero-cinema .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.9s ease, visibility 0.9s;
+}
+
+    .hero-cinema .slide.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+/* Link phủ toàn bộ slide -> trang chi tiết */
+.hero-cinema .hero-link {
+    position: absolute;
+    inset: 0;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .hero-cinema .hero-link:focus-visible {
+        outline: 3px solid #50C9C3;
+        outline-offset: -3px;
+        border-radius: var(--hc-radius);
+    }
+
+/* Lớp nền mờ: cùng ảnh, phóng to + blur, đứng yên */
+.hero-cinema .hero-img-blur {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    filter: blur(22px) brightness(0.8) saturate(1.2);
+    transform: scale(1.18);
+}
+
+/* Lớp ảnh rõ: chỉ rõ ở vùng giữa rồi mờ dần ra cạnh (giống xóa phông),
+   zoom chậm khác tốc độ với lớp nền -> cảm giác có chiều sâu */
+.hero-cinema .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    -webkit-mask-image: radial-gradient(ellipse 48% 75% at 58% 45%, #000 45%, transparent 100%);
+    mask-image: radial-gradient(ellipse 48% 75% at 58% 45%, #000 45%, transparent 100%);
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+    transform: scale(1.08);
+    transition: transform 6s ease-out;
+}
+
+.hero-cinema .slide.active .hero-img {
+    transform: scale(1.02);
+}
+
+/* Lớp tối nhẹ ở trên & dưới để chữ trắng đọc rõ */
+.hero-cinema .hero-shade {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 45%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 55%),
+        rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease;
+}
+
+/* Rê chuột: ảnh sáng lên một chút để báo có thể bấm */
+.hero-cinema .hero-link:hover .hero-shade {
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Góc trên trái ---------- */
+.hero-cinema .hero-top {
+    position: absolute;
+    top: 2.75rem;
+    left: 3.25rem;
+    max-width: 52%;
+    z-index: 2;
+    color: #fff;
+}
+
+.hero-cinema .hero-badge {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.hero-cinema .hero-title {
+    margin: 0;
+    font-size: 3.6rem;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #fff;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ---------- Góc dưới phải ---------- */
+.hero-cinema .hero-bottom {
+    position: absolute;
+    right: 3.25rem;
+    bottom: calc(var(--hc-notch-h) + 1.5rem);
+    max-width: 460px;
+    z-index: 2;
+    text-align: right;
+    color: #fff;
+}
+
+.hero-cinema .hero-desc {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    font-weight: 500;
+    color: #ffffff;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Hiệu ứng chữ xuất hiện */
+.hero-cinema .hero-top,
+.hero-cinema .hero-bottom {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s;
+}
+
+.hero-cinema .slide.active .hero-top,
+.hero-cinema .slide.active .hero-bottom {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---------- Tab trắng khoét ở cạnh dưới ---------- */
+.hero-cinema .hero-notch {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    width: fit-content;
+    margin-inline: auto;
+    z-index: 4;
+    height: var(--hc-notch-h);
+    max-width: 62%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 18px;
+    background: var(--hc-notch-bg);
+    border-radius: var(--hc-radius) var(--hc-radius) 0 0;
+}
+
+    /* 2 góc lõm hai bên tab */
+    .hero-cinema .hero-notch::before,
+    .hero-cinema .hero-notch::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: calc(var(--hc-radius) + 1px);
+        height: var(--hc-radius);
+        pointer-events: none;
+    }
+
+    .hero-cinema .hero-notch::before {
+        left: calc(var(--hc-radius) * -1 + 1px);
+        background: radial-gradient(circle at 0 0, transparent calc(var(--hc-radius) - 0.5px), var(--hc-notch-bg) var(--hc-radius));
+    }
+
+    .hero-cinema .hero-notch::after {
+        right: calc(var(--hc-radius) * -1 + 1px);
+        background: radial-gradient(circle at 100% 0, transparent calc(var(--hc-radius) - 0.5px), var(--hc-notch-bg) var(--hc-radius));
+    }
+
+/* Từng mục trong tab (ghi đè class tailwind mà JS cũ thêm vào .dot) */
+.hero-cinema .hero-notch .dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto !important;
+    height: auto;
+    min-width: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: transparent !important;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+    transition: opacity 0.25s ease, background-color 0.25s ease;
+}
+
+    .hero-cinema .hero-notch .dot:hover {
+        opacity: 0.85;
+    }
+
+    .hero-cinema .hero-notch .dot.active {
+        opacity: 1;
+    }
+
+    .hero-cinema .hero-notch .dot img {
+        width: 22px;
+        height: 22px;
+        flex: none;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .hero-cinema .hero-notch .dot.active img {
+        box-shadow: 0 0 0 2px #fff, 0 0 0 4px #50C9C3;
+    }
+
+.hero-cinema .hero-notch .dot-name {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+    .hero-slideshow.hero-cinema {
+        margin: 1.25rem 4%;
+        height: 420px;
+    }
+
+    .hero-cinema .hero-top {
+        top: 2rem;
+        left: 2.25rem;
+        max-width: 70%;
+    }
+
+    .hero-cinema .hero-title {
+        font-size: 2.8rem;
+    }
+
+    .hero-cinema .hero-bottom {
+        right: 2.25rem;
+    }
+
+    .hero-cinema .hero-desc {
+        font-size: 1.05rem;
+    }
+
+    .hero-cinema .hero-notch {
+        max-width: 80%;
+    }
+
+    .hero-cinema .hero-notch .dot-name {
+        max-width: 80px;
+    }
+}
+
+/* ---------- Điện thoại ---------- */
+@media (max-width: 768px) {
+    .hero-slideshow.hero-cinema {
+        --hc-radius: 22px;
+        --hc-notch-h: 46px;
+        margin: 14px;
+        height: 460px;
+    }
+
+    .hero-cinema .hero-top {
+        top: 1.25rem;
+        left: 1.25rem;
+        right: 1.25rem;
+        max-width: none;
+    }
+
+    .hero-cinema .hero-title {
+        font-size: 2.1rem;
+    }
+
+    .hero-cinema .hero-img {
+        -webkit-mask-image: radial-gradient(ellipse 85% 55% at 50% 45%, #000 40%, transparent 100%);
+        mask-image: radial-gradient(ellipse 85% 55% at 50% 45%, #000 40%, transparent 100%);
+    }
+
+    .hero-cinema .hero-bottom {
+        left: 1.25rem;
+        right: 1.25rem;
+        bottom: calc(var(--hc-notch-h) + 14px);
+        max-width: none;
+        text-align: left;
+    }
+
+    .hero-cinema .hero-desc {
+        font-size: 1rem;
+        -webkit-line-clamp: 3;
+    }
+
+    .hero-cinema .hero-notch {
+        max-width: none;
+        padding: 0 12px;
+        gap: 2px;
+    }
+
+        /* Trên điện thoại chỉ hiện ảnh tròn, ẩn tên */
+        .hero-cinema .hero-notch .dot {
+            padding: 6px;
+        }
+
+    .hero-cinema .hero-notch .dot-name {
+        display: none;
+    }
+}
+
+/* ---------- Giảm chuyển động ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .hero-cinema .hero-img,
+    .hero-cinema .slide.active .hero-img {
+        transition: none;
+        transform: none;
+    }
+
+    .hero-cinema .hero-top,
+    .hero-cinema .hero-bottom {
+        transition: opacity 0.3s ease;
+        transform: none;
+    }
+}

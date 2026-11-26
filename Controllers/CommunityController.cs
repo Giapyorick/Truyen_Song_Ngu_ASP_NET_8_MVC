@@ -35,7 +35,7 @@ namespace WebTruyenTranh.Controllers
             return CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
         }
 
-        // 1. INDEX (ĐÃ SỬA: Nạp danh sách bài viết truyền vào View)
+        // 1. INDEX
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -86,10 +86,10 @@ namespace WebTruyenTranh.Controllers
             bool isVi = IsVietnamese();
             int userId = GetCurrentUserId();
             if (userId == 0)
-                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập!" : "Please sign in!" });
+                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập để đăng bài!" : "Please sign in to create a post!" });
 
             if (req == null || string.IsNullOrWhiteSpace(req.Content))
-                return Json(new { success = false, message = isVi ? "Nội dung bài viết không được để trống!" : "Content cannot be empty!" });
+                return Json(new { success = false, message = isVi ? "Nội dung bài viết không được để trống!" : "Post content cannot be empty!" });
 
             var user = await _context.TblUsers.FirstOrDefaultAsync(x => x.UserId == userId);
             if (user == null)
@@ -142,7 +142,7 @@ namespace WebTruyenTranh.Controllers
             return Json(new { success = true, message = isVi ? "Đăng bài thành công!" : "Published successfully!" });
         }
 
-        // 3. GET POSTS (ĐÃ SỬA: Bảo vệ an toàn chống văng lỗi Null Reference LINQ)
+        // 3. GET POSTS
         [HttpGet]
         public async Task<IActionResult> GetPosts(int page = 1, int pageSize = 10, string filterTab = "latest", string search = "", int? filterStoryId = null)
         {
@@ -279,7 +279,9 @@ namespace WebTruyenTranh.Controllers
             if (userId == 0)
                 return Json(new { success = false, message = isVi ? "Vui lòng đăng nhập!" : "Please sign in!" });
 
+            // IgnoreQueryFilters: nạp cả bình luận đã bị admin ẩn, nếu không sẽ vướng khóa ngoại khi xóa
             var post = await _context.TblPosts
+                .IgnoreQueryFilters()
                 .Include(p => p.PostLikes)
                 .Include(p => p.PostComments)
                 .FirstOrDefaultAsync(p => p.PostId == postId);
@@ -291,7 +293,13 @@ namespace WebTruyenTranh.Controllers
                 return Json(new { success = false, message = isVi ? "Bạn không có quyền xóa bài viết này!" : "Unauthorized!" });
 
             if (post.PostLikes != null) _context.TblPostLikes.RemoveRange(post.PostLikes);
-            if (post.PostComments != null) _context.TblPostComments.RemoveRange(post.PostComments);
+            if (post.PostComments != null)
+            {
+                // Bỏ liên kết trả lời trước để xóa không vướng khóa ngoại tự tham chiếu
+                foreach (var c in post.PostComments) c.ParentCommentId = null;
+                await _context.SaveChangesAsync();
+                _context.TblPostComments.RemoveRange(post.PostComments);
+            }
             _context.TblPosts.Remove(post);
 
             await _context.SaveChangesAsync();
@@ -307,7 +315,7 @@ namespace WebTruyenTranh.Controllers
             bool isVi = IsVietnamese();
             int userId = GetCurrentUserId();
             if (userId == 0)
-                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập!" : "Please sign in!" });
+                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập để thích bài viết!" : "Please sign in to like posts!" });
 
             var existingLike = await _context.TblPostLikes.FirstOrDefaultAsync(x => x.PostId == req.PostId && x.UserId == userId);
             bool isLiked;
@@ -341,7 +349,7 @@ namespace WebTruyenTranh.Controllers
             bool isVi = IsVietnamese();
             int userId = GetCurrentUserId();
             if (userId == 0)
-                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập!" : "Please sign in!" });
+                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập để bình luận!" : "Please sign in to comment!" });
 
             if (req == null || string.IsNullOrWhiteSpace(req.Content))
                 return Json(new { success = false, message = isVi ? "Nội dung bình luận không được rỗng!" : "Comment cannot be empty!" });
@@ -434,7 +442,7 @@ namespace WebTruyenTranh.Controllers
             List<int> idsToDelete = new List<int> { commentId };
             GetChildCommentIds(commentId, idsToDelete);
 
-            var commentsToDelete = await _context.TblPostComments.Where(c => idsToDelete.Contains(c.CommentId)).ToListAsync();
+            var commentsToDelete = await _context.TblPostComments.IgnoreQueryFilters().Where(c => idsToDelete.Contains(c.CommentId)).ToListAsync();
             _context.TblPostComments.RemoveRange(commentsToDelete);
             await _context.SaveChangesAsync();
 
@@ -447,7 +455,7 @@ namespace WebTruyenTranh.Controllers
 
         private void GetChildCommentIds(int parentId, List<int> allIds)
         {
-            var children = _context.TblPostComments.Where(c => c.ParentCommentId == parentId).Select(c => c.CommentId).ToList();
+            var children = _context.TblPostComments.IgnoreQueryFilters().Where(c => c.ParentCommentId == parentId).Select(c => c.CommentId).ToList();
             foreach (var childId in children)
             {
                 allIds.Add(childId);
@@ -455,7 +463,62 @@ namespace WebTruyenTranh.Controllers
             }
         }
 
-        // 8. GET CHAPTERS BY STORY
+        // 8. BÁO CÁO VI PHẠM (bài viết / bình luận) -> admin xử lý ở Admin > Kiểm duyệt cộng đồng
+        private static readonly HashSet<string> ReportReasons = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "spam", "offensive", "spoiler", "inappropriate", "other"
+        };
+
+        [HttpPost]
+        public async Task<IActionResult> Report([FromBody] ContentReportRequest req)
+        {
+            bool isVi = IsVietnamese();
+            int userId = GetCurrentUserId();
+            if (userId == 0)
+                return Json(new { success = false, requireLogin = true, message = isVi ? "Vui lòng đăng nhập để báo cáo!" : "Please sign in to report!" });
+
+            if (req == null || req.TargetId <= 0 ||
+                (req.TargetType != TblContentReport.TypePost && req.TargetType != TblContentReport.TypeComment) ||
+                !ReportReasons.Contains(req.Reason ?? ""))
+                return Json(new { success = false, message = isVi ? "Yêu cầu không hợp lệ!" : "Invalid request!" });
+
+            // Nội dung phải tồn tại và không phải của chính mình
+            int? ownerId = req.TargetType == TblContentReport.TypePost
+                ? await _context.TblPosts.Where(p => p.PostId == req.TargetId).Select(p => (int?)p.UserId).FirstOrDefaultAsync()
+                : await _context.TblPostComments.Where(c => c.CommentId == req.TargetId).Select(c => (int?)c.UserId).FirstOrDefaultAsync();
+
+            if (ownerId == null)
+                return Json(new { success = false, message = isVi ? "Nội dung không còn tồn tại!" : "This content no longer exists!" });
+            if (ownerId == userId)
+                return Json(new { success = false, message = isVi ? "Bạn không thể báo cáo nội dung của chính mình." : "You can't report your own content." });
+
+            bool already = await _context.TblContentReports.AnyAsync(r =>
+                r.TargetType == req.TargetType && r.TargetId == req.TargetId && r.ReporterUserId == userId);
+            if (already)
+                return Json(new { success = true, message = isVi ? "Bạn đã báo cáo nội dung này rồi. Cảm ơn bạn!" : "You've already reported this. Thank you!" });
+
+            // Chống spam báo cáo: tối đa 10 báo cáo / giờ / người
+            var oneHourAgo = DateTime.Now.AddHours(-1);
+            int recent = await _context.TblContentReports.CountAsync(r => r.ReporterUserId == userId && r.CreatedAt >= oneHourAgo);
+            if (recent >= 10)
+                return Json(new { success = false, message = isVi ? "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau." : "Too many reports. Please try again later." });
+
+            _context.TblContentReports.Add(new TblContentReport
+            {
+                TargetType = req.TargetType,
+                TargetId = req.TargetId,
+                ReporterUserId = userId,
+                Reason = req.Reason!.ToLowerInvariant(),
+                Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim().Substring(0, Math.Min(300, req.Note.Trim().Length)),
+                CreatedAt = DateTime.Now,
+                Status = TblContentReport.StatusPending
+            });
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = isVi ? "Đã gửi báo cáo. Quản trị viên sẽ xem xét sớm." : "Report sent. Our moderators will review it soon." });
+        }
+
+        // 9. GET CHAPTERS BY STORY
         [HttpGet]
         public async Task<IActionResult> GetChaptersByStory(int storyId)
         {

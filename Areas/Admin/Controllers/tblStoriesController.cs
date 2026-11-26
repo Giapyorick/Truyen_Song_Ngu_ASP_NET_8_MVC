@@ -413,6 +413,8 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     _context.TblCategoryOfStories.RemoveRange(story.TblCategoryOfStories);
                 }
 
+                // Bình luận truyện (tblStoryComment) tự xóa theo nhờ ON DELETE CASCADE trong CSDL
+
                 _context.TblStories.Remove(story);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -468,6 +470,7 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                     var mappings = stories.SelectMany(s => s.TblCategoryOfStories).ToList();
 
                     if (mappings.Any()) _context.TblCategoryOfStories.RemoveRange(mappings);
+                    // Bình luận truyện (tblStoryComment) tự xóa theo nhờ ON DELETE CASCADE trong CSDL
                     _context.TblStories.RemoveRange(stories);
 
                     await _context.SaveChangesAsync();

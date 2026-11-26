@@ -1,0 +1,78 @@
+/* ==========================================================================
+   BỘ LỌC TRANG CHỦ (thể loại nổi bật + sắp xếp) | home-filter.js
+   Dùng tại: Views/Home/Index.cshtml (HTML: Components/StoriesList/StoriesList.cshtml)
+   GIAO DIỆN NÚT: dùng chung class .cat-pill / .active-cat / .cat-count của trang
+   Thể loại (css/home/categories.css) -> sửa kiểu nút ở categories.css là cả 2 trang
+   cùng đổi. File này chỉ lo bố cục của bộ lọc.
+   ========================================================================== */
+.home-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-family: 'Inter', sans-serif;
+}
+
+.hf-cats,
+.hf-sort {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Nhãn "Sắp xếp" */
+.hf-sort-label {
+    margin-right: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+    .hf-sort-label i {
+        color: #50C9C3;
+        margin-right: 2px;
+    }
+
+/* Icon trong nút sắp xếp đang chọn: trắng như chữ */
+.hf-sort-btn.active-cat i {
+    color: #ffffff;
+}
+
+/* Mũi tên chiều sắp xếp: chỉ hiện khi đang chọn "Số thứ tự" */
+.hf-dir {
+    display: none;
+    font-size: 0.74rem;
+}
+
+.hf-sort-btn.active-cat .hf-dir {
+    display: inline-block;
+}
+
+/* ---------- Điện thoại: thanh thể loại cuộn ngang ---------- */
+@media (max-width: 768px) {
+    .hf-cats {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin: 0 -12px;
+        padding: 4px 12px 14px;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+        mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    }
+
+        .hf-cats::-webkit-scrollbar {
+            display: none;
+        }
+}
+
+/* Tiêu đề "Truyện mới nhất": cùng màu teal với các nút (.cat-pill.active-cat / .btn-grad)
+   (giữ thêm vạch trái teal + hiệu ứng dải màu 200%) */
+.section-title.text-cus {
+    border-left-color: #50C9C3;
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+}

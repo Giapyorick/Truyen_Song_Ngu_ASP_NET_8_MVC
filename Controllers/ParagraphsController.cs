@@ -110,6 +110,58 @@ public class ParagraphsController : Controller
         }
     }
 
+    // 1b. API AUDIO ELEVENLABS CỦA CHƯƠNG (dùng cho trình phát "Nghe truyện" – reading-tts.js)
+    // Trả về { "vi": { "<ParagraphOrder>": "/audio/...mp3?v=<thời điểm tạo>" }, ... }
+    // Chỉ trả audio còn khớp nội dung hiện tại (câu bị sửa sau khi tạo audio -> đọc bằng giọng trình duyệt).
+    [HttpGet]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Client)]
+    public async Task<IActionResult> GetAudioMap(int chapterId)
+    {
+        try
+        {
+            var audios = await (from a in _context.TblParagraphAudios.AsNoTracking()
+                                join p in _context.TblParagraphs.AsNoTracking() on a.ParagraphId equals p.ParagraphId
+                                where p.ChapterId == chapterId
+                                select new
+                                {
+                                    a.Lang,
+                                    a.FilePath,
+                                    a.TextHash,
+                                    a.CreatedAt,
+                                    p.ParagraphOrder,
+                                    p.English,
+                                    p.Vietnamese,
+                                    p.Chinese,
+                                    p.Japanese,
+                                    p.French
+                                }).ToListAsync();
+
+            var map = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, string>>();
+            foreach (var a in audios)
+            {
+                string? raw = a.Lang switch
+                {
+                    "vi" => a.Vietnamese,
+                    "zh" => a.Chinese,
+                    "ja" => a.Japanese,
+                    "fr" => a.French,
+                    _ => a.English
+                };
+                string text = WebTruyenTranh.Services.ParagraphAudioHelper.CleanText(raw);
+                if (text.Length == 0 || WebTruyenTranh.Services.ParagraphAudioHelper.Hash(text) != a.TextHash) continue;
+
+                if (!map.TryGetValue(a.Lang, out var byOrder)) map[a.Lang] = byOrder = new();
+                byOrder[a.ParagraphOrder.ToString(CultureInfo.InvariantCulture)] = $"{a.FilePath}?v={a.CreatedAt.Ticks:x}";
+            }
+            return Json(map);
+        }
+        catch (Exception)
+        {
+            // Chưa chạy script ParagraphAudio.sql hoặc lỗi CSDL -> trình đọc dùng giọng trình duyệt như cũ
+            return Json(new { });
+        }
+    }
+
     // 2. API LẤY DANH SÁCH CHƯƠNG VÀ TIÊU ĐỀ SONG NGỮ
     [HttpGet]
     public async Task<IActionResult> GetListByChapter(int chapterId)

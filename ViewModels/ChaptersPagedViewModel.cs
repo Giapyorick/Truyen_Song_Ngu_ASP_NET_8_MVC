@@ -6,5 +6,6 @@
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public int StoryId { get; set; }
+        public int TotalChapters { get; set; }
     }
 }

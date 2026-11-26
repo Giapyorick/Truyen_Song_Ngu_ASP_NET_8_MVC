@@ -51,7 +51,16 @@ namespace WebTruyenTranh.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
-                if (isVi)
+
+                // Tìm theo mã định danh: "#2611001", "2611001" hoặc một phần đầu như "#2611"
+                var codeSearch = search.TrimStart('#').Trim();
+                bool isCodeSearch = codeSearch.Length >= 3 && codeSearch.Length <= 10 && codeSearch.All(char.IsDigit);
+
+                if (isCodeSearch)
+                {
+                    query = query.Where(s => s.StoryCode != null && s.StoryCode.StartsWith(codeSearch));
+                }
+                else if (isVi)
                 {
                     query = query.Where(s =>
                         s.TblStoryTranslations.Any(t => t.LanguageCode.StartsWith("vi") && t.Title.Contains(search))
@@ -74,6 +83,9 @@ namespace WebTruyenTranh.Controllers
                 "follower" => query.OrderByDescending(s => s.CountFolower).ThenByDescending(s => s.Likes).ThenByDescending(s => s.StoryId),
                 "most_rated" => query.OrderByDescending(s => s.CountRate).ThenByDescending(s => s.Rate).ThenByDescending(s => s.StoryId),
                 "likes" => query.OrderByDescending(s => s.Likes).ThenByDescending(s => s.CountFolower).ThenByDescending(s => s.StoryId),
+                // Số thứ tự theo mã định danh (#2611001, #2611002, ...); truyện chưa có mã xếp cuối
+                "code" => query.OrderBy(s => s.StoryCode == null).ThenBy(s => s.StoryCode).ThenBy(s => s.StoryId),
+                "code_desc" => query.OrderBy(s => s.StoryCode == null).ThenByDescending(s => s.StoryCode).ThenByDescending(s => s.StoryId),
                 // Mặc định hoặc khi chọn "latest": Ưu tiên ngày xuất bản mới nhất, sau đó đến StoryId giảm dần
                 _ => query.OrderByDescending(s => s.PublicationDate).ThenByDescending(s => s.StoryId)
             };
@@ -85,6 +97,7 @@ namespace WebTruyenTranh.Controllers
                 .Select(s => new StoryListViewModel
                 {
                     StoryID = s.StoryId,
+                    StoryCode = s.StoryCode,
                     Title = isVi
                         ? (s.TblStoryTranslations
                             .Where(st => st.LanguageCode.StartsWith("vi"))
@@ -114,6 +127,9 @@ namespace WebTruyenTranh.Controllers
                         }).ToList()
                 })
                 .ToListAsync();
+
+            // Gắn tiến độ đọc (huy hiệu "Chương X") nếu người dùng đã đăng nhập
+            await WebTruyenTranh.Helpers.ReadingProgressHelper.FillAsync(_context, stories, userId);
 
             return PartialView("_StoryCardsPartial", stories);
         }
@@ -170,10 +186,59 @@ namespace WebTruyenTranh.Controllers
                     .FirstOrDefaultAsync();
             }
 
+            // 3. Danh sách chương (rút gọn) + tiến độ đọc của người dùng -> thẻ "Đọc tiếp"
+            var chapterBrief = await _context.TblChapters
+                .AsNoTracking()
+                .Where(c => c.StoryId == id)
+                .OrderBy(c => c.ChapterNumber)
+                .Select(c => new
+                {
+                    c.ChapterId,
+                    c.ChapterNumber,
+                    Title = c.TblChapterTranslations
+                        .Where(t => t.LanguageCode.StartsWith(langPrefix))
+                        .Select(t => t.Title)
+                        .FirstOrDefault() ?? c.Title
+                })
+                .ToListAsync();
+
+            ViewBag.TotalChapters = chapterBrief.Count;
+            ViewBag.FirstChapterId = chapterBrief.FirstOrDefault()?.ChapterId ?? 0;
+
+            if (userId > 0 && chapterBrief.Count > 0)
+            {
+                int lastChapterId = await _context.TblUserReadingProgresses
+                    .AsNoTracking()
+                    .Where(p => p.UserId == userId && p.StoryId == id)
+                    .Select(p => p.LastChapterId)
+                    .FirstOrDefaultAsync();
+
+                int readIndex = chapterBrief.FindIndex(c => c.ChapterId == lastChapterId);
+                if (readIndex >= 0)
+                {
+                    var read = chapterBrief[readIndex];
+                    ViewBag.ReadChapterId = read.ChapterId;
+                    ViewBag.ReadChapterNumber = read.ChapterNumber;
+                    ViewBag.ReadChapterTitle = read.Title;
+                    ViewBag.ReadChapterIndex = readIndex + 1;   // thứ tự 1..N trong truyện
+                }
+            }
+
             ViewBag.IsLiked = isLiked;
             ViewBag.IsFollowed = isFollowed;
             ViewBag.UserRating = userRating;
             ViewBag.LangPrefix = langPrefix;
+
+            // Ảnh đại diện + tên người đang đăng nhập cho ô viết bình luận
+            if (userId > 0)
+            {
+                var me = await _context.TblUsers.AsNoTracking()
+                    .Where(u => u.UserId == userId)
+                    .Select(u => new { u.Img, u.Name })
+                    .FirstOrDefaultAsync();
+                ViewBag.CommentUserImg = me?.Img;
+                ViewBag.CommentUserName = me?.Name;
+            }
 
             return View(story);
         }

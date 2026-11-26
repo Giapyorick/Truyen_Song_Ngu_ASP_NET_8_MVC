@@ -30,6 +30,12 @@ public partial class TblStory
 
     public string? Lang { get; set; }
 
+    /// <summary>
+    /// Mã định danh truyện dạng YYMMNNN (hiển thị "#2611001"). Do trigger SQL
+    /// trg_tblStory_StoryCode tự cấp khi thêm truyện; KHÔNG được sửa (EF bỏ qua khi lưu).
+    /// </summary>
+    public string? StoryCode { get; set; }
+
     public virtual TblAuthor? Author { get; set; }
 
     public virtual ICollection<TblCategoryOfStory> TblCategoryOfStories { get; set; } = new List<TblCategoryOfStory>();

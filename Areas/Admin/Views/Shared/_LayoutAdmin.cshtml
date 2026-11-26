@@ -14,7 +14,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="~/css/admin/_AdminLayout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/buttons-fx.css" asp-append-version="true" />
 </head>
 <body class="flex h-screen overflow-hidden">
 
@@ -50,8 +51,14 @@
             <a asp-area="Admin" asp-controller="tblParagraphs" asp-action="Paragraphs" class="nav-link flex items-center p-3 rounded-lg">
                 <i class="fas fa-paragraph mr-3"></i> @SharedLocalizer["AdminLayout_Paragraphs"]
             </a>
+            <a asp-area="Admin" asp-controller="Audio" asp-action="Index" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-headphones mr-3"></i> @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Audio truyện" : "Story audio")
+            </a>
             <a asp-area="Admin" asp-controller="tblUsers" asp-action="Users" class="nav-link flex items-center p-3 rounded-lg">
                 <i class="fas fa-users-cog mr-3"></i> @SharedLocalizer["AdminLayout_Users"]
+            </a>
+            <a asp-area="Admin" asp-controller="CommunityModeration" asp-action="Index" class="nav-link flex items-center p-3 rounded-lg">
+                <i class="fas fa-shield-halved mr-3"></i> @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi") ? "Kiểm duyệt cộng đồng" : "Community moderation")
             </a>
 
             <a asp-area="Admin" asp-controller="tblAdmins" asp-action="Admins" class="nav-link flex items-center p-3 rounded-lg">
@@ -361,6 +368,12 @@
                         }
                     }
                 });
+
+                // Menu cuộn được: đưa mục đang mở vào vùng nhìn thấy
+                setTimeout(function () {
+                    var active = document.querySelector('.sidebar nav .active-nav');
+                    if (active) active.scrollIntoView({ block: 'nearest' });
+                }, 0);
 
                 if (!matched) {
                     $('.nav-link').each(function () {

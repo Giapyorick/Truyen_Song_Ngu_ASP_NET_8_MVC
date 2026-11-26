@@ -1,0 +1,73 @@
+﻿@{
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    Func<string, string, string> T = (vi, en) => isVi ? vi : en;
+    string siteName = ViewBag.SiteName ?? "BilingualManga";
+    string contactEmail = ViewBag.ContactEmail ?? "";
+    ViewData["Title"] = T("Giới thiệu", "About us");
+}
+
+<link rel="stylesheet" href="~/css/home/static-pages.css" asp-append-version="true">
+
+<article class="sp-page">
+    <!-- Tiêu đề trang -->
+    <div class="sp-head">
+        <h1 class="sp-title">@T("Giới thiệu", "About us")</h1>
+        <span class="sp-sub">@T("About us", "Giới thiệu")</span>
+    </div>
+
+    <p class="sp-lead">
+        @T($"{siteName} là nơi đọc truyện ngắn song ngữ Việt – Anh miễn phí, xoay quanh những câu chuyện đời thường đầy cảm xúc: gia đình, tình yêu, công sở và các mối quan hệ quanh ta.",
+           $"{siteName} is a free place to read bilingual Vietnamese – English short stories about the emotional moments of everyday life: family, love, the workplace and the relationships around us.")
+    </p>
+
+    <!-- Ba điểm nổi bật -->
+    <div class="sp-cards">
+        <div class="sp-card">
+            <span class="sp-card-icon"><i class="fa-solid fa-feather-pointed"></i></span>
+            <h3>@T("Truyện ngắn nguyên bản", "Original short stories")</h3>
+            <p>@T("Mỗi truyện được viết và biên tập riêng cho trang, đọc trọn trong vài phút nhưng đọng lại lâu.",
+                  "Every story is written and edited for this site – read in minutes, remembered for much longer.")</p>
+        </div>
+        <div class="sp-card">
+            <span class="sp-card-icon"><i class="fa-solid fa-language"></i></span>
+            <h3>@T("Đọc song ngữ", "Read in two languages")</h3>
+            <p>@T("Nhấp đúp vào một câu để xem bản dịch, hoặc dịch cả chương chỉ với một nút bấm – vừa đọc truyện vừa luyện ngoại ngữ.",
+                  "Double-click any sentence to see its translation, or translate a whole chapter with one tap – enjoy a story and practise a language.")</p>
+        </div>
+        <div class="sp-card">
+            <span class="sp-card-icon"><i class="fa-solid fa-heart"></i></span>
+            <h3>@T("Miễn phí cho mọi người", "Free for everyone")</h3>
+            <p>@T("Trang hoạt động nhờ quảng cáo để duy trì máy chủ và tiếp tục ra truyện mới mỗi tuần.",
+                  "The site is supported by advertising, which keeps the servers running and new stories coming every week.")</p>
+        </div>
+    </div>
+
+    <section class="sp-section">
+        <h2>@T("Câu chuyện của chúng tôi", "Our story")</h2>
+        <p>@T("Chúng tôi tin rằng ai cũng từng đi qua một bữa cơm gia đình căng thẳng, một mối tình dang dở hay một ngày làm việc mệt nhoài. Những câu chuyện nhỏ ấy giúp người đọc thấy mình được thấu hiểu – và khi được kể bằng hai ngôn ngữ, chúng còn trở thành cách học tiếng tự nhiên nhất.",
+              "We believe everyone has lived through a tense family dinner, an unfinished love story or an exhausting day at work. Small stories like these help readers feel understood – and told in two languages, they become the most natural way to learn.")</p>
+    </section>
+
+    <section class="sp-section">
+        <h2>@T("Nguyên tắc nội dung", "Content principles")</h2>
+        <ul class="sp-list">
+            <li>@T("Truyện là nội dung nguyên bản hoặc đã được tác giả cho phép đăng tải.", "Stories are original or published with the author's permission.")</li>
+            <li>@T("Không có nội dung khiêu dâm, cổ xúy bạo lực hay thù ghét.", "No sexual content, and nothing that glorifies violence or hate.")</li>
+            <li>@T("Tôn trọng bản quyền: nếu bạn thấy nội dung vi phạm, hãy báo cho chúng tôi để gỡ bỏ ngay.", "We respect copyright: if you find infringing content, tell us and we will remove it promptly.")</li>
+        </ul>
+    </section>
+
+    <!-- Kêu gọi liên hệ -->
+    <div class="sp-callout">
+        <div>
+            <h3>@T("Bạn muốn góp ý hay gửi truyện?", "Feedback or a story to share?")</h3>
+            <p>@T("Chúng tôi luôn muốn nghe từ độc giả.", "We'd love to hear from our readers.")
+               @if (!string.IsNullOrWhiteSpace(contactEmail))
+               {
+                   <span>@T("Email:", "Email:") <a href="mailto:@contactEmail">@contactEmail</a></span>
+               }
+            </p>
+        </div>
+        <a class="sp-btn" href="/contact">@T("Liên hệ", "Contact us") <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+</article>

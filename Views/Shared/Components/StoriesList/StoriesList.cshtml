@@ -1,5 +1,9 @@
 @using WebTruyenTranh.ViewModels
 @model IList<StoryListViewModel>
+@{
+    var featuredCats = ViewData["FeaturedCategories"] as List<FeaturedCategoryViewModel> ?? new List<FeaturedCategoryViewModel>();
+    var hfEn = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
 
 <div class="w-full space-y-6"
      data-story-no-search-matches="@Html.Raw(SharedLocalizer["Story_NoSearchMatches"].Value)"
@@ -11,6 +15,35 @@
             @SharedLocalizer["Story_LatestStories"]
         </h2>
         <span class="text-xs text-slate-400 font-medium">@SharedLocalizer["Story_ScrollToDiscover"]</span>
+    </div>
+
+    <!-- BỘ LỌC: thể loại nổi bật + sắp xếp (xử lý ở js/home/home-filter.js).
+         Nút dùng chung class .cat-pill / .active-cat của trang Thể loại (css/home/categories.css) -->
+    <div class="home-filter" id="homeFilter">
+        <div class="hf-cats" role="tablist" aria-label="@(hfEn ? "Genres" : "Thể loại")">
+            <button type="button" class="hf-chip cat-pill active-cat" data-category="" role="tab" aria-selected="true">
+                @(hfEn ? "All" : "Tất cả")
+            </button>
+            @foreach (var c in featuredCats)
+            {
+                <button type="button" class="hf-chip cat-pill" data-category="@c.CategoryId" role="tab" aria-selected="false">
+                    <span>@c.Name</span>
+                    <span class="cat-count">@c.StoryCount</span>
+                </button>
+            }
+        </div>
+
+        <div class="hf-sort" role="group" aria-label="@(hfEn ? "Sort stories" : "Sắp xếp truyện")">
+            <span class="hf-sort-label"><i class="fa-solid fa-arrow-down-wide-short"></i> @(hfEn ? "Sort" : "Sắp xếp")</span>
+            <button type="button" class="hf-sort-btn cat-pill active-cat" data-sort="latest" aria-pressed="true">
+                <i class="fa-regular fa-clock"></i> @(hfEn ? "Newest" : "Mới nhất")
+            </button>
+            <button type="button" class="hf-sort-btn cat-pill" data-sort="code" aria-pressed="false"
+                    title="@(hfEn ? "By story number (#YYMMNNN). Click again to reverse." : "Theo mã truyện (#YYMMNNN). Bấm lần nữa để đảo chiều.")">
+                <i class="fa-solid fa-hashtag"></i> @(hfEn ? "Story number" : "Số thứ tự")
+                <i class="fa-solid fa-arrow-up-1-9 hf-dir" aria-hidden="true"></i>
+            </button>
+        </div>
     </div>
 
     <!-- KHUNG CHỨA THẺ TRUYỆN -->

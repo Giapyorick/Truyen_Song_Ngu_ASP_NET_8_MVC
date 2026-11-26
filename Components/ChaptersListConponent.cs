@@ -60,7 +60,8 @@ namespace WebTruyenTranh.Components
                 Chapters = chapters,
                 CurrentPage = page,
                 TotalPages = totalPages,
-                StoryId = storyId
+                StoryId = storyId,
+                TotalChapters = totalChapters
             };
 
             return View("ChaptersList", model);

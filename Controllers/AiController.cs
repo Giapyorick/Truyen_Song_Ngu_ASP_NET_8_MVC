@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using WebTruyenTranh.Helpers;
 using WebTruyenTranh.Models;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace WebTruyenTranh.Controllers
 {
@@ -17,18 +20,23 @@ namespace WebTruyenTranh.Controllers
     {
         private readonly IAiTranslationService _ai;
         private readonly TruyenSongNguContext _context;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public AiController(IAiTranslationService ai, TruyenSongNguContext context)
+        public AiController(
+            IAiTranslationService ai,
+            TruyenSongNguContext context,
+            IStringLocalizer<SharedResource> localizer)
         {
             _ai = ai;
             _context = context;
+            _localizer = localizer;
         }
 
         [HttpPost]
         public async Task<IActionResult> Translate([FromBody] TranslateRequest req)
         {
             if (req == null || string.IsNullOrWhiteSpace(req.Text))
-                return BadRequest(new { message = "Please enter the content to be translated." });
+                return BadRequest(new { message = _localizer["Ai_EnterContentToTranslate"].Value });
 
             try
             {
@@ -38,7 +46,7 @@ namespace WebTruyenTranh.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = $"AI Service Error: {ex.Message}" });
+                return StatusCode(500, new { message = $"{_localizer["Ai_ServiceError"].Value}: {ex.Message}" });
             }
         }
 
@@ -46,7 +54,7 @@ namespace WebTruyenTranh.Controllers
         public async Task<IActionResult> Explain([FromBody] AiRequestModel model)
         {
             if (model == null || string.IsNullOrWhiteSpace(model.Text))
-                return BadRequest(new { message = "Văn bản không được để trống!" });
+                return BadRequest(new { message = _localizer["Ai_TextCannotBeEmpty"].Value });
 
             bool isVi = string.IsNullOrWhiteSpace(model.Culture)
                 ? CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
@@ -89,7 +97,7 @@ namespace WebTruyenTranh.Controllers
         [HttpPost]
         public async Task StreamExplain([FromBody] AiRequestModel model, CancellationToken cancellationToken)
         {
-            var bufferingFeature = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature>();
+            var bufferingFeature = HttpContext.Features.Get<IHttpResponseBodyFeature>();
             bufferingFeature?.DisableBuffering();
 
             Response.Headers.Append("Content-Type", "text/event-stream; charset=utf-8");
@@ -114,7 +122,7 @@ namespace WebTruyenTranh.Controllers
             {
                 var chapter = await _context.TblChapters
                     .Include(c => c.Story)
-                    .Include(c => c.TblParagraphs) // Include danh sách đoạn văn
+                    .Include(c => c.TblParagraphs)
                     .FirstOrDefaultAsync(c => c.ChapterId == model.ChapterId.Value, cancellationToken);
 
                 if (chapter != null)
@@ -126,15 +134,13 @@ namespace WebTruyenTranh.Controllers
                     if (chapter.TblParagraphs != null && chapter.TblParagraphs.Any())
                     {
                         var englishParagraphs = chapter.TblParagraphs
-                          
                             .OrderBy(p => p.ParagraphId)
-                            .Select(p => p.English) // Hoặc p.Text
+                            .Select(p => p.English)
                             .Where(t => !string.IsNullOrWhiteSpace(t));
 
                         chapterFullContent = string.Join("\n\n", englishParagraphs);
                     }
 
-                    // Giới hạn độ dài (~3500-4000 ký tự) để AI phân tích nhanh và không tràn token
                     if (chapterFullContent.Length > 4000)
                     {
                         chapterFullContent = chapterFullContent.Substring(0, 4000) + "...";
@@ -142,16 +148,13 @@ namespace WebTruyenTranh.Controllers
                 }
             }
 
-            // Nếu người dùng không nhập/bôi đen văn bản cụ thể thì ưu tiên dùng nội dung toàn chương
             string analysisText = !string.IsNullOrWhiteSpace(model.Text)
                 ? model.Text.Trim()
                 : chapterFullContent;
 
-            // Xây dựng Prompt kết hợp Cũ (Học thuật/Chi tiết) và Mới (Cốt truyện/Toàn chương)
             string prompt = "";
             switch (model.Mode?.ToLower())
             {
-                // 1. TÓM TẮT TOÀN CHƯƠNG (Phân tích toàn cảnh chương)
                 case "summary":
                     prompt = isVi
                         ? $"{contextInfo}Dưới đây là nội dung chương truyện:\n\"\"\"{analysisText}\"\"\"\n" +
@@ -168,7 +171,6 @@ namespace WebTruyenTranh.Controllers
                           "- Core conflicts or decisions characters are facing.";
                     break;
 
-                // 2. GIẢI MÃ BỐI CẢNH & LORE (Phân tích toàn chương)
                 case "lore":
                     prompt = isVi
                         ? $"{contextInfo}Dưới đây là nội dung chương truyện:\n\"\"\"{analysisText}\"\"\"\n" +
@@ -185,7 +187,6 @@ namespace WebTruyenTranh.Controllers
                           "- Key organizations, archaic terms, or fictional concepts.";
                     break;
 
-                // 3. CẢM NHẬN & PHÂN TÍCH NHÂN VẬT (Toàn chương hoặc đoạn chọn)
                 case "feelings":
                     prompt = isVi
                         ? $"{contextInfo}Dưới đây là nội dung chương truyện:\n\"\"\"{analysisText}\"\"\"\n" +
@@ -206,7 +207,6 @@ namespace WebTruyenTranh.Controllers
                           "- *Quote line* -> Contextual significance.";
                     break;
 
-                // 4. PHÂN TÍCH NGỮ PHÁP (Chế độ học thuật khi bôi đen câu cụ thể)
                 case "grammar":
                     prompt = isVi
                         ? $"{contextInfo}Phân tích NGỮ PHÁP chi tiết cho câu: \"{analysisText}\"\n" +
@@ -225,7 +225,6 @@ namespace WebTruyenTranh.Controllers
                           "- Grammar patterns in context.";
                     break;
 
-                // 5. MẶC ĐỊNH / GIẢI NGHĨA NGỮ CẢNH (Hỏi nhanh từng đoạn bôi đen)
                 default:
                     prompt = isVi
                         ? $"{contextInfo}Giải thích đoạn văn sau theo đúng bối cảnh truyện:\n\"{analysisText}\"\n\n" +
@@ -251,7 +250,7 @@ namespace WebTruyenTranh.Controllers
             {
                 await foreach (var token in _ai.StreamAiResponseAsync(prompt, cancellationToken))
                 {
-                    string jsonToken = System.Text.Json.JsonSerializer.Serialize(token);
+                    string jsonToken = JsonSerializer.Serialize(token);
                     await Response.WriteAsync($"data: {jsonToken}\n\n", cancellationToken);
                     await Response.Body.FlushAsync(cancellationToken);
                 }
@@ -261,7 +260,7 @@ namespace WebTruyenTranh.Controllers
             }
             catch (Exception ex)
             {
-                string jsonErr = System.Text.Json.JsonSerializer.Serialize($"\n[Error: {ex.Message}]");
+                string jsonErr = JsonSerializer.Serialize($"\n[{_localizer["Ai_ErrorPrefix"].Value}: {ex.Message}]");
                 await Response.WriteAsync($"data: {jsonErr}\n\n", cancellationToken);
                 await Response.Body.FlushAsync(cancellationToken);
             }
@@ -272,10 +271,6 @@ namespace WebTruyenTranh.Controllers
         {
             try
             {
-                // 0. Xác định ngôn ngữ hiện tại để trả về thông báo song ngữ phù hợp
-                bool isVi = CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
-
-                // 1. Quét tìm UserId linh hoạt từ Claims Cookie hoặc Session
                 int currentUserId = 0;
 
                 var claimId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -297,7 +292,7 @@ namespace WebTruyenTranh.Controllers
                     return Json(new
                     {
                         success = false,
-                        message = isVi ? "Bạn cần đăng nhập để lưu vào sổ tay!" : "Please sign in to save to your lorebook!"
+                        message = _localizer["Ai_RequireLoginToSave"].Value
                     });
                 }
 
@@ -306,18 +301,16 @@ namespace WebTruyenTranh.Controllers
                     return Json(new
                     {
                         success = false,
-                        message = isVi ? "Nội dung không được để trống!" : "Content cannot be empty!"
+                        message = _localizer["Ai_ContentCannotBeEmpty"].Value
                     });
                 }
 
-                // Cắt bớt nếu từ/cụm từ dài quá 200 ký tự tránh tràn cột [MaxLength(255)]
                 string cleanWord = req.Word.Trim();
                 if (cleanWord.Length > 200)
                 {
                     cleanWord = cleanWord.Substring(0, 197) + "...";
                 }
 
-                // Xử lý ChapterId: BẮT BUỘC gán null nếu <= 0 để tránh lỗi Foreign Key
                 int? validChapterId = null;
                 if (req.ChapterId.HasValue && req.ChapterId.Value > 0)
                 {
@@ -344,28 +337,28 @@ namespace WebTruyenTranh.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = isVi ? "Đã lưu vào sổ tay trích dẫn & cốt truyện!" : "Saved to Story Lorebook!"
+                    message = _localizer["Ai_SaveSuccess"].Value
                 });
             }
             catch (DbUpdateException dbEx)
             {
                 var innerMsg = dbEx.InnerException != null ? dbEx.InnerException.Message : dbEx.Message;
-                return Json(new { success = false, message = $"Lỗi cơ sở dữ liệu: {innerMsg}" });
+                return Json(new { success = false, message = $"{_localizer["Ai_DatabaseError"].Value}: {innerMsg}" });
             }
             catch (Exception ex)
             {
                 var innerMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return Json(new { success = false, message = $"Lỗi máy chủ: {innerMsg}" });
+                return Json(new { success = false, message = $"{_localizer["Ai_ServerError"].Value}: {innerMsg}" });
             }
         }
     }
 
-        public class AiRequestModel
+    public class AiRequestModel
     {
         public string Text { get; set; } = string.Empty;
         public int? ChapterId { get; set; }
         public string? Culture { get; set; }
-        public string Mode { get; set; } = "Explain"; // Explain, Grammar, Vocabulary, Translate
+        public string Mode { get; set; } = "Explain";
     }
 
     public class TranslateRequest
@@ -373,6 +366,7 @@ namespace WebTruyenTranh.Controllers
         [JsonPropertyName("text")]
         public string Text { get; set; } = string.Empty;
     }
+
     public class SaveVocabRequest
     {
         public string Word { get; set; } = string.Empty;

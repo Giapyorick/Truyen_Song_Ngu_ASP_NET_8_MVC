@@ -30,3 +30,50 @@
         </div>
     }
 }
+
+<script>
+    // Trang chi tiết truyện: thanh "Truyện hot" thẳng mép trên và cao bằng cả thẻ chi tiết truyện
+    // (dùng min-height nên nếu 10 truyện cần nhiều chỗ hơn thì thanh tự dài ra, không cắt danh sách)
+    (function () {
+        function target() {
+            return document.querySelector('.st-detail-card');
+        }
+
+        function sync() {
+            var aside = document.querySelector('.hot-sidebar');
+            var card = target();
+            if (!aside || !card) return;
+
+            if (window.innerWidth <= 1024) {          // sidebar xuống dưới nội dung -> để tự nhiên
+                aside.classList.remove('hv-synced');
+                aside.style.marginTop = '';
+                aside.style.minHeight = '';
+                return;
+            }
+            aside.classList.add('hv-synced');
+            aside.style.marginTop = '0px';
+            var delta = card.getBoundingClientRect().top - aside.getBoundingClientRect().top;
+            aside.style.marginTop = Math.max(0, delta) + 'px';
+            aside.style.minHeight = card.getBoundingClientRect().height + 'px';
+
+            // Dải xám kéo xuống sâu bằng dải tối của khung thông tin (lớp phủ hết ở 58% chiều cao khung)
+            var info = document.querySelector('.sd-card');
+            if (info) {
+                var infoTop = info.getBoundingClientRect().top - aside.getBoundingClientRect().top;
+                aside.style.setProperty('--hv-fade', Math.round(infoTop + info.getBoundingClientRect().height * 0.58) + 'px');
+            }
+        }
+
+        function init() {
+            var card = target();
+            if (!card) return;
+            sync();
+            window.addEventListener('resize', sync);
+            if ('ResizeObserver' in window) new ResizeObserver(sync).observe(card);
+            window.addEventListener('load', sync);   // ảnh/phông tải xong có thể đổi chiều cao
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    })();
+</script>

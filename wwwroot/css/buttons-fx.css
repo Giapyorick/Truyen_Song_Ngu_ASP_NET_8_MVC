@@ -1,0 +1,211 @@
+/* ==========================================================================
+   HIỆU ỨNG NÚT GRADIENT DÙNG CHUNG (trang người đọc + Admin)
+   Nạp tại: Views/Shared/_Layout.cshtml, Areas/Admin/Views/Shared/_LayoutAdmin.cshtml,
+            Areas/Admin/Views/Auth/Login.cshtml
+   - Màu nút CHỈ lấy từ bộ màu của web (giống các class chữ .text-*):
+       .btn-grad-cus      #50C9C3 → #96DEDA  (= .btn-grad, nút chính)
+       .btn-grad-field    #0250c5 → #d43f8d  (thông tin / điều hướng phụ)
+       .btn-grad-wait     #FF8008 → #FFC837  (chờ, ẩn, cảnh báo)
+       .btn-grad-accepted #93F9B9 → #1D976C  (đồng ý, hiện lại, duyệt)
+       .btn-grad-deny     #F45C43 → #EB3349  (hủy, xóa, từ chối, báo cáo)
+     Các nút cũ được đổi sang bộ màu: .btn-grad-trans(1) → wait,
+     .btn-grad-cancel → deny, .btn-grad-stay → field.
+   - Hiệu ứng: dải màu trượt mượt, nổi lên + bóng phát sáng cùng màu,
+     vệt sáng lướt qua, lún nhẹ khi bấm, viền focus cho bàn phím.
+   - Dùng thuộc tính translate/scale riêng (không dùng transform) để không
+     đè lên các class Tailwind như active:scale-95 đang gắn trên nút.
+
+   THÊM NÚT MỚI: thêm tên class vào CẢ HAI danh sách :where(...) và :is(...) bên dưới.
+     .btn-grad...   : nút gradient chung của web
+     .sp-btn        : nút trang Giới thiệu / Liên hệ / Chính sách (static-pages.css)
+     .sd-cta        : nút "Đọc tiếp" trang chi tiết truyện (story-detail.css)
+   ========================================================================== */
+
+/* Khung chứa vệt sáng. Bọc trong :where() (độ ưu tiên 0) để các nút đang dùng
+   class absolute / fixed của Tailwind (nút gửi chat, nút chat nổi) giữ nguyên vị trí */
+:where(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+       .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+       .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn) {
+    /* màu bóng phát sáng – mặc định teal, đổi theo từng loại nút bên dưới */
+    --btn-glow: 80, 201, 195;
+
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background-size: 200% auto;
+    background-position: left center;
+    box-shadow: 0 6px 16px -8px rgba(var(--btn-glow), 0.55);
+    transition:
+        background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s ease,
+        translate 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        scale 0.15s ease,
+        opacity 0.2s ease !important;
+}
+
+/* ---------- Bộ màu nút (dải 3 điểm để trượt khi rê chuột như .btn-grad) ---------- */
+.btn-grad-cus {
+    background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    color: #fff;
+}
+
+:is(.btn-grad-field, .btn-grad-stay) {
+    --btn-glow: 2, 80, 197;
+    background-image: linear-gradient(to right, #0250c5 0%, #d43f8d 51%, #0250c5 100%);
+    color: #fff;
+}
+
+:is(.btn-grad-wait, .btn-grad-trans, .btn-grad-trans1) {
+    --btn-glow: 255, 128, 8;
+    background-image: linear-gradient(to right, #FF8008 0%, #FFC837 51%, #FF8008 100%);
+    color: #fff;
+}
+
+.btn-grad-accepted {
+    --btn-glow: 29, 151, 108;
+    background-image: linear-gradient(to right, #1D976C 0%, #93F9B9 51%, #1D976C 100%);
+    color: #fff;
+}
+
+:is(.btn-grad-deny, .btn-grad-cancel, .btn-grad-cancel_modal) {
+    --btn-glow: 235, 51, 73;
+    background-image: linear-gradient(to right, #F45C43 0%, #EB3349 51%, #F45C43 100%);
+    color: #fff;
+}
+
+/* Hai dải sáng (vàng, xanh lá): bóng chữ mảnh để chữ trắng vẫn rõ */
+:is(.btn-grad-wait, .btn-grad-trans, .btn-grad-trans1, .btn-grad-accepted) {
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.22);
+}
+
+.btn-grad-gray   { --btn-glow: 100, 116, 139; }                       /* xám */
+
+/* Vệt sáng lướt chéo qua nút khi rê chuột */
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(100deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-20deg);
+    transition: left 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Rê chuột ---------- */
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):hover {
+    background-position: right center;
+    translate: 0 -2px;
+    box-shadow: 0 12px 24px -10px rgba(var(--btn-glow), 0.75);
+    text-decoration: none;
+}
+
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):hover::after {
+    left: 130%;
+}
+
+/* .sp-btn / .sd-cta vốn tự nhích lên bằng transform -> bỏ để không nhích gấp đôi */
+:is(.sp-btn, .sd-cta):hover {
+    transform: none !important;
+}
+
+/* ---------- Nhấn giữ: lún nhẹ ---------- */
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):active {
+    translate: 0 0;
+    scale: 0.97;
+    box-shadow: 0 4px 10px -6px rgba(var(--btn-glow), 0.6);
+}
+
+/* ---------- Bàn phím (Tab): viền focus rõ ràng ---------- */
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):focus-visible {
+    outline: 3px solid rgba(var(--btn-glow), 0.5);
+    outline-offset: 2px;
+}
+
+/* ---------- Vô hiệu hóa ---------- */
+:is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+    .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+    .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):is(:disabled, .sd-cta--disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+    translate: 0 0;
+    scale: 1;
+    box-shadow: none;
+}
+
+    :is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+        .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+        .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn):is(:disabled, .sd-cta--disabled)::after {
+        display: none;
+    }
+
+/* Nút xám nền sáng: vệt sáng nhẹ hơn để không bị lóa */
+.btn-grad-gray::after {
+    background: linear-gradient(100deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 255, 0) 100%);
+}
+
+/* Người dùng bật "giảm chuyển động": chỉ giữ đổi màu, bỏ nổi/vệt sáng */
+@media (prefers-reduced-motion: reduce) {
+    :is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+        .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+        .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn) {
+        transition: background-position 0.2s ease, box-shadow 0.2s ease !important;
+        translate: none !important;
+        scale: none !important;
+    }
+
+        :is(.btn-grad, .btn-grad1, .btn-grad-detail, .btn-grad-base1, .btn-grad-trans,
+            .btn-grad-trans1, .btn-grad-cancel, .btn-grad-gray, .btn-grad-vocab,
+            .sp-btn, .sd-cta,
+    .btn-grad-cus, .btn-grad-field, .btn-grad-wait, .btn-grad-accepted,
+    .btn-grad-deny, .btn-grad-stay, .btn-grad-cancel_modal, .mod-btn)::after {
+            display: none;
+        }
+}

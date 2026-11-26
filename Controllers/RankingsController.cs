@@ -33,6 +33,8 @@ namespace WebTruyenTranh.Controllers
         public async Task<IActionResult> GetRankedStoriesPartial(string type = "likes")
         {
             var stories = await QueryRankedStories(type);
+            // Gắn tiến độ đọc (huy hiệu "Chương X") nếu người dùng đã đăng nhập
+            await WebTruyenTranh.Helpers.ReadingProgressHelper.FillAsync(_context, stories, HttpContext.Session.GetInt32("UserId") ?? 0);
             return PartialView("_StoryCardsPartial", stories);
         }
 

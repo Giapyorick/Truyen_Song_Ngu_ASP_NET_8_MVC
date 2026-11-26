@@ -1,0 +1,108 @@
+﻿@model WebTruyenTranh.ViewModels.ContactFormViewModel
+@{
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    Func<string, string, string> T = (vi, en) => isVi ? vi : en;
+    string contactEmail = ViewBag.ContactEmail ?? "";
+    bool sent = TempData["ContactSent"] as bool? ?? false;
+    ViewData["Title"] = T("Liên hệ", "Contact");
+}
+
+<link rel="stylesheet" href="~/css/home/static-pages.css" asp-append-version="true">
+
+<article class="sp-page">
+    <div class="sp-head">
+        <h1 class="sp-title">@T("Liên hệ", "Contact")</h1>
+        <span class="sp-sub">@T("Contact us", "Liên hệ với chúng tôi")</span>
+    </div>
+
+    <p class="sp-lead">
+        @T("Góp ý về truyện, báo lỗi, yêu cầu gỡ nội dung hay hợp tác quảng cáo – hãy để lại lời nhắn, chúng tôi sẽ phản hồi trong vòng 1–3 ngày làm việc.",
+           "Story feedback, bug reports, takedown requests or advertising partnerships – leave us a message and we'll reply within 1–3 business days.")
+    </p>
+
+    <div class="sp-contact">
+        <!-- Thông tin liên hệ -->
+        <aside class="sp-contact-info">
+            @if (!string.IsNullOrWhiteSpace(contactEmail))
+            {
+                <div class="sp-info-row">
+                    <span class="sp-card-icon"><i class="fa-solid fa-envelope"></i></span>
+                    <div>
+                        <span class="sp-info-label">Email</span>
+                        <a href="mailto:@contactEmail">@contactEmail</a>
+                    </div>
+                </div>
+            }
+            <div class="sp-info-row">
+                <span class="sp-card-icon"><i class="fa-solid fa-clock"></i></span>
+                <div>
+                    <span class="sp-info-label">@T("Thời gian phản hồi", "Response time")</span>
+                    <span>@T("1–3 ngày làm việc", "1–3 business days")</span>
+                </div>
+            </div>
+            <div class="sp-info-row">
+                <span class="sp-card-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                <div>
+                    <span class="sp-info-label">@T("Bản quyền", "Copyright")</span>
+                    <span>@T("Yêu cầu gỡ nội dung được ưu tiên xử lý.", "Takedown requests are handled first.")</span>
+                </div>
+            </div>
+            <p class="sp-note">
+                @T("Thông tin bạn gửi chỉ dùng để trả lời bạn. Xem", "We only use your details to reply to you. See our")
+                <a href="/privacy">@T("Chính sách quyền riêng tư", "Privacy Policy")</a>.
+            </p>
+        </aside>
+
+        <!-- Form liên hệ -->
+        <div class="sp-form-card">
+            @if (sent)
+            {
+                <div class="sp-alert sp-alert--ok" role="status">
+                    <i class="fa-solid fa-circle-check"></i>
+                    @T("Cảm ơn bạn! Tin nhắn đã được gửi, chúng tôi sẽ sớm phản hồi.", "Thank you! Your message has been sent and we'll get back to you soon.")
+                </div>
+            }
+
+            <form asp-action="Contact" method="post" class="sp-form" novalidate>
+                <div asp-validation-summary="ModelOnly" class="sp-alert sp-alert--err"></div>
+
+                <div class="sp-field-row">
+                    <label class="sp-field">
+                        <span>@T("Họ tên", "Name")</span>
+                        <input asp-for="Name" autocomplete="name" maxlength="80" />
+                        <span asp-validation-for="Name" class="sp-err"></span>
+                    </label>
+                    <label class="sp-field">
+                        <span>Email</span>
+                        <input asp-for="Email" type="email" autocomplete="email" maxlength="120" />
+                        <span asp-validation-for="Email" class="sp-err"></span>
+                    </label>
+                </div>
+
+                <label class="sp-field">
+                    <span>@T("Chủ đề", "Topic")</span>
+                    <select asp-for="Topic">
+                        <option value="general">@T("Góp ý chung", "General feedback")</option>
+                        <option value="story">@T("Gửi truyện / cộng tác viết", "Submit a story / write for us")</option>
+                        <option value="bug">@T("Báo lỗi trang web", "Report a bug")</option>
+                        <option value="copyright">@T("Bản quyền / yêu cầu gỡ nội dung", "Copyright / takedown request")</option>
+                        <option value="ads">@T("Hợp tác quảng cáo", "Advertising")</option>
+                    </select>
+                </label>
+
+                <label class="sp-field">
+                    <span>@T("Nội dung", "Message")</span>
+                    <textarea asp-for="Message" rows="6" maxlength="3000"></textarea>
+                    <span asp-validation-for="Message" class="sp-err"></span>
+                </label>
+
+                <!-- Ô bẫy chống spam: ẩn với người dùng -->
+                <label class="sp-hp" aria-hidden="true">Website <input asp-for="Website" tabindex="-1" autocomplete="off" /></label>
+
+                <button type="submit" class="sp-btn sp-btn--full">
+                    @T("Gửi tin nhắn", "Send message") <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</article>

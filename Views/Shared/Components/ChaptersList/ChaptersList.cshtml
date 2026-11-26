@@ -1,41 +1,61 @@
 ﻿@model WebTruyenTranh.ViewModels.ChaptersPagedViewModel
 
+@{
+    bool chapIsVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    string totalText = Model.TotalChapters.ToString("00");
+}
 <div class="tab-content w-100" id="storyTabsContent">
-    <div class="d-flex flex-column gap-3 w-100" id="chapter-list">
+    <!-- Tiêu đề mục: cùng phong cách với từng dòng chương bên dưới -->
+    <div class="chap-header">
+        <div class="chap-header-text">
+            <h2 class="chap-header-title">@SharedLocalizer["Story_ChapterList"]</h2>
+            <span class="chap-header-sub">@(chapIsVi ? "Mục lục" : "Table of contents")</span>
+        </div>
+        <div class="chap-header-count" aria-label="@Model.TotalChapters @SharedLocalizer["Story_Chapter"]">
+            <span class="chap-num" aria-hidden="true"><span class="chap-num-head">@totalText.Substring(0, totalText.Length - 1)</span><span class="chap-num-tail">@totalText.Substring(totalText.Length - 1)</span></span>
+            <span class="chap-header-sub">@SharedLocalizer["Story_Chapter"]</span>
+        </div>
+    </div>
+
+    <div class="chap-list w-100" id="chapter-list">
 
         @if (Model.Chapters != null && Model.Chapters.Any())
         {
+            int rowIndex = 0;
             foreach (var item in Model.Chapters)
             {
+                // Số chương dạng 01, 02... : phần đầu xám nhạt, chữ số cuối màu teal
+                string num = item.ChapterNumber.ToString("00");
+                string numHead = num.Substring(0, num.Length - 1);
+                string numTail = num.Substring(num.Length - 1);
+                string chapterLabel = $"{SharedLocalizer["Story_Chapter"]} {num}";
+                string title = string.IsNullOrWhiteSpace(item.Title) ? chapterLabel : item.Title;
+                bool isRight = rowIndex % 2 == 1;   // dòng chẵn đảo sang phải (kiểu zigzag)
+                rowIndex++;
+
                 <a href="/Paragraphs/Content?chapterId=@item.ChapterId"
-                   class="chapter-item">
+                   class="chap-row @(isRight ? "is-right" : "")"
+                   title="@chapterLabel: @title">
 
-                    <div class="chapter-thumb-wrapper">
-                        <img src="https://picsum.photos/300/180?random=@item.ChapterId"
-                             alt="@SharedLocalizer["Story_Chapter"] @item.ChapterNumber"
-                             class="chapter-thumb-img"
-                             loading="lazy" />
-                    </div>
-
-                    <div class="chapter-info-wrapper">
-                        <div class="chapter-title text-main">
-                            @SharedLocalizer["Story_Chapter"] @item.ChapterNumber: @item.Title
-                        </div>
-
-                        <div class="chapter-meta">
-                            <span class="text-main">
-                                <i class="far text-main fa-clock me-1"></i>
-                                @item.CreatedDate?.ToString("dd/MM/yyyy")
+                    <div class="chap-head">
+                        <span class="chap-num" aria-hidden="true"><span class="chap-num-head">@numHead</span><span class="chap-num-tail">@numTail</span></span>
+                        <span class="chap-text">
+                            <span class="chap-title">@title</span>
+                            <span class="chap-sub">
+                                @chapterLabel
+                                @if (item.CreatedDate.HasValue)
+                                {
+                                    <span class="chap-dot">·</span>
+                                    <span>@item.CreatedDate.Value.ToString("dd/MM/yyyy")</span>
+                                }
                             </span>
-                            <span class="text-main">
-                                <i class="far text-main fa-eye me-1"></i>@SharedLocalizer["Chapter_AutomaticallyUpdated"]
-                            </span>
-                        </div>
+                        </span>
                     </div>
 
-                    <div class="chapter-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
+                    <span class="chap-tag">
+                        <i class="fas fa-book-open"></i>
+                        @SharedLocalizer["Story_ReadNow"]
+                    </span>
                 </a>
             }
         }

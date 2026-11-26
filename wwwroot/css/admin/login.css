@@ -1,0 +1,31 @@
+/* ======================================================================
+   ADMIN - TRANG ĐĂNG NHẬP ADMIN | Areas/Admin/Views/Auth/Login.cshtml
+   ====================================================================== */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Chữ phủ Gradient tone ngọc sáng */
+.text-cus {
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(15, 3, 28, 0.05);
+}
+
+/* Nút bấm Gradient chủ đạo của hệ thống */
+.btn-grad {
+    background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    background-size: 200% auto;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.btn-grad:hover {
+    background-position: right center;
+    box-shadow: 0 10px 25px rgba(80, 201, 195, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-grad:active {
+    transform: scale(0.98);
+}

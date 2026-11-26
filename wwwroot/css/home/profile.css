@@ -1,0 +1,213 @@
+/* ======================================================================
+   HOME - TRANG HỒ SƠ | Views/Profile/Index.cshtml
+   ====================================================================== */
+.profile-tab-btn {
+background-color: #ffffff;
+border: 1.5px solid #e2e8f0;
+color: #64748b;
+cursor: pointer;
+}
+
+.profile-tab-btn:hover:not(.active-tab) {
+border-color: #50C9C3;
+color: #0f766e;
+}
+
+.profile-tab-btn.active-tab {
+background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+background-size: 200% auto;
+color: #ffffff !important;
+border-color: transparent;
+box-shadow: 0 4px 12px rgba(80, 201, 195, 0.3);
+}
+
+.profile-tab-btn.active-tab i {
+color: #ffffff !important;
+}
+
+.stat-badge-grad {
+min-width: 90px;
+padding: 10px 18px;
+text-align: center;
+border-radius: 16px;
+color: #ffffff !important;
+transition: 0.5s ease;
+background-size: 200% auto;
+user-select: none;
+cursor: default;
+}
+
+.stat-badge-grad:hover {
+background-position: right center;
+transform: translateY(-2px);
+}
+
+.stat-grad-teal {
+background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+box-shadow: 0 4px 15px rgba(80, 201, 195, 0.35);
+}
+
+.stat-grad-teal:hover {
+box-shadow: 0 6px 20px rgba(80, 201, 195, 0.5);
+}
+
+.stat-grad-rose {
+background-image: linear-gradient(to right, #ff416c 0%, #ff4b2b 51%, #ff416c 100%);
+box-shadow: 0 4px 15px rgba(255, 65, 108, 0.35);
+}
+
+.stat-grad-rose:hover {
+box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
+}
+
+.stat-grad-amber {
+background-image: linear-gradient(to right, #f7971e 0%, #ffd200 51%, #f7971e 100%);
+box-shadow: 0 4px 15px rgba(247, 151, 30, 0.35);
+}
+
+.stat-grad-amber:hover {
+box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
+}
+
+.stat-grad-indigo {
+background-image: linear-gradient(to right, #667eea 0%, #764ba2 51%, #667eea 100%);
+box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+}
+
+.stat-grad-indigo:hover {
+box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+/* ==========================================================================
+BỔ SUNG CSS CHO BADGE TỪ VỰNG TRÊN TRANG PROFILE
+========================================================================== */
+.badge-pill {
+display: inline-flex !important;
+align-items: center !important;
+gap: 5px !important;
+padding: 4px 11px !important;
+border-radius: 20px !important;
+font-size: 14px !important;
+font-weight: 800 !important;
+color: #ffffff !important;
+line-height: 2 !important;
+letter-spacing: -0.01em !important;
+border: none !important;
+user-select: none !important;
+margin: 6px 0 3px 0 !important;
+}
+
+.badge-pill i {
+color: #ffffff !important;
+font-size: 12px !important;
+}
+
+/* Các dải màu gradient nền */
+.badge-pill.bg-main {
+background: linear-gradient(to right, #50C9C3 0%, #96DEDA 100%) !important;
+box-shadow: 0 3px 10px rgba(80, 201, 195, 0.35) !important;
+}
+
+.badge-pill.bg-cus {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3) !important;
+}
+
+.badge-pill.bg-info {
+background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important;
+box-shadow: 0 3px 10px rgba(0, 198, 255, 0.3) !important;
+}
+
+.badge-pill.bg-wait {
+background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%) !important;
+box-shadow: 0 3px 10px rgba(255, 128, 8, 0.3) !important;
+}
+
+.badge-pill.bg-accepted {
+background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3) !important;
+}
+
+.badge-pill.bg-deny {
+background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%) !important;
+box-shadow: 0 3px 10px rgba(235, 51, 73, 0.3) !important;
+}
+
+/* Tối ưu danh sách gạch đầu dòng từ vựng hiển thị trong thẻ card */
+.ai-content ul {
+list-style-type: none !important;
+padding-left: 0 !important;
+margin: 4px 0 6px 0 !important;
+}
+
+.ai-content li {
+position: relative;
+padding-left: 14px !important;
+margin-bottom: 3px !important;
+line-height: 1.45 !important;
+}
+
+.ai-content li::before {
+content: "•";
+position: absolute;
+left: 2px;
+top: 0;
+color: #14b8a6;
+font-size: 13px;
+font-weight: bold;
+}
+
+.ai-content strong {
+color: #0d9488 !important;
+font-weight: 700 !important;
+}
+/* Thẻ btn-grad riêng chuyên dụng cho từ/cụm từ vựng */
+.btn-grad-vocab {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 6px 14px;
+border-radius: 20px; /* Bo tròn hoàn toàn dạng pill */
+font-weight: 800;
+color: #ffffff !important;
+line-height: 2;
+letter-spacing: -0.01em;
+user-select: none;
+border: none;
+text-decoration: none;
+cursor: default;
+/* Dải màu gradient Teal chuẩn của btn-grad */
+background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+background-size: 200% auto;
+box-shadow: 0 4px 12px rgba(80, 201, 195, 0.35);
+transition: all 0.5s ease;
+}
+
+/* Hiệu ứng hover trượt màu và nổi nhẹ */
+.btn-grad-vocab:hover {
+background-position: right center;
+transform: translateY(-1px);
+box-shadow: 0 6px 16px rgba(80, 201, 195, 0.45);
+color: #ffffff !important;
+}
+
+.btn-grad-vocab i {
+color: #ffffff;
+font-size: 11px;
+}
+.stat-badge-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 12px;
+    color: #ffffff !important;
+    user-select: none;
+    cursor: default;
+    background-size: 200% auto;
+    transition: all 0.3s ease;
+}
+
+.stat-badge-small:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+}

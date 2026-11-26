@@ -1,13 +1,15 @@
 ﻿@{
     ViewBag.HideHotSidebar = false;
 }
+<!-- Nút lọc dùng chung kiểu nút của trang Thể loại (.cat-pill) -->
+<link rel="stylesheet" href="~/css/home/categories.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/home/home-filter.css" asp-append-version="true" />
 
 <div class="w-full">
     @await Component.InvokeAsync("StoriesList")
 </div>
 
 @section Scripts {
-    <script src="~/js/infinite_scroll.js"></script>
 
     <script>
         $(document).ready(function () {
@@ -20,9 +22,11 @@
                 pageSize: 8,
                 params: {
                     type: 'latest', // THÊM DÒNG NÀY: Ép buộc lấy theo mới nhất thay vì mặc định 'likes'
+                    categoryId: '',
                     search: ''
                 }
             });
         });
     </script>
+    <script src="~/js/home/home-filter.js" asp-append-version="true"></script>
 }

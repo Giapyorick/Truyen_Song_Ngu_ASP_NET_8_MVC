@@ -29,7 +29,12 @@ public partial class TruyenSongNguContext : DbContext
 
     public virtual DbSet<TblComment> TblComments { get; set; }
 
+    // Bình luận truyện (StoreProcedure/StoryComment.sql) – thay cho tblComment cũ không khớp CSDL
+    public virtual DbSet<TblStoryComment> TblStoryComments { get; set; }
+
     public virtual DbSet<TblParagraph> TblParagraphs { get; set; }
+
+    public virtual DbSet<TblParagraphAudio> TblParagraphAudios { get; set; }
 
     public virtual DbSet<TblStory> TblStories { get; set; }
 
@@ -51,6 +56,7 @@ public partial class TruyenSongNguContext : DbContext
     public virtual DbSet<TblPost> TblPosts { get; set; }
     public virtual DbSet<TblPostLike> TblPostLikes { get; set; }
     public virtual DbSet<TblPostComment> TblPostComments { get; set; }
+    public virtual DbSet<TblContentReport> TblContentReports { get; set; }
 
 
 
@@ -107,6 +113,19 @@ public partial class TruyenSongNguContext : DbContext
             .WithMany(x => x.PostComments)
             .HasForeignKey(x => x.PostId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ===== KIỂM DUYỆT CỘNG ĐỒNG =====
+        // Bộ lọc toàn cục: mọi truy vấn phía người đọc tự bỏ qua bài viết / bình luận đã bị ẩn
+        // (kể cả Include và Count). Trang Admin dùng .IgnoreQueryFilters() để thấy tất cả.
+        modelBuilder.Entity<TblPost>().HasQueryFilter(p => !p.IsHidden);
+        modelBuilder.Entity<TblPostComment>().HasQueryFilter(c => !c.IsHidden);
+
+        // Mỗi người chỉ báo cáo 1 nội dung 1 lần
+        modelBuilder.Entity<TblContentReport>()
+            .HasIndex(r => new { r.TargetType, r.TargetId, r.ReporterUserId })
+            .IsUnique();
+        modelBuilder.Entity<TblContentReport>()
+            .HasIndex(r => r.Status);
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<TblUserVocabulary>(entity =>
         {
@@ -281,6 +300,25 @@ public partial class TruyenSongNguContext : DbContext
                 .HasConstraintName("FK__tblChapte__UserI__2FCF1A8A");
         });
 
+        modelBuilder.Entity<TblStoryComment>(entity =>
+        {
+            entity.HasKey(e => e.StoryCommentId).HasName("PK_tblStoryComment");
+
+            entity.ToTable("tblStoryComment");
+
+            entity.Property(e => e.StoryCommentId).HasColumnName("StoryCommentID");
+            entity.Property(e => e.StoryId).HasColumnName("StoryID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.UserName).HasMaxLength(100);
+            entity.Property(e => e.Contents).HasMaxLength(1000);
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasIndex(e => new { e.StoryId, e.CreatedAt }, "IX_tblStoryComment_Story_Created");
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt }, "IX_tblStoryComment_User_Created");
+        });
+
         modelBuilder.Entity<TblComment>(entity =>
         {
             entity.HasKey(e => e.CommentId).HasName("PK__tblComme__C3B4DFAAEFD2F427");
@@ -322,11 +360,40 @@ public partial class TruyenSongNguContext : DbContext
                 .HasConstraintName("FK_tblParagraph_tblChapter");
         });
 
+        // Audio ElevenLabs của câu/đoạn – script StoreProcedure/ParagraphAudio.sql
+        modelBuilder.Entity<TblParagraphAudio>(entity =>
+        {
+            entity.HasKey(e => e.ParagraphAudioId).HasName("PK_tblParagraphAudio");
+
+            entity.ToTable("tblParagraphAudio");
+
+            entity.Property(e => e.ParagraphAudioId).HasColumnName("ParagraphAudioID");
+            entity.Property(e => e.ParagraphId).HasColumnName("ParagraphID");
+            entity.Property(e => e.Lang).HasMaxLength(2).IsUnicode(false).IsFixedLength();
+            entity.Property(e => e.ModelId).HasMaxLength(40).IsUnicode(false);
+            entity.Property(e => e.VoiceId).HasMaxLength(40).IsUnicode(false);
+            entity.Property(e => e.FilePath).HasMaxLength(200).IsUnicode(false);
+            entity.Property(e => e.TextHash).HasMaxLength(16).IsUnicode(false).IsFixedLength();
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasIndex(e => new { e.ParagraphId, e.Lang }, "UX_tblParagraphAudio_Paragraph_Lang").IsUnique();
+
+            // Xóa câu/đoạn -> CSDL tự xóa audio (ON DELETE CASCADE)
+            entity.HasOne<TblParagraph>().WithMany()
+                .HasForeignKey(d => d.ParagraphId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_tblParagraphAudio_tblParagraph");
+        });
+
         modelBuilder.Entity<TblStory>(entity =>
         {
             entity.HasKey(e => e.StoryId);
 
-            entity.ToTable("tblStory");
+            // Bảng có trigger trg_tblStory_StoryCode (StoreProcedure/StoryCode.sql) -> phải khai báo
+            // để EF Core không dùng OUTPUT khi INSERT/UPDATE (SQL Server không cho OUTPUT trên bảng có trigger)
+            entity.ToTable("tblStory", tb => tb.HasTrigger("trg_tblStory_StoryCode"));
 
             entity.Property(e => e.StoryId).HasColumnName("StoryID");
             entity.Property(e => e.AuthorId).HasColumnName("AuthorID");
@@ -334,6 +401,12 @@ public partial class TruyenSongNguContext : DbContext
             entity.Property(e => e.CountRate).HasColumnName("Count_rate");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.Title).HasMaxLength(50);
+
+            // Mã định danh: chỉ đọc. EF không bao giờ ghi cột này (trigger SQL tự cấp mã khi thêm truyện)
+            entity.Property(e => e.StoryCode).HasMaxLength(10).IsUnicode(false);
+            entity.Property(e => e.StoryCode).Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.StoryCode).Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.HasIndex(e => e.StoryCode, "UX_tblStory_StoryCode").IsUnique().HasFilter("([StoryCode] IS NOT NULL)");
 
             entity.HasOne(d => d.Author).WithMany(p => p.TblStories)
                 .HasForeignKey(d => d.AuthorId)

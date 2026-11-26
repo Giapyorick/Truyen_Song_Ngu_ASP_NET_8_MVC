@@ -195,9 +195,6 @@
   <data name="Story_Followers" xml:space="preserve">
     <value>Người theo dõi</value>
   </data>
-  <data name="Story_Rating" xml:space="preserve">
-    <value>Đánh giá</value>
-  </data>
   <data name="Story_ReadContinue" xml:space="preserve">
     <value>Đọc tiếp</value>
   </data>
@@ -2201,5 +2198,143 @@
   </data>
   <data name="Para_SentTaskBackgroundSuccess" xml:space="preserve">
     <value>Đã gửi tác vụ nền thành công!</value>
+  </data>
+  <data name="Auth_EnterOtpLabel" xml:space="preserve">
+    <value>Enter 6-digit OTP code</value>
+  </data>
+  <data name="Auth_ResendCodeIn" xml:space="preserve">
+    <value>Resend code in {0}s</value>
+  </data>
+  <data name="Auth_SendingOtp" xml:space="preserve">
+    <value>Sending OTP...</value>
+  </data>
+  <data name="Auth_CreatingAccount" xml:space="preserve">
+    <value>Creating account...</value>
+  </data>
+  <data name="Auth_OtpSentSuccess" xml:space="preserve">
+    <value>Verification OTP has been sent to your Gmail address!</value>
+  </data>
+  <data name="Auth_InvalidOtpRequest" xml:space="preserve">
+    <value>Invalid OTP request. Please request a new code!</value>
+  </data>
+  <data name="Auth_OtpExpired" xml:space="preserve">
+    <value>OTP has expired. Please request a new verification code!</value>
+  </data>
+  <data name="Auth_IncorrectOtp" xml:space="preserve">
+    <value>Incorrect OTP code. Please try again!</value>
+  </data>
+  <data name="Auth_RegisterSuccess" xml:space="preserve">
+    <value>Account created successfully! Please sign in.</value>
+  </data>
+  <data name="Email_OtpSubject" xml:space="preserve">
+    <value>Bilingual Manga - Email Verification Code</value>
+  </data>
+  <data name="Email_OtpTitle" xml:space="preserve">
+    <value>Email Verification Code</value>
+  </data>
+  <data name="Email_Greeting" xml:space="preserve">
+    <value>Hello</value>
+  </data>
+  <data name="Email_OtpMessage" xml:space="preserve">
+    <value>Thank you for registering at Bilingual Manga. Your email verification OTP code is</value>
+  </data>
+  <data name="Email_OtpExpiryNotice" xml:space="preserve">
+    <value>* This code is valid for 5 minutes. Please do not share this code with anyone.</value>
+  </data>
+  <data name="SharedChat_ClearHistory" xml:space="preserve">
+    <value>Xóa lịch sử chat</value>
+  </data>
+  <data name="Ai_Action_ChapterSummary" xml:space="preserve">
+    <value>Tóm tắt chương</value>
+  </data>
+  <data name="Ai_Action_Impression" xml:space="preserve">
+    <value>Cảm nhận</value>
+  </data>
+  <data name="Ai_Action_LoreDecode" xml:space="preserve">
+    <value>Giải mã Lore</value>
+  </data>
+  <data name="Ai_Action_ExplainPassage" xml:space="preserve">
+    <value>Giải thích đoạn</value>
+  </data>
+  <data name="Ai_Action_Grammar" xml:space="preserve">
+    <value>Ngữ pháp</value>
+  </data>
+  <data name="Ai_SaveQuote" xml:space="preserve">
+    <value>Lưu trích dẫn</value>
+  </data>
+  <data name="Ai_Copy" xml:space="preserve">
+    <value>Sao chép</value>
+  </data>
+  <data name="Ai_CopiedToClipboard" xml:space="preserve">
+    <value>Đã sao chép vào bộ nhớ tạm!</value>
+  </data>
+  <data name="Ai_NetworkErrorSave" xml:space="preserve">
+    <value>Lỗi kết nối khi lưu vào sổ tay!</value>
+  </data>
+  <data name="Ai_ReqSummary" xml:space="preserve">
+    <value>Yêu cầu tóm tắt diễn biến chương này...</value>
+  </data>
+  <data name="Ai_ReqLore" xml:space="preserve">
+    <value>Yêu cầu giải mã cốt truyện &amp; lore của chương...</value>
+  </data>
+  <data name="Ai_ReqImpression" xml:space="preserve">
+    <value>Đang cảm thụ &amp; phân tích diễn biến chương này...</value>
+  </data>
+  <data name="Ai_EnterContentToTranslate" xml:space="preserve">
+    <value>Vui lòng nhập nội dung cần dịch!</value>
+  </data>
+  <data name="Ai_TextCannotBeEmpty" xml:space="preserve">
+    <value>Văn bản không được để trống!</value>
+  </data>
+  <data name="Ai_RequireLoginToSave" xml:space="preserve">
+    <value>Bạn cần đăng nhập để lưu vào sổ tay!</value>
+  </data>
+  <data name="Ai_ContentCannotBeEmpty" xml:space="preserve">
+    <value>Nội dung không được để trống!</value>
+  </data>
+  <data name="Ai_SaveSuccess" xml:space="preserve">
+    <value>Đã lưu vào sổ tay trích dẫn &amp; cốt truyện!</value>
+  </data>
+  <data name="Ai_DatabaseError" xml:space="preserve">
+    <value>Lỗi cơ sở dữ liệu</value>
+  </data>
+  <data name="Ai_ServerError" xml:space="preserve">
+    <value>Lỗi máy chủ</value>
+  </data>
+  <data name="Ai_ServiceError" xml:space="preserve">
+    <value>Lỗi dịch vụ AI</value>
+  </data>
+  <data name="Ai_ErrorPrefix" xml:space="preserve">
+    <value>Lỗi</value>
+  </data>
+  <data name="ViewerAccessDenied" xml:space="preserve">
+    <value>Tài khoản của bạn chỉ có quyền XEM (Read-only). Bạn không có quyền thêm, sửa, xóa hoặc lưu dữ liệu!</value>
+  </data>
+  <data name="TempFileNotFound" xml:space="preserve">
+    <value>Không tìm thấy tệp tạm thời: {0}</value>
+  </data>
+  <data name="FileEmptyAfterSegmentation" xml:space="preserve">
+    <value>Tệp {0} trống sau khi phân tách câu.</value>
+  </data>
+  <data name="TranslatingConfigLog" xml:space="preserve">
+    <value>Đang dịch {0} ngôn ngữ. Kích thước batch: {1}, Tạm dừng: {2}s.</value>
+  </data>
+  <data name="TranslatingAiBatchLog" xml:space="preserve">
+    <value>Đang dịch AI batch: #{0} đến #{1} / {2}</value>
+  </data>
+  <data name="TpmLimitReachedWaiting" xml:space="preserve">
+    <value>Đã chạm trần giới hạn TPM. Đang chờ {0}s...</value>
+  </data>
+  <data name="SavedSentencesLog" xml:space="preserve">
+    <value>Đã lưu {0} câu. Tạm dừng {1}s...</value>
+  </data>
+  <data name="FinishedProcessingChapterLog" xml:space="preserve">
+    <value>Hoàn thành xử lý Chương ID: {0}</value>
+  </data>
+  <data name="JobExecutionFailedLog" xml:space="preserve">
+    <value>Thực thi công việc thất bại: {0}</value>
+  </data>
+  <data name="EnglishSourceFileEmptyLog" xml:space="preserve">
+    <value>Tệp nguồn tiếng Anh bị rỗng.</value>
   </data>
 </root>

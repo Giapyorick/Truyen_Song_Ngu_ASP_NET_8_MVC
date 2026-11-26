@@ -1,0 +1,196 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    bool isVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    Func<string, string, string> T = (vi, en) => isVi ? vi : en;
+    ViewData["Title"] = T("Audio truyện", "Story audio");
+    bool configured = (ViewBag.ElevenLabsConfigured as bool?) ?? false;
+}
+
+<link rel="stylesheet" href="~/css/admin/moderation.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/admin/audio.css" asp-append-version="true" />
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+    <div class="mod-page aud-page">
+        <!-- Tiêu đề -->
+        <div class="mod-head">
+            <div>
+                <h2 class="mod-title">@T("Audio truyện", "Story audio")</h2>
+                <p class="mod-sub">@T("Chọn truyện, chương và giọng đọc để tạo audio bằng ElevenLabs. Audio chỉ tạo khi bạn bấm nút, mỗi câu tạo một lần rồi phát lại miễn phí.", "Pick a story, chapters and a voice to generate ElevenLabs audio. Audio is only generated when you click the button; each sentence is generated once and replayed for free.")</p>
+            </div>
+            <div class="aud-head-right">
+                <div id="audQuota" class="aud-quota" hidden>
+                    <span class="aud-quota-label"><i class="fa-solid fa-coins"></i> ElevenLabs</span>
+                    <div class="aud-quota-bar"><span></span></div>
+                    <small></small>
+                </div>
+                <button type="button" class="mod-refresh" id="audRefresh" title="@T("Tải lại", "Refresh")">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        @if (!configured)
+        {
+            <div class="aud-alert">
+                <i class="fa-solid fa-key"></i>
+                <div>
+                    <b>@T("Chưa cấu hình API key ElevenLabs", "ElevenLabs API key is not configured")</b>
+                    <p>@T("Mở terminal ở thư mục dự án và chạy lệnh sau (thay bằng key của bạn), rồi chạy lại web:", "Open a terminal in the project folder, run the command below with your key, then restart the site:")</p>
+                    <code>dotnet user-secrets set "ElevenLabs:ApiKey" "sk_..."</code>
+                    <p class="aud-alert-note">@T("Trên server thật: đặt biến môi trường ElevenLabs__ApiKey. Không ghi key vào appsettings.json.", "On the production server: set the ElevenLabs__ApiKey environment variable. Do not put the key in appsettings.json.")</p>
+                </div>
+            </div>
+        }
+
+        <!-- Tiến độ job đang chạy -->
+        <div id="audJob" class="aud-job" hidden>
+            <div class="aud-job-top">
+                <span class="aud-job-title"><i class="fa-solid fa-wave-square"></i> <span id="audJobTitle">@T("Đang tạo audio...", "Generating audio...")</span></span>
+                <button type="button" id="audStop" class="mod-btn btn-grad-deny"><i class="fa-solid fa-stop"></i> @T("Dừng", "Stop")</button>
+            </div>
+            <div class="aud-job-bar"><span id="audJobBar"></span></div>
+            <div class="aud-job-meta">
+                <span id="audJobCount">0/0</span>
+                <span id="audJobChapter"></span>
+                <span id="audJobFailed" class="aud-job-failed" hidden></span>
+            </div>
+            <p id="audJobError" class="aud-job-error" hidden></p>
+        </div>
+
+        <div class="aud-grid">
+            <!-- Thiết lập -->
+            <section class="mod-card aud-card aud-setup">
+                <h3 class="aud-card-title"><span class="aud-step">1</span> @T("Thiết lập", "Settings")</h3>
+
+                <label class="aud-field">
+                    <span>@T("Truyện", "Story")</span>
+                    <select id="audStory"><option value="">@T("-- Chọn truyện --", "-- Select story --")</option></select>
+                </label>
+
+                <div class="aud-field">
+                    <span>@T("Ngôn ngữ đọc", "Language")</span>
+                    <div id="audLangs" class="aud-langs">
+                        <small class="aud-muted">@T("Chọn truyện trước", "Select a story first")</small>
+                    </div>
+                </div>
+
+                <div class="aud-field">
+                    <span>Model</span>
+                    <div id="audModels" class="aud-models"></div>
+                </div>
+
+                <div class="aud-field">
+                    <span class="aud-field-row">
+                        @T("Giọng đọc", "Voice")
+                        <button type="button" id="audVoiceReload" class="aud-link" title="@T("Tải lại danh sách giọng", "Reload voices")"><i class="fa-solid fa-rotate"></i></button>
+                    </span>
+                    <div class="aud-voice-row">
+                        <select id="audVoice" disabled><option value="">@T("Đang tải giọng...", "Loading voices...")</option></select>
+                        <button type="button" id="audVoicePreview" class="aud-icon-btn" title="@T("Nghe thử giọng", "Preview voice")" disabled><i class="fa-solid fa-play"></i></button>
+                    </div>
+                    <small id="audVoiceDesc" class="aud-muted"></small>
+                </div>
+
+                <label class="aud-check">
+                    <input type="checkbox" id="audOverwrite" />
+                    <span>@T("Tạo lại cả câu đã có audio (đổi giọng / model)", "Regenerate sentences that already have audio (new voice / model)")</span>
+                </label>
+            </section>
+
+            <!-- Chương -->
+            <section class="mod-card aud-card aud-chapters">
+                <div class="aud-card-head">
+                    <h3 class="aud-card-title"><span class="aud-step">2</span> @T("Chọn chương", "Chapters")</h3>
+                    <label class="aud-check aud-check--sm">
+                        <input type="checkbox" id="audSelectAll" />
+                        <span>@T("Chọn tất cả", "Select all")</span>
+                    </label>
+                </div>
+                <div id="audChapterList" class="aud-chapter-list">
+                    <div class="mod-empty"><i class="fa-solid fa-book-open"></i><p>@T("Chọn truyện và ngôn ngữ để xem chương.", "Select a story and language to see chapters.")</p></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tóm tắt + nút -->
+        <div class="aud-summary">
+            <div id="audSummaryText" class="aud-summary-text">@T("Chưa chọn chương nào.", "No chapters selected.")</div>
+            <div class="aud-summary-actions">
+                <button type="button" id="audCleanup" class="mod-btn btn-grad-wait" title="@T("Xóa file mp3 của câu/chương đã bị xóa", "Delete mp3 files of removed sentences/chapters")"><i class="fa-solid fa-broom"></i> @T("Dọn file thừa", "Clean up")</button>
+                <button type="button" id="audDelete" class="mod-btn btn-grad-deny" disabled><i class="fa-solid fa-trash"></i> @T("Xóa audio", "Delete audio")</button>
+                <button type="button" id="audStart" class="mod-btn btn-grad-cus" disabled><i class="fa-solid fa-microphone-lines"></i> @T("Tạo audio", "Generate audio")</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Hộp xác nhận -->
+<div id="audConfirm" class="mod-modal" hidden role="dialog" aria-modal="true" aria-labelledby="audConfirmTitle">
+    <div class="mod-modal-backdrop" data-confirm="cancel"></div>
+    <div class="mod-modal-box aud-confirm-box">
+        <h3 id="audConfirmTitle"></h3>
+        <div id="audConfirmBody" class="aud-confirm-body"></div>
+        <div class="aud-confirm-actions">
+            <button type="button" class="mod-btn btn-grad-cus" data-confirm="cancel">@T("Hủy", "Cancel")</button>
+            <button type="button" class="mod-btn btn-grad-deny" data-confirm="ok" id="audConfirmOk">OK</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.AUDIO_LANG = {
+            isVi: @Json.Serialize(isVi),
+            selectStory: @Json.Serialize(T("-- Chọn truyện --", "-- Select story --")),
+            noLang: @Json.Serialize(T("Truyện chưa khai báo ngôn ngữ.", "This story has no languages.")),
+            loadingVoices: @Json.Serialize(T("Đang tải giọng...", "Loading voices...")),
+            selectVoice: @Json.Serialize(T("-- Chọn giọng --", "-- Select voice --")),
+            noVoices: @Json.Serialize(T("Không tải được giọng", "Could not load voices")),
+            notForLang: @Json.Serialize(T("Không hỗ trợ ngôn ngữ này", "Language not supported")),
+            loading: @Json.Serialize(T("Đang tải...", "Loading...")),
+            noChapters: @Json.Serialize(T("Truyện chưa có chương.", "No chapters yet.")),
+            pickStory: @Json.Serialize(T("Chọn truyện và ngôn ngữ để xem chương.", "Select a story and language to see chapters.")),
+            chapter: @Json.Serialize(T("Chương", "Chapter")),
+            sentences: @Json.Serialize(T("câu", "sentences")),
+            chars: @Json.Serialize(T("ký tự", "characters")),
+            noText: @Json.Serialize(T("Không có nội dung ngôn ngữ này", "No text in this language")),
+            outdated: @Json.Serialize(T("câu đã sửa", "edited")),
+            complete: @Json.Serialize(T("Đủ audio", "Complete")),
+            toGenerate: @Json.Serialize(T("sẽ tạo", "to generate")),
+            noneSelected: @Json.Serialize(T("Chưa chọn chương nào.", "No chapters selected.")),
+            summary: @Json.Serialize(T("Đã chọn {0} chương · sẽ tạo {1} câu · {2} ký tự · ≈ {3} credit", "{0} chapters selected · {1} sentences · {2} characters · ≈ {3} credits")),
+            summaryQuota: @Json.Serialize(T("(còn {0})", "({0} left)")),
+            overQuota: @Json.Serialize(T("Vượt hạn mức còn lại!", "Exceeds remaining quota!")),
+            nothingToDo: @Json.Serialize(T("Các chương đã chọn đều đã có audio.", "Selected chapters already have audio.")),
+            quotaText: @Json.Serialize(T("Còn {0} / {1} ký tự", "{0} / {1} characters left")),
+            quotaReset: @Json.Serialize(T("làm mới {0}", "resets {0}")),
+            confirmStartTitle: @Json.Serialize(T("Tạo audio?", "Generate audio?")),
+            confirmStartBody: @Json.Serialize(T("Tạo audio cho <b>{0}</b> câu ({1} ký tự, ≈ <b>{2}</b> credit) bằng giọng <b>{3}</b> – model <b>{4}</b>.", "Generate audio for <b>{0}</b> sentences ({1} characters, ≈ <b>{2}</b> credits) with voice <b>{3}</b> – model <b>{4}</b>.")),
+            confirmStartNote: @Json.Serialize(T("Credit ElevenLabs bị trừ ngay khi tạo. Có thể bấm Dừng bất cứ lúc nào, câu đã tạo vẫn được giữ.", "ElevenLabs credits are charged as audio is generated. You can stop at any time; finished sentences are kept.")),
+            confirmStartOk: @Json.Serialize(T("Tạo audio", "Generate")),
+            confirmDeleteTitle: @Json.Serialize(T("Xóa audio?", "Delete audio?")),
+            confirmDeleteBody: @Json.Serialize(T("Xóa toàn bộ audio <b>{0}</b> của {1} chương đã chọn. Tạo lại sẽ tốn credit.", "Delete all <b>{0}</b> audio of the {1} selected chapters. Regenerating costs credits.")),
+            confirmDeleteOk: @Json.Serialize(T("Xóa", "Delete")),
+            confirmCleanupTitle: @Json.Serialize(T("Dọn file thừa?", "Clean up files?")),
+            confirmCleanupBody: @Json.Serialize(T("Xóa các file mp3 không còn thuộc câu nào (câu, chương hoặc truyện đã bị xóa).", "Delete mp3 files that no longer belong to any sentence (deleted sentences, chapters or stories).")),
+            confirmCleanupOk: @Json.Serialize(T("Dọn", "Clean up")),
+            jobRunning: @Json.Serialize(T("Đang tạo audio...", "Generating audio...")),
+            jobDone: @Json.Serialize(T("Đã tạo xong audio", "Audio generation finished")),
+            jobCancelled: @Json.Serialize(T("Đã dừng – các câu đã tạo vẫn được giữ", "Stopped – finished sentences were kept")),
+            jobFailed: @Json.Serialize(T("Tạo audio bị lỗi", "Audio generation failed")),
+            jobQueued: @Json.Serialize(T("Đang chờ đến lượt chạy (hàng đợi Hangfire)...", "Waiting in the Hangfire queue...")),
+            failedCount: @Json.Serialize(T("{0} câu lỗi", "{0} failed")),
+            errConnect: @Json.Serialize(T("Lỗi kết nối máy chủ!", "Server connection error!")),
+            previewNone: @Json.Serialize(T("Giọng này không có bản nghe thử.", "This voice has no preview.")),
+            categories: {
+                premade: @Json.Serialize(T("Giọng có sẵn", "Premade")),
+                cloned: @Json.Serialize(T("Giọng nhân bản", "Cloned")),
+                generated: @Json.Serialize(T("Giọng tự thiết kế", "Designed")),
+                professional: @Json.Serialize(T("Giọng chuyên nghiệp", "Professional")),
+                famous: @Json.Serialize(T("Giọng nổi tiếng", "Famous")),
+                other: @Json.Serialize(T("Khác", "Other"))
+            }
+        };
+    </script>
+    <script src="~/js/admin/audio/audio.js" asp-append-version="true"></script>
+}

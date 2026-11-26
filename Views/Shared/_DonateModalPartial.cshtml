@@ -1,0 +1,126 @@
+@* Không dùng "@using WebTruyenTranh.Helpers" vì trong Helpers cũng có class SharedResource -> trùng tên với _ViewImports *@
+@{
+    bool dnVi = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
+    bool dnQrOk = WebTruyenTranh.Helpers.DonationInfo.PayloadMatchesAccount();
+}
+@* =========================================================================
+   HỘP ỦNG HỘ – mở bằng nút trái tim trên header (_Layout.cshtml)
+   JS: js/home/common/donate.js · CSS: css/home/donate.css
+   Thông tin tài khoản: Helpers/DonationInfo.cs (biên dịch vào .dll).
+   Mã QR: SVG vẽ sẵn từ chuỗi VietQR (không dùng file ảnh) để không ai tráo được bằng
+   cách thay ảnh trên server. Có 5 mã: Tùy tâm (mã gốc của ngân hàng) + 10k/20k/50k/100k
+   (đã gắn số tiền và nội dung chuyển khoản), JS chỉ bật/tắt mã đang chọn.
+   ========================================================================= *@
+<div id="donateModal" class="donate-modal" hidden role="dialog" aria-modal="true" aria-labelledby="donateTitle">
+    <div class="donate-backdrop" data-donate-close></div>
+
+    <div class="donate-box" role="document">
+        <button type="button" class="donate-x" data-donate-close aria-label="@(dnVi ? "Đóng" : "Close")">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="donate-head">
+            <span class="donate-heart-badge"><i class="fa-solid fa-heart"></i></span>
+            <div>
+                <h3 id="donateTitle">@(dnVi ? "Ủng hộ tác giả" : "Support the author")</h3>
+                <p>@(dnVi ? "Bạn có thể quét mã QR hoặc chuyển khoản theo thông tin bên dưới." : "Scan the QR code or transfer using the details below.")</p>
+            </div>
+        </div>
+
+        <div class="donate-grid">
+            <!-- CỘT TRÁI: mã QR + chọn số tiền -->
+            <div class="donate-left">
+                @if (dnQrOk)
+                {
+                    <div class="donate-qr-card">
+                        <div class="donate-qr-brand"><i class="fa-solid fa-heart"></i> Bilingual Novel</div>
+                        <div class="donate-qr-frame">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" class="donate-qr-svg" data-qr-amount="0" role="img" aria-label="VietQR" shape-rendering="crispEdges"><path class="qrline" stroke="#0f172a" d="M2 2.5h7m4 0h1m5 0h3m1 0h1m1 0h6m1 0h7m-37 1h1m5 0h1m1 0h2m1 0h4m1 0h4m8 0h1m1 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h2m1 0h6m2 0h1m5 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m4 0h2m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m2 0h1m1 0h2m2 0h2m7 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m3 0h1m2 0h1m1 0h2m1 0h5m1 0h1m1 0h2m2 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h2m1 0h1m7 0h3m2 0h1m-25 1h1m5 0h1m1 0h3m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m1 0h5m2 0h3m-35 1h1m1 0h3m1 0h3m1 0h2m7 0h1m1 0h1m3 0h2m2 0h1m1 0h1m3 0h1m-36 1h6m1 0h1m1 0h1m2 0h2m3 0h1m1 0h2m1 0h2m5 0h1m2 0h2m1 0h1m-35 1h3m2 0h3m3 0h4m1 0h1m2 0h3m7 0h1m1 0h2m1 0h1m-36 1h1m2 0h1m1 0h1m2 0h4m1 0h1m1 0h4m1 0h2m1 0h4m1 0h4m1 0h3m-36 1h2m1 0h1m3 0h1m5 0h1m2 0h1m6 0h1m2 0h3m1 0h3m2 0h1m-37 1h3m2 0h3m1 0h5m1 0h1m1 0h1m3 0h1m2 0h1m1 0h2m2 0h2m1 0h1m1 0h2m-36 1h1m1 0h3m3 0h1m2 0h4m1 0h2m4 0h1m2 0h3m1 0h3m1 0h1m1 0h1m-35 1h2m1 0h2m1 0h2m3 0h1m2 0h1m4 0h1m2 0h2m3 0h2m1 0h2m1 0h2m-37 1h1m2 0h2m2 0h1m2 0h1m1 0h3m3 0h1m1 0h3m1 0h1m1 0h1m4 0h3m2 0h1m-34 1h2m1 0h1m3 0h6m1 0h2m1 0h2m1 0h4m1 0h1m2 0h3m1 0h2m-37 1h3m2 0h1m2 0h1m1 0h1m1 0h1m5 0h4m2 0h1m2 0h2m1 0h1m1 0h2m2 0h1m-37 1h1m3 0h4m1 0h1m1 0h1m1 0h3m3 0h1m2 0h1m1 0h1m2 0h4m2 0h2m1 0h1m-36 1h1m7 0h5m1 0h2m3 0h3m1 0h3m2 0h1m2 0h1m1 0h1m1 0h1m-35 1h2m1 0h5m3 0h3m2 0h1m3 0h3m2 0h1m1 0h2m1 0h2m2 0h1m-33 1h2m2 0h1m1 0h5m6 0h1m2 0h2m4 0h1m2 0h1m2 0h1m-36 1h2m3 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h4m1 0h1m1 0h2m1 0h2m4 0h4m-36 1h4m3 0h3m1 0h1m2 0h1m1 0h1m7 0h1m1 0h1m7 0h1m1 0h1m-37 1h1m3 0h4m4 0h2m4 0h1m1 0h2m8 0h2m1 0h2m-35 1h1m3 0h1m2 0h2m2 0h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h2m2 0h1m-30 1h1m2 0h5m3 0h1m2 0h1m3 0h1m2 0h1m2 0h3m1 0h5m1 0h2m-28 1h1m1 0h3m2 0h4m1 0h1m3 0h1m3 0h1m3 0h1m3 0h1m-37 1h7m2 0h1m2 0h1m3 0h1m2 0h6m2 0h2m1 0h1m1 0h5m-37 1h1m5 0h1m5 0h3m2 0h4m1 0h1m3 0h1m1 0h1m3 0h1m3 0h1m-37 1h1m1 0h3m1 0h1m2 0h1m3 0h2m1 0h1m4 0h1m2 0h2m1 0h7m2 0h1m-37 1h1m1 0h3m1 0h1m2 0h2m2 0h2m1 0h1m1 0h1m7 0h1m1 0h1m3 0h1m1 0h1m-35 1h1m1 0h3m1 0h1m4 0h1m2 0h3m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m2 0h1m2 0h1m-37 1h1m5 0h1m3 0h2m1 0h1m4 0h3m3 0h4m1 0h1m-30 1h7m1 0h3m1 0h1m1 0h2m4 0h3m1 0h3m1 0h4m1 0h1m1 0h2"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="donate-qr-svg" data-qr-amount="10000" role="img" aria-label="VietQR" shape-rendering="crispEdges" hidden><path class="qrline" stroke="#0f172a" d="M2 2.5h7m2 0h3m3 0h3m1 0h2m2 0h1m1 0h4m1 0h1m1 0h1m1 0h7m-41 1h1m5 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h2m4 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-41 1h1m1 0h3m1 0h1m2 0h2m4 0h5m3 0h4m5 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m5 0h2m3 0h2m2 0h1m2 0h4m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h3m1 0h3m3 0h2m5 0h4m3 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m5 0h1m2 0h3m2 0h2m1 0h1m3 0h1m5 0h1m3 0h1m2 0h1m5 0h1m-41 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-31 1h1m2 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h1m-32 1h1m1 0h1m1 0h1m1 0h1m5 0h1m2 0h1m2 0h4m1 0h3m1 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-40 1h1m1 0h1m1 0h2m4 0h1m2 0h5m1 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m1 0h1m-40 1h4m1 0h3m1 0h7m4 0h2m2 0h2m2 0h1m1 0h2m4 0h1m1 0h2m-40 1h3m1 0h2m1 0h3m2 0h2m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m-37 1h4m1 0h1m1 0h3m1 0h5m1 0h1m2 0h1m2 0h1m1 0h1m5 0h3m1 0h1m1 0h3m-41 1h4m1 0h1m2 0h1m1 0h1m1 0h3m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m1 0h5m1 0h1m1 0h1m-38 1h2m2 0h3m3 0h1m1 0h3m8 0h2m1 0h1m3 0h3m1 0h1m1 0h1m1 0h3m-41 1h1m1 0h2m1 0h1m2 0h2m2 0h1m3 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m-40 1h2m1 0h2m1 0h1m2 0h3m1 0h1m1 0h2m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h2m-40 1h3m1 0h1m2 0h2m1 0h2m3 0h5m4 0h4m2 0h1m1 0h2m4 0h3m-41 1h1m2 0h4m2 0h3m1 0h1m1 0h2m1 0h2m1 0h1m1 0h2m1 0h1m1 0h2m1 0h4m1 0h1m1 0h2m-40 1h2m6 0h3m2 0h1m1 0h6m4 0h3m3 0h1m1 0h1m1 0h1m1 0h3m-39 1h1m1 0h1m2 0h3m1 0h3m1 0h2m2 0h2m3 0h2m1 0h3m5 0h1m1 0h1m1 0h2m-40 1h2m1 0h3m2 0h1m1 0h10m1 0h1m1 0h4m1 0h1m2 0h2m2 0h1m1 0h3m-39 1h1m2 0h1m1 0h4m2 0h1m1 0h2m2 0h1m3 0h1m1 0h1m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-41 1h6m2 0h3m1 0h2m3 0h1m1 0h1m2 0h3m2 0h1m1 0h1m3 0h1m3 0h2m1 0h1m-41 1h1m2 0h1m1 0h2m1 0h2m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h1m1 0h1m1 0h1m1 0h2m-39 1h2m1 0h1m4 0h3m1 0h1m2 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m2 0h2m2 0h1m-41 1h2m2 0h3m1 0h1m2 0h6m1 0h5m1 0h1m1 0h1m1 0h1m1 0h1m1 0h5m1 0h3m-37 1h1m3 0h1m1 0h1m3 0h4m1 0h1m3 0h1m1 0h1m1 0h1m5 0h3m1 0h1m1 0h1m-39 1h2m3 0h3m1 0h2m2 0h1m2 0h1m2 0h3m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m1 0h2m-39 1h1m6 0h1m3 0h3m2 0h1m1 0h5m1 0h1m1 0h3m1 0h1m2 0h1m4 0h2m-41 1h1m1 0h9m8 0h4m3 0h4m2 0h1m5 0h2m-39 1h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m1 0h1m3 0h1m1 0h1m-40 1h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h1m2 0h1m3 0h1m1 0h2m1 0h1m1 0h11m1 0h3m-33 1h3m1 0h1m5 0h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m3 0h4m-40 1h7m3 0h1m1 0h1m1 0h1m2 0h1m4 0h4m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m-38 1h1m5 0h1m2 0h2m1 0h5m2 0h1m1 0h4m2 0h1m1 0h4m3 0h1m-37 1h1m1 0h3m1 0h1m1 0h2m5 0h1m3 0h2m1 0h3m2 0h1m2 0h1m1 0h5m1 0h1m1 0h1m-41 1h1m1 0h3m1 0h1m3 0h3m2 0h3m3 0h3m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h2m2 0h1m1 0h1m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-41 1h1m5 0h1m2 0h1m1 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m1 0h1m1 0h2m-41 1h7m1 0h2m1 0h1m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="donate-qr-svg" data-qr-amount="20000" role="img" aria-label="VietQR" shape-rendering="crispEdges" hidden><path class="qrline" stroke="#0f172a" d="M2 2.5h7m2 0h1m2 0h4m1 0h1m1 0h2m2 0h1m1 0h4m1 0h1m1 0h1m1 0h7m-41 1h1m5 0h1m1 0h1m1 0h3m2 0h1m2 0h1m1 0h2m4 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-41 1h1m1 0h3m1 0h1m2 0h3m2 0h2m1 0h3m3 0h4m5 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h1m1 0h2m2 0h1m2 0h4m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h3m1 0h2m4 0h2m5 0h4m3 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m5 0h1m2 0h3m2 0h2m1 0h1m3 0h1m5 0h1m3 0h1m2 0h1m5 0h1m-41 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-31 1h1m2 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h1m-32 1h1m1 0h1m1 0h1m1 0h1m5 0h1m2 0h1m2 0h4m1 0h3m1 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-40 1h4m1 0h1m1 0h1m2 0h1m2 0h5m1 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m1 0h1m-40 1h1m5 0h1m2 0h7m4 0h2m2 0h2m2 0h1m1 0h2m1 0h2m3 0h2m-40 1h1m2 0h3m1 0h1m1 0h1m2 0h2m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m-38 1h2m1 0h8m1 0h4m2 0h1m2 0h1m2 0h1m1 0h1m5 0h2m2 0h1m1 0h3m-41 1h1m1 0h2m1 0h1m2 0h3m2 0h2m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m1 0h7m1 0h1m-38 1h2m2 0h3m3 0h7m6 0h2m1 0h1m3 0h3m1 0h1m1 0h1m1 0h3m-41 1h1m1 0h2m1 0h1m2 0h2m2 0h1m2 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m-40 1h2m1 0h2m1 0h1m3 0h4m1 0h2m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h2m-40 1h3m1 0h1m2 0h13m4 0h4m2 0h1m1 0h2m4 0h3m-41 1h1m2 0h4m2 0h1m1 0h2m1 0h3m1 0h2m1 0h1m1 0h2m1 0h1m1 0h2m1 0h4m1 0h1m1 0h2m-40 1h2m6 0h2m1 0h1m1 0h2m1 0h5m4 0h3m3 0h1m1 0h1m1 0h1m1 0h3m-39 1h1m4 0h5m1 0h4m2 0h2m3 0h2m1 0h3m5 0h3m1 0h2m-40 1h3m2 0h1m1 0h1m3 0h9m1 0h1m1 0h4m1 0h1m2 0h2m2 0h1m1 0h3m-40 1h1m1 0h1m1 0h1m1 0h4m2 0h1m1 0h2m2 0h1m3 0h1m1 0h1m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-40 1h2m1 0h2m3 0h2m1 0h2m3 0h1m1 0h1m2 0h3m2 0h1m1 0h1m3 0h1m3 0h2m1 0h1m-41 1h3m1 0h6m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h1m1 0h1m1 0h1m1 0h2m-40 1h1m7 0h4m1 0h1m2 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m2 0h2m2 0h1m-39 1h1m2 0h2m1 0h1m2 0h6m1 0h5m1 0h1m1 0h1m1 0h1m1 0h1m1 0h5m1 0h3m-41 1h1m1 0h1m4 0h2m1 0h1m3 0h4m1 0h1m3 0h1m1 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h1m-36 1h1m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1m2 0h3m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m1 0h2m-39 1h1m6 0h2m4 0h2m1 0h1m1 0h5m1 0h1m1 0h3m1 0h1m7 0h2m-41 1h1m1 0h7m4 0h3m3 0h4m3 0h4m2 0h1m5 0h2m-39 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m4 0h1m1 0h1m2 0h1m1 0h1m2 0h2m1 0h3m3 0h1m1 0h1m-40 1h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h5m1 0h5m1 0h3m-33 1h2m1 0h2m1 0h1m3 0h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m3 0h4m-40 1h7m4 0h3m1 0h3m4 0h4m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m-38 1h1m5 0h1m3 0h2m1 0h1m5 0h1m1 0h4m2 0h1m1 0h4m3 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m6 0h1m3 0h2m1 0h3m2 0h1m2 0h1m1 0h5m1 0h1m1 0h1m-41 1h1m1 0h3m1 0h1m4 0h2m2 0h3m3 0h3m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h2m2 0h1m1 0h1m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-41 1h1m5 0h1m2 0h1m1 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m1 0h1m1 0h2m-41 1h7m1 0h2m1 0h1m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="donate-qr-svg" data-qr-amount="50000" role="img" aria-label="VietQR" shape-rendering="crispEdges" hidden><path class="qrline" stroke="#0f172a" d="M2 2.5h7m2 0h6m1 0h2m1 0h2m2 0h1m1 0h4m1 0h1m1 0h1m1 0h7m-41 1h1m5 0h1m1 0h1m1 0h2m1 0h4m1 0h1m1 0h2m4 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-41 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m1 0h4m3 0h4m5 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m3 0h3m1 0h1m2 0h2m2 0h1m2 0h4m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h3m1 0h3m3 0h2m5 0h4m3 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m5 0h1m2 0h3m2 0h2m1 0h1m3 0h1m5 0h1m3 0h1m2 0h1m5 0h1m-41 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-31 1h1m2 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h1m-32 1h1m1 0h1m1 0h1m1 0h1m5 0h1m2 0h1m2 0h4m1 0h3m1 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-40 1h2m5 0h2m1 0h1m2 0h5m1 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m1 0h1m-40 1h3m1 0h1m1 0h1m2 0h7m4 0h2m2 0h2m2 0h1m1 0h2m1 0h1m2 0h1m1 0h2m-40 1h1m1 0h2m1 0h1m1 0h3m2 0h2m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h2m-37 1h1m1 0h1m2 0h1m1 0h3m2 0h3m2 0h1m2 0h1m2 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h3m-41 1h4m1 0h1m2 0h1m1 0h1m1 0h6m1 0h1m1 0h1m1 0h3m1 0h1m1 0h7m1 0h1m-38 1h2m2 0h3m2 0h3m1 0h3m7 0h2m1 0h1m3 0h3m1 0h1m1 0h1m1 0h3m-41 1h1m1 0h2m1 0h1m2 0h5m2 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m-40 1h2m1 0h2m1 0h1m3 0h2m1 0h2m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h2m-40 1h3m1 0h1m2 0h2m1 0h1m1 0h1m2 0h5m4 0h4m2 0h1m1 0h2m4 0h3m-41 1h1m2 0h4m3 0h1m2 0h4m1 0h2m1 0h1m1 0h2m1 0h1m1 0h2m1 0h4m1 0h1m1 0h2m-40 1h2m6 0h1m2 0h2m1 0h7m4 0h3m3 0h1m1 0h1m1 0h1m1 0h3m-39 1h1m1 0h1m2 0h5m1 0h3m3 0h2m3 0h2m1 0h3m5 0h2m2 0h2m-39 1h1m1 0h3m4 0h4m1 0h5m1 0h1m1 0h4m1 0h1m2 0h2m2 0h1m1 0h3m-40 1h2m4 0h4m2 0h1m1 0h2m2 0h1m3 0h1m1 0h1m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-40 1h4m3 0h3m1 0h2m3 0h1m1 0h1m2 0h3m2 0h1m1 0h1m3 0h1m3 0h2m1 0h1m-41 1h1m1 0h5m1 0h2m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h1m1 0h1m1 0h1m1 0h2m-40 1h1m2 0h1m3 0h1m1 0h3m1 0h1m2 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m2 0h2m2 0h1m-40 1h1m1 0h6m2 0h6m1 0h5m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h3m-37 1h1m2 0h2m1 0h1m3 0h4m1 0h1m3 0h1m1 0h1m1 0h1m5 0h3m1 0h1m1 0h1m-39 1h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m1 0h2m2 0h3m3 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m-32 1h2m2 0h1m1 0h4m1 0h5m1 0h1m1 0h3m1 0h1m1 0h2m4 0h2m-41 1h1m1 0h8m1 0h3m2 0h1m2 0h4m3 0h4m2 0h1m5 0h2m-39 1h1m1 0h3m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m1 0h1m3 0h1m1 0h1m-40 1h1m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m1 0h2m2 0h1m1 0h2m1 0h1m1 0h5m1 0h5m1 0h3m-33 1h2m3 0h2m3 0h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m3 0h4m-40 1h7m2 0h2m3 0h4m4 0h4m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m-38 1h1m5 0h1m4 0h3m5 0h1m1 0h4m2 0h1m1 0h4m3 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m2 0h1m7 0h2m1 0h3m2 0h1m2 0h1m1 0h5m1 0h1m1 0h1m-41 1h1m1 0h3m1 0h1m3 0h3m2 0h3m3 0h3m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h2m2 0h1m1 0h1m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-41 1h1m5 0h1m2 0h1m1 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m1 0h1m1 0h2m-41 1h7m1 0h2m1 0h1m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="donate-qr-svg" data-qr-amount="100000" role="img" aria-label="VietQR" shape-rendering="crispEdges" hidden><path class="qrline" stroke="#0f172a" d="M2 2.5h7m3 0h1m2 0h2m1 0h1m2 0h3m2 0h1m1 0h1m2 0h4m1 0h7m-41 1h1m5 0h1m1 0h1m1 0h4m3 0h1m4 0h2m1 0h1m2 0h1m1 0h3m1 0h1m5 0h1m-41 1h1m1 0h3m1 0h1m5 0h5m3 0h3m6 0h2m3 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m1 0h5m1 0h1m1 0h4m1 0h1m1 0h3m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m6 0h1m2 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-41 1h1m5 0h1m3 0h2m1 0h1m1 0h1m1 0h1m3 0h1m5 0h1m3 0h1m2 0h1m5 0h1m-41 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-32 1h2m2 0h2m2 0h1m1 0h1m5 0h1m1 0h1m1 0h1m1 0h1m-32 1h1m1 0h1m1 0h1m1 0h1m3 0h1m1 0h4m2 0h4m1 0h3m1 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-39 1h1m1 0h3m1 0h1m2 0h1m2 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-38 1h1m2 0h1m2 0h5m2 0h2m5 0h2m2 0h2m2 0h1m1 0h2m1 0h2m3 0h1m1 0h1m-41 1h1m1 0h3m4 0h1m1 0h1m1 0h1m1 0h3m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m1 0h1m-39 1h1m1 0h1m1 0h2m1 0h3m1 0h5m1 0h1m1 0h2m4 0h1m1 0h1m3 0h1m3 0h1m1 0h3m-41 1h1m1 0h3m3 0h4m1 0h4m2 0h2m2 0h1m1 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h1m-38 1h1m4 0h2m3 0h7m2 0h4m3 0h3m3 0h1m1 0h1m1 0h1m1 0h3m-41 1h1m1 0h2m4 0h1m1 0h3m3 0h2m2 0h1m1 0h2m1 0h1m2 0h4m1 0h1m1 0h1m1 0h1m1 0h1m-36 1h1m1 0h1m4 0h1m2 0h2m1 0h4m3 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m-40 1h1m2 0h2m2 0h3m2 0h2m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h1m4 0h3m-41 1h1m1 0h1m1 0h3m6 0h2m1 0h2m4 0h1m2 0h1m1 0h2m1 0h1m1 0h3m1 0h1m1 0h2m-40 1h2m1 0h1m4 0h5m3 0h1m2 0h1m1 0h3m3 0h1m1 0h3m1 0h1m1 0h1m1 0h3m-39 1h1m4 0h1m1 0h1m1 0h1m1 0h1m9 0h3m2 0h2m1 0h1m3 0h3m1 0h2m-40 1h2m1 0h3m5 0h3m1 0h3m1 0h1m1 0h5m2 0h1m1 0h3m2 0h1m2 0h2m-39 1h2m3 0h1m2 0h2m1 0h1m2 0h1m2 0h1m3 0h1m1 0h1m1 0h3m2 0h2m1 0h2m1 0h2m-39 1h1m1 0h1m4 0h2m3 0h1m1 0h1m2 0h1m1 0h1m2 0h3m2 0h1m1 0h1m3 0h1m3 0h2m1 0h1m-41 1h1m2 0h1m2 0h1m1 0h1m1 0h1m5 0h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h1m1 0h4m1 0h1m-39 1h3m1 0h1m1 0h4m1 0h3m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m-38 1h1m1 0h1m3 0h3m2 0h1m1 0h4m1 0h5m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m3 0h3m-41 1h5m2 0h2m1 0h3m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m5 0h1m1 0h1m1 0h1m2 0h1m-39 1h1m1 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h2m3 0h2m1 0h1m1 0h1m3 0h1m5 0h1m1 0h3m-40 1h1m6 0h2m3 0h4m2 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m4 0h2m-41 1h1m1 0h2m2 0h3m2 0h1m1 0h1m4 0h1m4 0h2m1 0h1m3 0h3m5 0h2m-39 1h1m1 0h2m2 0h1m1 0h2m2 0h1m3 0h1m1 0h1m4 0h2m1 0h1m2 0h2m1 0h1m3 0h1m1 0h1m-40 1h1m1 0h1m1 0h1m1 0h2m1 0h1m5 0h1m1 0h2m2 0h4m3 0h2m1 0h6m1 0h3m-33 1h1m7 0h3m1 0h1m1 0h6m3 0h2m3 0h4m-40 1h7m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m2 0h1m1 0h1m1 0h2m2 0h1m1 0h1m1 0h2m-38 1h1m5 0h1m2 0h4m1 0h1m2 0h3m5 0h2m1 0h1m2 0h2m3 0h1m-37 1h1m1 0h3m1 0h1m1 0h2m3 0h1m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m5 0h5m1 0h1m1 0h1m-41 1h1m1 0h3m1 0h1m2 0h1m1 0h3m1 0h4m2 0h1m1 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m-41 1h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h2m4 0h1m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-41 1h1m5 0h1m3 0h2m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m1 0h4m-41 1h7m1 0h1m2 0h4m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1"/></svg>
+                        </div>
+                        <div class="donate-qr-foot">
+                            <span class="dqf-napas">napas <b>247</b></span>
+                            <i class="dqf-sep" aria-hidden="true"></i>
+                            <span class="dqf-bank">VietinBank</span>
+                            <i class="dqf-sep" aria-hidden="true"></i>
+                            <span class="dqf-vietqr">VietQR</span>
+                        </div>
+                    </div>
+                    <div class="donate-amount" aria-live="polite">@(dnVi ? "Tùy tâm" : "Any amount")</div>
+                    <div class="donate-chips" role="radiogroup" aria-label="@(dnVi ? "Chọn số tiền" : "Choose an amount")">
+                    <button type="button" class="donate-chip is-active" role="radio" aria-checked="true" data-amount="0" data-label="@(dnVi ? "Tùy tâm" : "Any amount")">@(dnVi ? "Tùy tâm" : "Any")</button>
+                    <button type="button" class="donate-chip" role="radio" aria-checked="false" data-amount="10000" data-label="10.000đ">10k</button>
+                    <button type="button" class="donate-chip" role="radio" aria-checked="false" data-amount="20000" data-label="20.000đ">20k</button>
+                    <button type="button" class="donate-chip" role="radio" aria-checked="false" data-amount="50000" data-label="50.000đ">50k</button>
+                    <button type="button" class="donate-chip" role="radio" aria-checked="false" data-amount="100000" data-label="100.000đ">100k</button>
+                    </div>
+                }
+            </div>
+
+            <!-- CỘT PHẢI: thông tin chuyển khoản -->
+            <div class="donate-right">
+                <div class="donate-field">
+                    <div class="donate-field-text">
+                        <span class="donate-field-label">@(dnVi ? "Ngân hàng" : "Bank")</span>
+                        <span class="donate-field-value">@WebTruyenTranh.Helpers.DonationInfo.BankName</span>
+                        <span class="donate-field-sub">@WebTruyenTranh.Helpers.DonationInfo.BankBranch</span>
+                    </div>
+                    <button type="button" class="donate-copy" data-copy="@WebTruyenTranh.Helpers.DonationInfo.BankName"
+                            aria-label="@(dnVi ? "Sao chép ngân hàng" : "Copy bank")" title="@(dnVi ? "Sao chép" : "Copy")">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donate-field">
+                    <div class="donate-field-text">
+                        <span class="donate-field-label">@(dnVi ? "Chủ tài khoản" : "Account name")</span>
+                        <span class="donate-field-value">@WebTruyenTranh.Helpers.DonationInfo.AccountName</span>
+                    </div>
+                    <button type="button" class="donate-copy" data-copy="@WebTruyenTranh.Helpers.DonationInfo.AccountName"
+                            aria-label="@(dnVi ? "Sao chép chủ tài khoản" : "Copy account name")" title="@(dnVi ? "Sao chép" : "Copy")">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donate-field">
+                    <div class="donate-field-text">
+                        <span class="donate-field-label">@(dnVi ? "Số tài khoản" : "Account number")</span>
+                        <span class="donate-field-value"><span class="donate-number">@WebTruyenTranh.Helpers.DonationInfo.AccountNumber</span></span>
+                    </div>
+                    <button type="button" class="donate-copy" data-copy="@WebTruyenTranh.Helpers.DonationInfo.AccountNumber"
+                            aria-label="@(dnVi ? "Sao chép số tài khoản" : "Copy account number")" title="@(dnVi ? "Sao chép" : "Copy")">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donate-field donate-field--note">
+                    <div class="donate-field-text">
+                        <span class="donate-field-label">@(dnVi ? "Nội dung chuyển khoản" : "Transfer note")</span>
+                        <span class="donate-field-value">@WebTruyenTranh.Helpers.DonationInfo.TransferNote</span>
+                    </div>
+                    <button type="button" class="donate-copy" data-copy="@WebTruyenTranh.Helpers.DonationInfo.TransferNote"
+                            aria-label="@(dnVi ? "Sao chép nội dung chuyển khoản" : "Copy transfer note")" title="@(dnVi ? "Sao chép" : "Copy")">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="donate-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>@(dnVi
+                ? "Mã QR theo chuẩn VietQR (Napas 247), tự đổi theo số tiền bạn chọn. Hãy kiểm tra đúng người nhận "
+                : "The QR follows the VietQR standard (Napas 247) and changes with the amount you pick. Please check the recipient ")<b>@WebTruyenTranh.Helpers.DonationInfo.AccountName</b>@(dnVi
+                ? " và số tiền trong ứng dụng ngân hàng trước khi chuyển."
+                : " and the amount in your banking app before sending.")</span>
+        </p>
+
+        <div class="donate-divider"></div>
+
+        <p class="donate-foot">
+            @(dnVi
+                ? "Bilingual Novel không yêu cầu đóng góp để đọc truyện – mọi ủng hộ đều tự nguyện. Mình không bao giờ nhắn tin xin chuyển vào tài khoản khác. Cần hỏi gì, bạn có thể "
+                : "Reading on Bilingual Novel is always free – every contribution is voluntary. I will never message you asking to transfer to another account. Questions? Feel free to ")<a href="/contact">@(dnVi ? "liên hệ mình" : "contact me")</a>.
+        </p>
+    </div>
+</div>

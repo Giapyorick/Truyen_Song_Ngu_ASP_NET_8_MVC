@@ -1,0 +1,964 @@
+/* ==========================================================================
+   GIAO DIỆN TỐI (DARK MODE) – mọi trang người đọc (trừ trang đọc truyện, vốn có theme riêng)
+   Bật khi <html> có class "dark" (js/home/common/theme-toggle.js). Nạp ở _Layout
+   CHỈ trên trang đã hỗ trợ (biến themeReady) để trang chưa làm không bị lỗi màu.
+
+   Màu: chỉ dùng màu trung tính tối (xám slate) cho nền / chữ / viền.
+   5 bộ màu của web (teal, field, wait, accepted, deny) giữ nguyên.
+
+   Cách làm: ghi đè màu, không sửa CSS gốc -> muốn bỏ chế độ tối chỉ cần gỡ file này.
+   Nhiều thành phần dùng class Tailwind gắn thẳng trong HTML (bg-white, text-slate-800...)
+   nên có phần "Tiện ích Tailwind" ghi đè chung ở cuối file.
+   ========================================================================== */
+
+/* ---------- Nút chuyển sáng / tối (hiện ở cả 2 chế độ) ---------- */
+/* Cụm nút góc phải header xếp hàng ngang (trước đây chỉ có 1 khối nên không cần) */
+@media (min-width: 769px) {
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+.theme-toggle {
+    position: relative;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #64748b;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    overflow: hidden;
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+    .theme-toggle:hover {
+        color: #50C9C3;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px -6px rgba(80, 201, 195, 0.55);
+    }
+
+    .theme-toggle:active {
+        transform: scale(0.94);
+    }
+
+    .theme-toggle:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.7);
+        outline-offset: 2px;
+    }
+
+    /* 2 icon chồng lên nhau, đổi bằng hiệu ứng xoay + mờ */
+    .theme-toggle i {
+        position: absolute;
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    }
+
+    .theme-toggle .theme-icon-sun {
+        opacity: 0;
+        transform: rotate(-90deg) scale(0.5);
+        color: #FF8008;
+    }
+
+html.dark .theme-toggle .theme-icon-moon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+}
+
+html.dark .theme-toggle .theme-icon-sun {
+    opacity: 1;
+    transform: none;
+}
+
+.theme-toggle.is-spinning {
+    animation: theme-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes theme-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.86) rotate(-8deg); }
+    100% { transform: scale(1); }
+}
+
+/* Lúc đang đổi theme: tắt mọi transition để toàn trang đổi màu cùng lúc */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+    transition: none !important;
+}
+
+/* ==========================================================================
+   BIẾN MÀU TỐI
+   ========================================================================== */
+html.dark {
+    color-scheme: dark;
+
+    --dk-bg: #0f172a;          /* nền trang */
+    --dk-surface: #1e293b;     /* thẻ, khung */
+    --dk-surface-2: #273449;   /* thẻ lồng trong thẻ, hover */
+    --dk-sunken: #0b1324;      /* ô nhập, nền lõm */
+    --dk-line: #334155;        /* viền */
+    --dk-line-soft: rgba(148, 163, 184, 0.14);
+    --dk-text: #e2e8f0;        /* chữ thường */
+    --dk-strong: #f8fafc;      /* tiêu đề */
+    --dk-muted: #94a3b8;       /* chữ phụ */
+    --dk-dim: #64748b;         /* chữ mờ */
+    --dk-teal: #50C9C3;
+    --dk-teal-soft: #96DEDA;
+    --dk-teal-tint: rgba(80, 201, 195, 0.14);
+    --dk-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Trang ---------- */
+html.dark body,
+html.dark body.bg-white {
+    background-color: var(--dk-bg) !important;
+    color: var(--dk-text) !important;
+}
+
+html.dark .theme-toggle {
+    color: #FF8008;
+}
+
+html.dark ::selection {
+    background: rgba(80, 201, 195, 0.35);
+}
+
+/* Thanh cuộn tối (Chrome / Edge) */
+html.dark ::-webkit-scrollbar-track {
+    background: var(--dk-bg);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: var(--dk-line);
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   HEADER: giữ NGUYÊN như chế độ sáng (nền teal). Chỉ nút sáng/tối đổi icon.
+   Các tiện ích Tailwind ở cuối file chỉ áp dụng bên trong main / modal / thanh tìm kiếm điện thoại,
+   nên không đụng tới header.
+   ========================================================================== */
+
+/* ==========================================================================
+   HERO + QUẢNG CÁO
+   ========================================================================== */
+html.dark .hero-cinema {
+    --hc-notch-bg: var(--dk-bg);   /* "khuyết" dưới hero phải trùng màu nền trang */
+}
+
+html.dark .hero-slideshow {
+    border-color: var(--dk-line-soft);
+}
+
+/* Tên truyện trên "khuyết" dưới hero (gốc màu #0f172a -> không thấy trên nền tối) */
+html.dark .hero-cinema .hero-notch .dot {
+    color: var(--dk-text);
+}
+
+    html.dark .hero-cinema .hero-notch .dot.active {
+        color: var(--dk-teal-soft);
+    }
+
+html.dark .hero-cinema .hero-notch .dot.active img {
+    box-shadow: 0 0 0 2px var(--dk-bg), 0 0 0 4px #50C9C3;
+}
+
+html.dark .ad-slot {
+    background: var(--dk-surface);
+    box-shadow: inset 0 0 0 1px var(--dk-line-soft);
+}
+
+html.dark .ad-label {
+    color: var(--dk-dim);
+}
+
+html.dark .ad-placeholder {
+    border-color: var(--dk-line);
+    color: var(--dk-dim);
+}
+
+/* ==========================================================================
+   DANH SÁCH TRUYỆN + BỘ LỌC
+   ========================================================================== */
+html.dark .section-title {
+    color: var(--dk-strong);
+}
+
+/* Nút thể loại / sắp xếp (.cat-pill dùng chung với trang Thể loại) */
+html.dark .cat-pill {
+    color: #cbd5e1;
+    background-color: var(--dk-surface);
+    border-color: var(--dk-line);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+    html.dark .cat-pill:hover:not(.active-cat) {
+        color: var(--dk-teal-soft);
+        border-color: #50C9C3;
+        box-shadow: 0 4px 14px rgba(80, 201, 195, 0.22);
+    }
+
+    html.dark .cat-pill .cat-count {
+        color: var(--dk-muted);
+        background-color: var(--dk-sunken);
+    }
+
+    html.dark .cat-pill.active-cat {
+        box-shadow: 0 6px 18px rgba(80, 201, 195, 0.3);
+    }
+
+        html.dark .cat-pill.active-cat .cat-count {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+html.dark .hf-sort-label {
+    color: var(--dk-dim);
+}
+
+/* Thẻ truyện */
+html.dark .story-card {
+    background: var(--dk-surface) !important;
+    border-color: var(--dk-line-soft) !important;
+    box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.55), inset 0 0 0 1px var(--dk-line-soft) !important;
+}
+
+    html.dark .story-card:hover {
+        box-shadow: 0 20px 35px -10px rgba(80, 201, 195, 0.28), 0 10px 20px -6px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html.dark .story-card .cover-box {
+        background: var(--dk-sunken);
+    }
+
+    html.dark .story-card .story-name {
+        color: var(--dk-strong) !important;
+    }
+
+        html.dark .story-card .story-name:hover {
+            color: var(--dk-teal-soft) !important;
+        }
+
+    /* Nhãn ngôn ngữ dạng chữ (chỉ còn với ngôn ngữ chưa có cờ): sáng hơn trên nền tối */
+    html.dark .story-card span.bg-gradient-to-r {
+        filter: brightness(1.45) saturate(1.1);
+    }
+
+    html.dark .story-card .lang-flag {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 3 chương mới nhất */
+    html.dark .story-card .latest-chapters-list a {
+        background-color: var(--dk-sunken) !important;
+        border-color: var(--dk-line-soft) !important;
+    }
+
+        html.dark .story-card .latest-chapters-list a:hover {
+            background-color: var(--dk-teal-tint) !important;
+            border-color: rgba(80, 201, 195, 0.5) !important;
+        }
+
+        html.dark .story-card .latest-chapters-list a span {
+            color: #cbd5e1 !important;
+        }
+
+        html.dark .story-card .latest-chapters-list a:hover span {
+            color: var(--dk-teal-soft) !important;
+        }
+
+    html.dark .story-card .latest-chapters-list,
+    html.dark .story-card .action-buttons {
+        border-color: var(--dk-line-soft) !important;
+    }
+
+    /* Chip số liệu + mã truyện trên ảnh bìa: kính tối */
+    html.dark .story-card .bg-white\/80 {
+        background-color: rgba(15, 23, 42, 0.72) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html.dark .story-card .story-code {
+        color: var(--dk-text);
+        background: rgba(15, 23, 42, 0.78);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+/* Đang tải / hết truyện */
+html.dark #scrollSpinner {
+    color: var(--dk-teal) !important;
+}
+
+html.dark #noMoreData {
+    color: var(--dk-dim) !important;
+}
+
+/* ==========================================================================
+   SIDEBAR "TRUYỆN HOT TUẦN"
+   ========================================================================== */
+html.dark .hot-sidebar {
+    background: linear-gradient(to bottom,
+        #334155 0%,
+        #273449 calc(var(--hv-fade, 300px) * 0.45),
+        var(--dk-surface) var(--hv-fade, 300px)) !important;
+    border-color: var(--dk-line-soft) !important;
+    box-shadow: var(--dk-shadow) !important;
+}
+
+    html.dark .hot-sidebar .hot-item {
+        background: var(--dk-surface-2);
+        box-shadow: inset 0 0 0 1px var(--dk-line-soft);
+    }
+
+        html.dark .hot-sidebar .hot-item:hover {
+            background: #2e3d55;
+        }
+
+    html.dark .hot-sidebar .hot-item-title {
+        color: var(--dk-strong);
+    }
+
+        html.dark .hot-sidebar .hot-item-title:hover {
+            color: var(--dk-teal-soft);
+        }
+
+    html.dark .hot-sidebar .hot-item-author,
+    html.dark .hot-sidebar .hot-item-view {
+        color: var(--dk-muted);
+    }
+
+/* Hạng 4 trở đi (hạng 1–3 giữ nền teal) */
+html.dark .hot-item:nth-child(n + 4) .rank {
+    background-color: var(--dk-sunken);
+    color: var(--dk-muted);
+}
+
+/* ==========================================================================
+   FOOTER (vốn đã tối) – chỉ thêm đường viền để tách khỏi nền trang
+   ========================================================================== */
+html.dark .app-footer {
+    border-top: 1px solid var(--dk-line-soft);
+}
+
+/* ==========================================================================
+   ĐIỆN THOẠI: thanh tìm kiếm + thanh tab dưới đáy
+   ========================================================================== */
+html.dark .m-search-bar {
+    background: rgba(15, 23, 42, 0.92);
+}
+
+html.dark .m-search-field input {
+    background: var(--dk-sunken);
+    color: var(--dk-text);
+}
+
+html.dark .m-tabbar {
+    background: rgba(30, 41, 59, 0.88);
+    border-color: var(--dk-line-soft);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html.dark .m-tab {
+    color: var(--dk-muted);
+}
+
+    html.dark .m-tab i {
+        color: var(--dk-dim);
+    }
+
+    html.dark .m-tab.active,
+    html.dark .m-tab.active i {
+        color: #ffffff;
+    }
+
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 42px;
+        height: 42px;
+    }
+}
+
+/* ==========================================================================
+   TIỆN ÍCH TAILWIND gắn thẳng trong HTML – CHỈ trong nội dung trang, modal đăng nhập/đăng ký
+   và thanh tìm kiếm điện thoại (KHÔNG áp cho header để header giữ như chế độ sáng)
+   ========================================================================== */
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-white {
+    background-color: var(--dk-surface) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-slate-50,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-gray-50 {
+    background-color: var(--dk-surface-2) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-gray-100,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-slate-100,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-slate-100\/80 {
+    background-color: var(--dk-sunken) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .hover\:bg-slate-100:hover,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .hover\:bg-gray-200:hover {
+    background-color: var(--dk-surface-2) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .focus\:bg-white:focus {
+    background-color: var(--dk-sunken) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-teal-50,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-teal-50\/40,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .hover\:bg-teal-50:hover {
+    background-color: var(--dk-teal-tint) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .bg-gradient-to-r.from-gray-50 {
+    background-image: none !important;
+    background-color: var(--dk-surface) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-slate-900,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-slate-800,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-gray-900,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-gray-800 {
+    color: var(--dk-strong) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-slate-700,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-slate-600,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-gray-700,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-gray-600 {
+    color: #cbd5e1 !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-slate-500,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-gray-500 {
+    color: var(--dk-muted) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .text-teal-700 {
+    color: var(--dk-teal-soft) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-slate-100,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-slate-200,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-slate-200\/60,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-gray-100,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-gray-200 {
+    border-color: var(--dk-line-soft) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-teal-100,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .border-teal-200 {
+    border-color: rgba(80, 201, 195, 0.35) !important;
+}
+
+/* Ô nhập trong modal đăng nhập / đăng ký */
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) input,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) textarea,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) select {
+    color: var(--dk-text);
+}
+
+    html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) input::placeholder,
+    html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) textarea::placeholder {
+        color: var(--dk-dim);
+    }
+
+/* Nút gradient trong modal: bỏ bóng trắng của .btn-grad gốc */
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .btn-grad,
+html.dark :is(main, footer, [id$="ModalOverlay"], .m-search-bar) .btn-grad-trans {
+    box-shadow: 0 6px 16px -8px rgba(80, 201, 195, 0.6);
+}
+
+/* ==========================================================================
+   ===================  CÁC TRANG CÒN LẠI (ngoài trang chủ)  =================
+   ========================================================================== */
+
+/* ---------- Tiện ích Tailwind bổ sung dùng ở các trang ---------- */
+html.dark :is(main, footer, [id$="ModalOverlay"]) .bg-\[\#F8FAFC\],
+html.dark :is(main, footer, [id$="ModalOverlay"]) .bg-\[\#f8fafc\] {
+    background-color: var(--dk-bg) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .bg-white\/65 {
+    background-color: rgba(30, 41, 59, 0.65) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .bg-teal-50\/50,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .hover\:bg-teal-100:hover {
+    background-color: rgba(80, 201, 195, 0.18) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .hover\:bg-slate-200:hover {
+    background-color: var(--dk-line) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .bg-sky-50,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .hover\:bg-sky-100:hover {
+    background-color: rgba(2, 80, 197, 0.18) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .hover\:bg-rose-50:hover {
+    background-color: rgba(235, 51, 73, 0.14) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .text-sky-700 {
+    color: #cbd5e1 !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .hover\:text-teal-700:hover {
+    color: var(--dk-teal-soft) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .border-slate-300,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .border-slate-200\/80,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .border-teal-200\/60,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .border-teal-200\/50,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .border-sky-200\/60 {
+    border-color: var(--dk-line) !important;
+}
+
+html.dark :is(main, footer, [id$="ModalOverlay"]) .shadow-sm,
+html.dark :is(main, footer, [id$="ModalOverlay"]) .shadow-md {
+    --tw-shadow-color: rgba(0, 0, 0, 0.45);
+}
+
+/* ==========================================================================
+   TRANG CHI TIẾT TRUYỆN (story-detail.css)
+   ========================================================================== */
+html.dark .st-detail-card {
+    background: var(--dk-surface) !important;   /* thẻ có style="background:#fff" trong HTML */
+    border-color: var(--dk-line-soft) !important;
+    box-shadow: var(--dk-shadow) !important;
+}
+
+html.dark .st-panel {
+    background: var(--dk-surface);
+}
+
+html.dark .st-glass-card {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border-color: var(--dk-line-soft) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Ô Đánh giá / Thích / Theo dõi */
+html.dark .sd-tile,
+html.dark #cardLike.sd-tile.active,
+html.dark #cardFollow.sd-tile.active {
+    background: var(--dk-surface-2) !important;
+    border-color: var(--dk-line) !important;
+    box-shadow: none !important;
+}
+
+html.dark .sd-tile-label,
+html.dark #cardLike.sd-tile.active .sd-tile-label,
+html.dark #cardFollow.sd-tile.active .sd-tile-label {
+    color: var(--dk-muted) !important;
+}
+
+html.dark .sd-tile-value {
+    color: var(--dk-strong);
+}
+
+    html.dark .sd-tile-value small,
+    html.dark .sd-tile-foot {
+        color: var(--dk-dim);
+    }
+
+/* Thẻ tiến độ đọc */
+html.dark .sd-progress {
+    background: var(--dk-surface-2);
+    border-color: var(--dk-line);
+}
+
+html.dark .sd-progress-title,
+html.dark .sd-progress-meta b,
+html.dark .sd-synopsis-title {
+    color: var(--dk-strong);
+}
+
+html.dark .sd-progress-meta,
+html.dark .sd-synopsis-text {
+    color: var(--dk-muted);
+}
+
+html.dark .sd-progress-bar {
+    background: var(--dk-line);
+}
+
+/* Thể loại dạng kính trên ảnh */
+html.dark .sd-genre {
+    background: rgba(15, 23, 42, 0.55);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .sd-genre--empty {
+    color: var(--dk-dim);
+    border-color: var(--dk-line);
+}
+
+html.dark .sd-cta--disabled {
+    background: var(--dk-line);
+    color: var(--dk-dim) !important;
+}
+
+/* Danh sách chương */
+html.dark .chap-row {
+    border-bottom-color: var(--dk-line-soft);
+    color: var(--dk-text);
+}
+
+html.dark .chap-num-head {
+    color: #3b4a61;
+}
+
+html.dark .chap-row:hover .chap-num-head {
+    color: #4f7f86;
+}
+
+html.dark .chap-title {
+    color: #cbd5e1;
+}
+
+html.dark .chap-sub,
+html.dark .chap-header-sub,
+html.dark .st-sec-sub {
+    color: var(--dk-dim);
+}
+
+html.dark .chap-row:hover .chap-sub,
+html.dark .chap-row:focus-visible .chap-sub {
+    color: var(--dk-muted);
+}
+
+html.dark .chap-tag::before,
+html.dark .chap-tag::after {
+    background: rgba(80, 201, 195, 0.35);
+}
+
+html.dark .chap-header-title,
+html.dark .st-sec-title {
+    color: var(--dk-strong);
+}
+
+/* Phân trang chương (nếu có) */
+html.dark .pagination-modern .page-link {
+    color: #cbd5e1;
+    background: var(--dk-surface-2);
+    box-shadow: none;
+}
+
+/* Bình luận */
+html.dark .sdc-form {
+    background: var(--dk-sunken);
+    box-shadow: inset 0 0 0 1px var(--dk-line-soft);
+}
+
+html.dark .sdc-input {
+    background: var(--dk-surface);
+    border-color: var(--dk-line);
+    color: var(--dk-text);
+}
+
+    html.dark .sdc-input::placeholder {
+        color: var(--dk-dim);
+    }
+
+    html.dark .sdc-input:focus {
+        border-color: #50C9C3;
+        box-shadow: 0 0 0 4px rgba(80, 201, 195, 0.18);
+    }
+
+html.dark .sdc-avatar {
+    background: var(--dk-surface-2);
+    box-shadow: 0 0 0 2px var(--dk-surface), 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .sdc-guest {
+    color: #cbd5e1;
+    background: rgba(80, 201, 195, 0.1);
+}
+
+html.dark .sdc-item {
+    border-bottom-color: var(--dk-line-soft);
+}
+
+html.dark .sdc-name {
+    color: var(--dk-strong);
+}
+
+html.dark .sdc-text {
+    color: #cbd5e1;
+}
+
+html.dark .sdc-time,
+html.dark .sdc-hint,
+html.dark .sdc-chars,
+html.dark .sdc-empty,
+html.dark .sdc-loading {
+    color: var(--dk-dim);
+}
+
+html.dark .sdc-chars.is-near {
+    color: #EB3349;
+}
+
+html.dark .sdc-del {
+    color: var(--dk-dim);
+}
+
+html.dark .sdc-more {
+    color: var(--dk-muted);
+    background: var(--dk-sunken);
+    box-shadow: inset 0 0 0 1px var(--dk-line-soft);
+}
+
+    html.dark .sdc-more:hover:not(:disabled) {
+        color: var(--dk-teal-soft);
+        background: var(--dk-teal-tint);
+    }
+
+/* ==========================================================================
+   XẾP HẠNG (rankings.css) – nút cùng kiểu .cat-pill
+   ========================================================================== */
+html.dark .rank-btn {
+    color: #cbd5e1;
+    background-color: var(--dk-surface);
+    border-color: var(--dk-line);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+    html.dark .rank-btn:hover:not(.active-rank) {
+        color: var(--dk-teal-soft);
+        border-color: #50C9C3;
+        box-shadow: 0 4px 14px rgba(80, 201, 195, 0.22);
+    }
+
+/* Tiêu đề trang Thể loại / Xếp hạng (text-main) */
+html.dark main .text-main {
+    color: var(--dk-strong);
+}
+
+/* ==========================================================================
+   CỘNG ĐỒNG (community.css) + hộp báo cáo
+   ========================================================================== */
+html.dark .spoiler-container {
+    background-color: var(--dk-surface);
+}
+
+html.dark .spoiler-overlay-layer {
+    background-color: rgba(15, 23, 42, 0.35);
+}
+
+html.dark .btn-hide-spoiler {
+    color: var(--dk-muted);
+    background-color: var(--dk-sunken);
+    border-color: var(--dk-line);
+}
+
+    html.dark .btn-hide-spoiler:hover {
+        color: var(--dk-text);
+        background-color: var(--dk-surface-2);
+    }
+
+html.dark .report-box {
+    background: var(--dk-surface);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+}
+
+html.dark .report-head p,
+html.dark .report-note {
+    color: var(--dk-muted);
+}
+
+html.dark .report-x {
+    color: var(--dk-dim);
+}
+
+    html.dark .report-x:hover {
+        color: var(--dk-text);
+        background: var(--dk-surface-2);
+    }
+
+html.dark .report-reason {
+    color: #cbd5e1;
+    background: var(--dk-sunken);
+}
+
+    html.dark .report-reason:hover {
+        background: var(--dk-surface-2);
+    }
+
+    html.dark .report-reason:has(input:checked) {
+        color: var(--dk-strong);
+        background: rgba(235, 51, 73, 0.14);
+    }
+
+html.dark .report-note textarea {
+    background: var(--dk-sunken);
+    border-color: var(--dk-line);
+    color: var(--dk-text);
+}
+
+    html.dark .report-note textarea:focus {
+        background: var(--dk-surface-2);
+    }
+
+/* Ô nhập bài viết / bình luận cộng đồng (Tailwind bg-slate-50 đã được đổi chung) */
+html.dark main textarea,
+html.dark main input[type="text"],
+html.dark main input[type="search"],
+html.dark main input[type="email"],
+html.dark main input[type="password"],
+html.dark main select {
+    color: var(--dk-text);
+}
+
+/* ==========================================================================
+   HỒ SƠ (profile.css)
+   ========================================================================== */
+html.dark .profile-tab-btn {
+    color: var(--dk-muted);
+    background-color: var(--dk-surface);
+    border-color: var(--dk-line);
+}
+
+    html.dark .profile-tab-btn:hover:not(.active-tab) {
+        color: var(--dk-teal-soft);
+        border-color: #50C9C3;
+    }
+
+/* ==========================================================================
+   GIỚI THIỆU / LIÊN HỆ / QUYỀN RIÊNG TƯ (static-pages.css)
+   ========================================================================== */
+html.dark .sp-page {
+    background: var(--dk-surface);
+    color: #cbd5e1;
+    box-shadow: var(--dk-shadow);
+}
+
+html.dark .sp-title,
+html.dark .sp-section h2,
+html.dark .sp-list b,
+html.dark .sp-card h3,
+html.dark .sp-callout h3 {
+    color: var(--dk-strong);
+}
+
+html.dark .sp-lead,
+html.dark .sp-callout p {
+    color: #cbd5e1;
+}
+
+html.dark .sp-sub,
+html.dark .sp-toc-title,
+html.dark .sp-info-label,
+html.dark .sp-note,
+html.dark .sp-card p {
+    color: var(--dk-muted);
+}
+
+html.dark .sp-card,
+html.dark .sp-info-row,
+html.dark .sp-form-card {
+    background: var(--dk-surface-2);
+    box-shadow: inset 0 0 0 1px var(--dk-line-soft);
+}
+
+    html.dark .sp-card:hover {
+        box-shadow: inset 0 0 0 1px rgba(80, 201, 195, 0.4), 0 12px 26px rgba(0, 0, 0, 0.4);
+    }
+
+html.dark .sp-toc {
+    background: var(--dk-sunken);
+}
+
+html.dark .sp-callout {
+    background: linear-gradient(135deg, rgba(80, 201, 195, 0.16), rgba(150, 222, 218, 0.06));
+}
+
+html.dark .sp-field {
+    color: #cbd5e1;
+}
+
+    html.dark .sp-field input,
+    html.dark .sp-field select,
+    html.dark .sp-field textarea {
+        background: var(--dk-sunken);
+        border-color: var(--dk-line);
+        color: var(--dk-text);
+    }
+
+        html.dark .sp-field input:focus,
+        html.dark .sp-field select:focus,
+        html.dark .sp-field textarea:focus {
+            background: var(--dk-surface);
+        }
+
+/* ==========================================================================
+   TRANG ĐĂNG NHẬP RIÊNG (login.css) + Select2 / Flatpickr trong form đăng ký
+   ========================================================================== */
+html.dark .login-wrapper {
+    background: var(--dk-bg);
+}
+
+html.dark .login-card {
+    background: var(--dk-surface);
+    box-shadow: var(--dk-shadow);
+}
+
+    html.dark .login-card h2:not(.text-cus),
+    html.dark .login-card .form-group label:not(.text-cus) {
+        color: var(--dk-strong);
+    }
+
+html.dark .form-control {
+    background: var(--dk-sunken);
+    border-color: var(--dk-line);
+    color: var(--dk-text);
+}
+
+html.dark .select2-container--default .select2-selection--single {
+    background-color: var(--dk-sunken) !important;
+    border-color: var(--dk-line) !important;
+}
+
+    html.dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--dk-text) !important;
+    }
+
+html.dark .select2-dropdown {
+    background-color: var(--dk-surface) !important;
+    color: var(--dk-text);
+}
+
+html.dark .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--dk-teal-tint) !important;
+    color: var(--dk-strong) !important;
+}
+
+html.dark .flatpickr-calendar {
+    background: var(--dk-surface);
+    box-shadow: var(--dk-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle, .theme-toggle i {
+        transition: none;
+    }
+
+    .theme-toggle.is-spinning {
+        animation: none;
+    }
+}

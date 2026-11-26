@@ -33,6 +33,13 @@ namespace WebTruyenTranh.Models
         public int? StoryId { get; set; }
         public int? ChapterId { get; set; }
         public bool IsSpoiler { get; set; } = false;
+
+        // ===== Kiểm duyệt (Admin) – cột thêm bởi StoreProcedure/CommunityModeration.sql =====
+        /// <summary>true = đã bị quản trị viên ẩn, không hiển thị ở trang Cộng đồng</summary>
+        public bool IsHidden { get; set; } = false;
+        public DateTime? HiddenAt { get; set; }
+        [StringLength(200)]
+        public string? HiddenReason { get; set; }
         public virtual TblStory? Story { get; set; }
         public virtual TblChapter? Chapter { get; set; }
 

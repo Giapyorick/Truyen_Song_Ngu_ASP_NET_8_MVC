@@ -33,6 +33,13 @@ namespace WebTruyenTranh.Models
         public virtual TblChapter? Chapter { get; set; }
         public bool IsSpoiler { get; set; } = false;
 
+        // ===== Kiểm duyệt (Admin) – cột thêm bởi StoreProcedure/CommunityModeration.sql =====
+        /// <summary>true = đã bị quản trị viên ẩn, không hiển thị ở trang Cộng đồng</summary>
+        public bool IsHidden { get; set; } = false;
+        public DateTime? HiddenAt { get; set; }
+        [StringLength(200)]
+        public string? HiddenReason { get; set; }
+
         public virtual ICollection<TblPostLike> PostLikes { get; set; } = new List<TblPostLike>();
         public virtual ICollection<TblPostComment> PostComments { get; set; } = new List<TblPostComment>();
     }

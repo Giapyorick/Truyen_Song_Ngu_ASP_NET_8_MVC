@@ -1,0 +1,523 @@
+/* ==========================================================================
+   ỦNG HỘ TÁC GIẢ – nút trái tim trên header + hộp chuyển khoản (2 cột)
+   HTML: Views/Shared/_DonateModalPartial.cshtml · JS: js/home/common/donate.js
+   Màu: deny #F45C43 → #EB3349 (trái tim), teal #50C9C3 → #96DEDA (điểm nhấn),
+        accepted #93F9B9 → #1D976C (đã sao chép), wait #FF8008 (lưu ý) + màu trung tính.
+   ========================================================================== */
+
+/* ---------- Nút trái tim trên header ---------- */
+.donate-btn {
+    position: relative;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    color: #EB3349;
+    background: #ffffff;
+    background-size: 200% auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, background-position 0.5s ease;
+}
+
+    .donate-btn i {
+        animation: donate-beat 2.4s ease-in-out infinite;
+    }
+
+    .donate-btn:hover {
+        color: #ffffff;
+        background-image: linear-gradient(to right, #F45C43 0%, #EB3349 51%, #F45C43 100%);
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px -6px rgba(235, 51, 73, 0.6);
+    }
+
+    .donate-btn:active {
+        transform: scale(0.94);
+    }
+
+    .donate-btn:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.8);
+        outline-offset: 2px;
+    }
+
+@keyframes donate-beat {
+    0%, 60%, 100% { transform: scale(1); }
+    15% { transform: scale(1.22); }
+    30% { transform: scale(0.95); }
+    45% { transform: scale(1.12); }
+}
+
+/* ---------- Khung hộp ---------- */
+.donate-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    font-family: 'Inter', sans-serif;
+}
+
+    .donate-modal[hidden] {
+        display: none;
+    }
+
+body.donate-open {
+    overflow: hidden;
+}
+
+.donate-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.donate-box {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 30px 32px 24px;
+    border-radius: 28px;
+    background: #fbfaf8;
+    color: #334155;
+    box-shadow: 0 30px 70px -20px rgba(15, 23, 42, 0.5), inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.donate-modal.is-open .donate-backdrop { opacity: 1; }
+.donate-modal.is-open .donate-box { opacity: 1; transform: none; }
+
+.donate-x {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    color: #94a3b8;
+    background: transparent;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+    .donate-x:hover {
+        color: #334155;
+        background: #f1f5f9;
+    }
+
+/* ---------- Tiêu đề ---------- */
+.donate-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 40px;
+}
+
+.donate-heart-badge {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    font-size: 1.25rem;
+    color: #ffffff;
+    background: linear-gradient(135deg, #F45C43, #EB3349);
+    box-shadow: 0 10px 22px -8px rgba(235, 51, 73, 0.7);
+}
+
+    .donate-heart-badge i {
+        animation: donate-beat 2.4s ease-in-out infinite;
+    }
+
+.donate-head h3 {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #1e293b;
+}
+
+.donate-head p {
+    margin: 4px 0 0;
+    font-size: 0.92rem;
+    color: #64748b;
+}
+
+/* ---------- 2 cột ---------- */
+.donate-grid {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 24px;
+}
+
+/* Cột trái: mã QR */
+.donate-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.donate-qr-card {
+    width: 100%;
+    padding: 14px 18px 12px;
+    border-radius: 22px;
+    background: #ffffff;    /* luôn trắng để app ngân hàng quét được, kể cả chế độ tối */
+    box-shadow: 0 0 0 1px #eef2f7, 0 10px 26px -14px rgba(15, 23, 42, 0.3);
+    text-align: center;
+}
+
+.donate-qr-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+    .donate-qr-brand i {
+        -webkit-text-fill-color: #EB3349;
+        font-size: 0.9rem;
+    }
+
+.donate-qr-frame {
+    margin: 10px auto 8px;
+    padding: 6px;
+    width: 210px;
+    border-radius: 10px;
+    box-shadow: 0 0 0 2px #50C9C3;
+}
+
+.donate-qr-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    animation: donate-qr-in 0.3s ease;
+}
+
+    .donate-qr-svg[hidden] {
+        display: none;
+    }
+
+@keyframes donate-qr-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Dòng "napas 247 | VietinBank | VietQR" (chữ, không dùng logo ảnh) */
+.donate-qr-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.01em;
+}
+
+.dqf-napas { color: #0250c5; }
+.dqf-napas b { color: #50C9C3; }
+.dqf-bank { color: #334155; font-style: normal; }
+.dqf-vietqr { color: #EB3349; }
+
+.dqf-sep {
+    width: 1px;
+    height: 14px;
+    background: #cbd5e1;
+}
+
+.donate-amount {
+    margin-top: 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Chọn số tiền */
+.donate-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.donate-chip {
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    background-color: #ffffff;
+    background-size: 200% auto;
+    box-shadow: inset 0 0 0 1.5px #e2e8f0;
+    cursor: pointer;
+    transition: color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-position 0.5s ease;
+}
+
+    .donate-chip:hover:not(.is-active) {
+        color: #50C9C3;
+        box-shadow: inset 0 0 0 1.5px #50C9C3;
+        transform: translateY(-1px);
+    }
+
+    .donate-chip.is-active {
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
+        background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+        box-shadow: 0 6px 14px -6px rgba(80, 201, 195, 0.7);
+    }
+
+        .donate-chip.is-active:hover {
+            background-position: right center;
+        }
+
+    .donate-chip:focus-visible {
+        outline: 3px solid rgba(80, 201, 195, 0.45);
+        outline-offset: 2px;
+    }
+
+/* Cột phải: các ô thông tin */
+.donate-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.donate-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px #e9edf2;
+    transition: box-shadow 0.2s ease;
+}
+
+    .donate-field:hover {
+        box-shadow: inset 0 0 0 1px rgba(80, 201, 195, 0.55);
+    }
+
+.donate-field-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.donate-field-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.donate-field-value {
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+
+.donate-field-sub {
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+.donate-number {
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Nội dung chuyển khoản: nhấn teal */
+.donate-field--note .donate-field-value {
+    background: linear-gradient(to right, #50C9C3 0%, #96DEDA 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.donate-copy {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    color: #475569;
+    background: transparent;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+    .donate-copy:hover {
+        color: #50C9C3;
+        background: rgba(80, 201, 195, 0.12);
+    }
+
+    .donate-copy:active {
+        transform: scale(0.92);
+    }
+
+    .donate-copy.is-copied {
+        color: #ffffff;
+        background: linear-gradient(135deg, #93F9B9, #1D976C);
+    }
+
+/* ---------- Ghi chú + chân hộp ---------- */
+.donate-note {
+    display: flex;
+    gap: 10px;
+    margin: 22px 0 0;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+    .donate-note i {
+        margin-top: 4px;
+        color: #FF8008;
+    }
+
+    .donate-note b {
+        color: #334155;
+    }
+
+.donate-divider {
+    height: 1px;
+    margin: 18px 0;
+    background: #e9edf2;
+}
+
+.donate-foot {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+    .donate-foot a {
+        color: #50C9C3;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+/* ---------- Chế độ tối ---------- */
+html.dark .donate-box {
+    background: #1e293b;
+    color: #e2e8f0;
+    box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+html.dark .donate-x:hover {
+    color: #e2e8f0;
+    background: #273449;
+}
+
+html.dark .donate-head h3 {
+    color: #f8fafc;
+}
+
+html.dark .donate-head p,
+html.dark .donate-note,
+html.dark .donate-foot,
+html.dark .donate-field-label {
+    color: #94a3b8;
+}
+
+html.dark .donate-note b {
+    color: #e2e8f0;
+}
+
+html.dark .donate-qr-card {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 28px -12px rgba(0, 0, 0, 0.7);
+}
+
+html.dark .donate-amount {
+    color: #e2e8f0;
+}
+
+html.dark .donate-chip {
+    color: #cbd5e1;
+    background-color: #0b1324;
+    box-shadow: inset 0 0 0 1.5px #334155;
+}
+
+html.dark .donate-field {
+    background: #0b1324;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.14);
+}
+
+html.dark .donate-field-value {
+    color: #f8fafc;
+}
+
+html.dark .donate-copy {
+    color: #cbd5e1;
+}
+
+html.dark .donate-divider {
+    background: rgba(148, 163, 184, 0.16);
+}
+
+/* ---------- Điện thoại / máy tính bảng ---------- */
+@media (max-width: 720px) {
+    .donate-box {
+        padding: 24px 18px 18px;
+        border-radius: 24px;
+    }
+
+    .donate-head h3 {
+        font-size: 1.25rem;
+    }
+
+    .donate-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .donate-qr-card {
+        max-width: 300px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .donate-btn i,
+    .donate-heart-badge i,
+    .donate-qr-svg {
+        animation: none;
+    }
+
+    .donate-box,
+    .donate-backdrop {
+        transition: none;
+    }
+}

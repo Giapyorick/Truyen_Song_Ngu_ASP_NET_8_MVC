@@ -13,6 +13,8 @@ namespace WebTruyenTranh.ViewModels
     public class StoryListViewModel
     {
         public int StoryID { get; set; }
+        /// <summary>Mã định danh YYMMNNN (hiển thị kèm dấu #), có thể null nếu chưa chạy StoryCode.sql</summary>
+        public string? StoryCode { get; set; }
         public string Title { get; set; } = null!;
         public DateOnly? PublicationDate { get; set; }
         public string? Img { get; set; }
@@ -29,5 +31,15 @@ namespace WebTruyenTranh.ViewModels
         public List<string>? Categories { get; set; }
 
         public List<LatestChapterItemViewModel> LatestChapters { get; set; } = new();
+    }
+}
+namespace WebTruyenTranh.ViewModels
+{
+    /// <summary>Thể loại nổi bật hiển thị trên trang chủ (lọc truyện)</summary>
+    public class FeaturedCategoryViewModel
+    {
+        public int CategoryId { get; set; }
+        public string Name { get; set; } = "";
+        public int StoryCount { get; set; }
     }
 }

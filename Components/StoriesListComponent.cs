@@ -29,6 +29,24 @@ namespace WebTruyenTranh.Components
             bool isVi = currentCulture.StartsWith("vi", System.StringComparison.OrdinalIgnoreCase);
             string langPrefix = isVi ? "vi" : "en";
 
+            // 1b. Thể loại nổi bật cho bộ lọc trang chủ: 8 thể loại có nhiều truyện nhất
+            ViewData["FeaturedCategories"] = await _context.TblCategories
+                .AsNoTracking()
+                .Select(c => new FeaturedCategoryViewModel
+                {
+                    CategoryId = c.CategoryId,
+                    Name = c.TblCategoryTranslations
+                            .Where(t => t.LanguageCode.StartsWith(langPrefix))
+                            .Select(t => t.Name)
+                            .FirstOrDefault() ?? c.Name ?? "",
+                    StoryCount = c.TblCategoryOfStories.Count()
+                })
+                .Where(c => c.StoryCount > 0)
+                .OrderByDescending(c => c.StoryCount)
+                .ThenBy(c => c.Name)
+                .Take(8)
+                .ToListAsync();
+
             // 2. Lấy 8 truyện đầu tiên kèm tiêu đề song ngữ
             var topStories = await _context.TblStories
                 .AsNoTracking()
@@ -38,6 +56,7 @@ namespace WebTruyenTranh.Components
                 .Select(s => new
                 {
                     s.StoryId,
+                    s.StoryCode,
                     Title = s.TblStoryTranslations
                              .Where(t => t.LanguageCode.StartsWith(langPrefix))
                              .Select(t => t.Title)
@@ -127,6 +146,7 @@ namespace WebTruyenTranh.Components
                 return new StoryListViewModel
                 {
                     StoryID = s.StoryId,
+                    StoryCode = s.StoryCode,
                     Title = s.Title,
                     Img = s.Img,
                     Likes = s.Likes,

@@ -1,0 +1,781 @@
+/* ==========================================================================
+   TRANG ĐỌC TRUYỆN – GIAO DIỆN KIỂU KINDLE (1 cột, cuộn dọc)
+   - Nạp SAU reading.css (Views/Paragraphs/Content.cshtml) để ghi đè.
+   - Không đổi ID/class mà reading-viewer.js dùng → mọi chức năng cũ giữ nguyên:
+     đổi chương, song ngữ (nhấp đúp), dịch tất cả, cỡ chữ, theme, Focus, AI chat.
+   ========================================================================== */
+
+:root {
+    --rk-font: 'Literata', 'Lora', Georgia, 'Times New Roman', serif;
+    --rk-ui-font: 'Inter', system-ui, sans-serif;
+
+    /* Giấy sáng (mặc định) */
+    --rk-paper: #fbfaf7;
+    --rk-paper-2: #f6f3ec;
+    --rk-ink: #2b2925;
+    --rk-muted: #7a746c;
+    --rk-line: rgba(43, 41, 37, 0.08);
+    --rk-accent: #2fb5af;          /* teal của web */
+    --rk-hover: rgba(80, 201, 195, 0.10);
+}
+
+/* Nền trang xám nhạt giống mẫu, để trang giấy nổi lên */
+body.m-reading {
+    background-color: #ecebe8 !important;
+}
+
+/* ---------- Khung trang giấy ---------- */
+#mainWrapper.reader-kindle {
+    max-width: 920px !important;
+    margin: 32px auto 140px !important;
+    padding: 0 !important;
+    border-radius: 32px;
+    background: linear-gradient(160deg, var(--rk-paper) 0%, var(--rk-paper-2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 30px 60px -30px rgba(31, 27, 20, 0.22),
+        0 8px 24px -12px rgba(31, 27, 20, 0.10) !important;
+    color: var(--rk-ink);
+}
+
+/* ---------- Thanh tiêu đề ---------- */
+.reader-head {
+    padding: 40px 64px 0;
+    background: transparent !important;
+    border: 0 !important;
+    text-align: left;
+    text-indent: 0;
+    font-family: var(--rk-ui-font);
+}
+
+.reader-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 26px;
+    border-radius: 50%;
+    background: #c9c6c0;
+    color: #fff !important;
+    font-size: 15px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+    .reader-back:hover {
+        background: var(--rk-accent);
+        transform: translateX(-2px);
+    }
+
+    .reader-back:focus-visible {
+        outline: 3px solid rgba(47, 181, 175, 0.45);
+        outline-offset: 2px;
+    }
+
+.reader-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.reader-crumb {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    min-width: 0;
+}
+
+/* Tên truyện (h1) – nhỏ, nhạt hơn tên chương giống mẫu */
+.reader-head .reader-story {
+    margin: 0;
+    font-family: var(--rk-ui-font);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--rk-ink) !important;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    text-shadow: none;
+}
+
+.reader-crumb-sep {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--rk-muted);
+}
+
+/* Tên chương (h2) – lớn hơn, đậm hơn */
+.reader-head .reader-chapter {
+    margin: 0;
+    font-family: var(--rk-ui-font);
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--rk-ink) !important;
+}
+
+.reader-chapter-no {
+    flex: none;
+    font-family: var(--rk-ui-font);
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--rk-ink);
+}
+
+.reader-head .reader-hint {
+    margin: 14px 0 0;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--rk-line);
+    font-size: 0.8rem;
+    font-style: normal;
+    color: var(--rk-muted);
+}
+
+    .reader-head .reader-hint i {
+        margin-right: 4px;
+        color: var(--rk-accent);
+    }
+
+/* ---------- Phần chữ ---------- */
+#mainWrapper.reader-kindle #paragraphList,
+#focusContentContainer.reading-content {
+    font-family: var(--rk-font) !important;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    line-height: 1.85 !important;
+    letter-spacing: 0.003em;
+    color: var(--rk-ink);
+    text-align: justify;
+    /* không tự gạch nối: trang khai báo lang="en" nên sẽ ngắt sai chữ tiếng Việt */
+    hyphens: manual;
+    text-wrap: pretty;
+    font-kerning: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#mainWrapper.reader-kindle #paragraphList {
+    padding: 28px 64px 72px !important;
+}
+
+/* Đoạn văn: cách đoạn rõ ràng như mẫu, thụt đầu dòng nhẹ */
+#mainWrapper.reader-kindle .reading-content .para-block-start,
+#mainWrapper.reader-kindle .reading-content .para-block-indent,
+#focusContentContainer .para-block-start,
+#focusContentContainer .para-block-indent {
+    margin-top: 1.15em !important;
+    text-indent: 1.6em !important;
+}
+
+#mainWrapper.reader-kindle .reading-content .para-block-dialogue,
+#focusContentContainer .para-block-dialogue {
+    margin-top: 0.55em !important;
+    text-indent: 1.6em !important;
+}
+
+    #mainWrapper.reader-kindle .reading-content .para-block-dialogue::before,
+    #focusContentContainer .para-block-dialogue::before {
+        content: "– " !important;
+        font-weight: 400 !important;
+        color: var(--rk-muted) !important;
+    }
+
+/* Đoạn đầu chương: chữ cái đầu to (drop cap) */
+#mainWrapper.reader-kindle #paragraphList > .para-block-start:first-child {
+    margin-top: 0.4em !important;
+    text-indent: 0 !important;
+}
+
+    #mainWrapper.reader-kindle #paragraphList > .para-block-start:first-child::first-letter {
+        float: left;
+        margin: 0.08em 0.1em 0 0;
+        font-size: 3.3em;
+        line-height: 0.85;
+        font-weight: 600;
+        color: var(--rk-accent);
+    }
+
+/* Câu: hover nhẹ để báo có thể nhấp đúp dịch */
+#mainWrapper.reader-kindle .reading-content .text-segment,
+#focusContentContainer .text-segment {
+    padding: 1px 1px;
+    border-radius: 4px !important;
+    transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+    #mainWrapper.reader-kindle .reading-content .text-segment:hover,
+    #focusContentContainer .text-segment:hover {
+        background-color: var(--rk-hover) !important;
+    }
+
+/* Câu đã chuyển sang bản dịch (JS thêm .text-teal-700) – trước đây bị màu theme che mất */
+#mainWrapper .reading-content .text-segment.text-teal-700,
+#focusContentContainer .text-segment.text-teal-700 {
+    color: #0f766e !important;
+    font-weight: 500;
+    font-style: italic;
+}
+
+::selection {
+    background: rgba(80, 201, 195, 0.28);
+}
+
+/* Ảnh minh họa hài hòa với nền giấy */
+#mainWrapper.reader-kindle .story-illustration-block img {
+    border-radius: 18px !important;
+    border-color: var(--rk-line) !important;
+}
+
+#mainWrapper.reader-kindle .story-illustration-caption {
+    font-family: var(--rk-ui-font);
+    color: var(--rk-muted);
+}
+
+/* ---------- Focus mode: dùng cùng kiểu chữ ---------- */
+#focusContentContainer.reading-content {
+    border-radius: 32px !important;
+    padding: 40px 64px 120px !important;
+    background: linear-gradient(160deg, var(--rk-paper) 0%, var(--rk-paper-2) 100%) !important;
+    color: var(--rk-ink) !important;
+    border: 1px solid var(--rk-line);
+}
+
+    /* Chữ trong Focus luôn theo màu theme (rule cũ đổi sang xanh dương khi rê chuột) */
+    #focusContentContainer .text-segment:not(.text-teal-700),
+    #focusContentContainer .text-segment:not(.text-teal-700):hover {
+        color: inherit !important;
+    }
+
+    #focusContentContainer #txtStoryTitle,
+    #focusContentContainer #txtChapterTitle,
+    #focusContentContainer .reader-chapter-no {
+        color: var(--rk-ink) !important;
+    }
+
+    #focusContentContainer .reader-head {
+        padding: 0;
+    }
+
+#focusModeOverlay.theme-light {
+    background-color: #ecebe8;
+}
+
+/* ==========================================================================
+   THEME SEPIA & DARK (giữ màu cũ, chỉnh cho bố cục mới)
+   ========================================================================== */
+#mainWrapper.reader-kindle.theme-sepia,
+#focusModeOverlay.theme-sepia {
+    --rk-paper: #fdf6e3;
+    --rk-paper-2: #f7ecd3;
+    --rk-ink: #433422;
+    --rk-muted: #8a7458;
+    --rk-line: rgba(67, 52, 34, 0.12);
+    --rk-accent: #b7791f;
+    --rk-hover: rgba(183, 121, 31, 0.10);
+}
+
+#mainWrapper.reader-kindle.theme-dark,
+#focusModeOverlay.theme-dark {
+    --rk-paper: #1e293b;
+    --rk-paper-2: #172033;
+    --rk-ink: #e8edf4;
+    --rk-muted: #94a3b8;
+    --rk-line: rgba(148, 163, 184, 0.18);
+    --rk-accent: #5eead4;
+    --rk-hover: rgba(94, 234, 212, 0.10);
+}
+
+#mainWrapper.reader-kindle.theme-sepia,
+#mainWrapper.reader-kindle.theme-dark {
+    background: linear-gradient(160deg, var(--rk-paper) 0%, var(--rk-paper-2) 100%) !important;
+}
+
+#mainWrapper.reader-kindle.theme-dark {
+    border-color: #334155 !important;
+}
+
+#focusModeOverlay.theme-sepia {
+    background-color: #eaddca;
+}
+
+#focusModeOverlay.theme-dark {
+    background-color: #020617;
+}
+
+    #mainWrapper.reader-kindle.theme-sepia #storyChapterHeader,
+    #mainWrapper.reader-kindle.theme-dark #storyChapterHeader {
+        background: transparent !important;
+    }
+
+    #mainWrapper.reader-kindle.theme-sepia #txtStoryTitle,
+    #mainWrapper.reader-kindle.theme-sepia #txtChapterTitle,
+    #mainWrapper.reader-kindle.theme-dark #txtStoryTitle,
+    #mainWrapper.reader-kindle.theme-dark #txtChapterTitle {
+        color: var(--rk-ink) !important;
+    }
+
+    #mainWrapper.reader-kindle.theme-dark .reader-back,
+    #focusModeOverlay.theme-dark .reader-back {
+        background: #475569;
+    }
+
+    #mainWrapper.reader-kindle.theme-dark .text-segment.text-teal-700,
+    #focusModeOverlay.theme-dark .text-segment.text-teal-700 {
+        color: #5eead4 !important;
+    }
+
+    #focusModeOverlay.theme-sepia .text-segment.text-teal-700 {
+        color: #0f766e !important;
+    }
+
+/* ---------- Tablet & điện thoại ---------- */
+@media (max-width: 1024px) {
+    #mainWrapper.reader-kindle {
+        margin: 20px auto 140px !important;
+    }
+
+    .reader-head {
+        padding: 32px 40px 0;
+    }
+
+    #mainWrapper.reader-kindle #paragraphList {
+        padding: 24px 40px 64px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body #mainWrapper.reader-kindle {
+        margin: 10px auto 120px !important;
+        border-radius: 22px;
+    }
+
+    body #storyChapterHeader.reader-head {
+        padding: 18px 20px 0;
+    }
+
+    .reader-back {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 16px;
+    }
+
+    .reader-head-row {
+        align-items: flex-start;
+    }
+
+    .reader-crumb {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .reader-crumb-sep {
+        display: none;
+    }
+
+    .reader-head .reader-story {
+        font-size: 0.85rem;
+        color: var(--rk-muted) !important;
+    }
+
+    .reader-head .reader-chapter {
+        font-size: 1.15rem;
+    }
+
+    .reader-chapter-no {
+        font-size: 0.95rem;
+    }
+
+    body #mainWrapper.reader-kindle #paragraphList {
+        padding: 18px 20px 150px !important;
+        text-align: left;
+    }
+
+    #focusContentContainer.reading-content {
+        padding: 24px 20px 140px !important;
+        border-radius: 22px !important;
+        text-align: left;
+    }
+}
+
+/* ==========================================================================
+   VIỀN TIẾN ĐỘ ĐỌC QUANH THANH ĐIỀU KHIỂN (vẽ bởi reading-progress.js)
+   Chạy đủ 1 vòng = đã đọc hết chương
+   ========================================================================== */
+#fixedBottomBar .reader-progress-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+
+    #fixedBottomBar .reader-progress-ring rect {
+        fill: none;
+        stroke-width: 3;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    #fixedBottomBar .reader-progress-ring .ring-track {
+        stroke: rgba(80, 201, 195, 0.14);
+    }
+
+    #fixedBottomBar .reader-progress-ring .ring-fill {
+        stroke-dasharray: 100 100;
+        stroke-dashoffset: 100;
+        transition: stroke-dashoffset 0.15s linear;
+        filter: drop-shadow(0 0 4px rgba(80, 201, 195, 0.55));
+    }
+
+/* Đọc hết chương: viền sáng lên nhẹ */
+#fixedBottomBar.reading-done .reader-progress-ring .ring-fill {
+    animation: rk-ring-done 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes rk-ring-done {
+    from { filter: drop-shadow(0 0 3px rgba(80, 201, 195, 0.5)); }
+    to   { filter: drop-shadow(0 0 9px rgba(80, 201, 195, 0.95)); }
+}
+
+/* Điện thoại: thanh cuộn ngang được nên ẩn viền để không bị lệch */
+@media (max-width: 768px) {
+    #fixedBottomBar .reader-progress-ring {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fixedBottomBar .reader-progress-ring .ring-fill {
+        transition: none;
+    }
+
+    #fixedBottomBar.reading-done .reader-progress-ring .ring-fill {
+        animation: none;
+    }
+}
+
+/* ==========================================================================
+   FOCUS MODE: ẨN THANH CUỘN + CỘT ĐIỀU KHIỂN GỌN, KHÔNG ĐÈ LÊN TRUYỆN
+   ========================================================================== */
+#focusModeOverlay > div {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+    #focusModeOverlay > div::-webkit-scrollbar {
+        display: none;
+    }
+
+@media (min-width: 769px) {
+    body {
+        --rk-focus-col: 236px;   /* chiều ngang cột điều khiển (đổi tại đây) */
+        --rk-focus-gap: 20px;    /* khoảng cách tới mép phải màn hình */
+    }
+
+    /* Chừa chỗ bên phải cho cột điều khiển để không đè lên khung truyện */
+    #focusModeOverlay > div {
+        max-width: none !important;
+        padding-left: 24px !important;
+        padding-right: calc(var(--rk-focus-col) + var(--rk-focus-gap) * 2) !important;
+    }
+
+    #focusContentContainer.reading-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Khối thanh công cụ */
+    body #fixedBottomBar.focus-layout-active {
+        width: var(--rk-focus-col) !important;
+        max-width: var(--rk-focus-col) !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+        body #fixedBottomBar.focus-layout-active > div {
+            box-sizing: border-box !important;
+            min-height: 36px;
+            padding: 2px 6px !important;
+        }
+
+        /* Cụm chương: ô chọn chương giãn ra lấp chỗ trống */
+        body #fixedBottomBar.focus-layout-active #chapterNavigation {
+            justify-content: space-between !important;
+            gap: 0 !important;
+        }
+
+            body #fixedBottomBar.focus-layout-active #chapterNavigation button {
+                padding: 4px 5px !important;
+            }
+
+        body #fixedBottomBar.focus-layout-active #chapterSelect {
+            flex: 1 1 auto;
+            max-width: none !important;
+            min-width: 0;
+            text-align: center;
+            text-align-last: center;
+        }
+
+        /* Cụm cỡ chữ: A- | 18px | A+ chia đều */
+        body #fixedBottomBar.focus-layout-active > div:has(#fontSizeDisplay) {
+            justify-content: space-between !important;
+        }
+
+        body #fixedBottomBar.focus-layout-active #fontSizeDisplay {
+            flex: 1;
+            text-align: center;
+        }
+
+    /* 3 nút Exit Focus / Translate all / Chat AI: cùng chiều ngang với thanh */
+    body #rightActionControls.focus-layout-active {
+        right: var(--rk-focus-gap) !important;
+        align-items: stretch !important;
+        width: var(--rk-focus-col) !important;
+        gap: 8px !important;
+    }
+
+        body #rightActionControls.focus-layout-active button {
+            width: 100% !important;
+            justify-content: center !important;
+            box-sizing: border-box !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+        }
+
+    body #fixedBottomBar.focus-layout-active {
+        left: calc(100% - var(--rk-focus-gap)) !important;
+        bottom: 190px !important;
+    }
+}
+
+/* ==========================================================================
+   CHỌN NGÔN NGỮ BẰNG CỜ (reading-lang-flags.js)
+   ========================================================================== */
+#fixedBottomBar select.lf-native {
+    display: none !important;
+}
+
+#fixedBottomBar .lf-trigger {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px !important;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    background: transparent;
+    transition: background-color 0.2s ease;
+}
+
+    #fixedBottomBar .lf-trigger:hover,
+    #fixedBottomBar .lf-trigger[aria-expanded="true"] {
+        background: rgba(80, 201, 195, 0.14) !important;
+    }
+
+    #fixedBottomBar .lf-trigger:focus-visible {
+        outline: 2px solid #50C9C3;
+        outline-offset: 1px;
+    }
+
+    #fixedBottomBar .lf-trigger .lf-caret {
+        font-size: 9px;
+        opacity: 0.7;
+    }
+
+/* Nút đảo ngôn ngữ (thay mũi tên ➔ cũ).
+   Các nút trên thanh bị reading.css tô chữ gradient (background-clip: text) -> ở đây
+   trả nền về bình thường để có vòng tròn teal nhạt, icon giữ màu teal. */
+#fixedBottomBar #languageSelectorGroup .lf-swap {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0 !important;
+    border-radius: 50%;
+    font-size: 11px;
+    background: rgba(80, 201, 195, 0.14) !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    -webkit-text-fill-color: #50C9C3 !important;
+    color: #50C9C3 !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    #fixedBottomBar #languageSelectorGroup .lf-swap i {
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: inherit !important;
+        color: inherit !important;
+    }
+
+    #fixedBottomBar #languageSelectorGroup .lf-swap:hover {
+        background: linear-gradient(135deg, #50C9C3, #96DEDA) !important;
+        -webkit-text-fill-color: #fff !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px -4px rgba(80, 201, 195, 0.8) !important;
+    }
+
+    #fixedBottomBar #languageSelectorGroup .lf-swap:focus-visible {
+        outline: 2px solid #50C9C3;
+        outline-offset: 1px;
+    }
+
+    #fixedBottomBar #languageSelectorGroup .lf-swap.is-spin i {
+        animation: lf-swap-spin 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+@keyframes lf-swap-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(180deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fixedBottomBar #languageSelectorGroup .lf-swap.is-spin i { animation: none; }
+}
+
+/* Ảnh cờ: viền mảnh + bo góc nhẹ cho nổi trên mọi nền */
+.lf-flag {
+    width: 20px;
+    height: 15px;
+    flex: none;
+    border-radius: 3px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.lf-flag-empty {
+    display: inline-block;
+    background: #e2e8f0;
+}
+
+/* Menu xổ (gắn vào body, position fixed) */
+.lf-menu {
+    position: fixed;
+    z-index: 100000;
+    min-width: 168px;
+    padding: 6px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.35);
+    font-family: 'Inter', system-ui, sans-serif;
+    animation: lf-pop 0.14s ease-out;
+}
+
+@keyframes lf-pop {
+    from { opacity: 0; transform: translateY(4px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+.lf-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #1e293b;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .lf-option:hover,
+    .lf-option:focus-visible {
+        background: rgba(80, 201, 195, 0.12);
+        outline: none;
+    }
+
+    .lf-option .lf-code {
+        width: 22px;
+        font-weight: 700;
+        font-size: 12px;
+        color: #2fb5af;
+    }
+
+    .lf-option .lf-name {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .lf-option .lf-check {
+        font-size: 11px;
+        color: #2fb5af;
+        visibility: hidden;
+    }
+
+    .lf-option.is-selected {
+        background: rgba(80, 201, 195, 0.10);
+    }
+
+        .lf-option.is-selected .lf-check {
+            visibility: visible;
+        }
+
+/* Theme sepia / tối cho menu */
+.lf-menu.lf-theme-sepia {
+    background: rgba(253, 246, 227, 0.97);
+    border-color: rgba(67, 52, 34, 0.15);
+}
+
+    .lf-menu.lf-theme-sepia .lf-option { color: #433422; }
+    .lf-menu.lf-theme-sepia .lf-option .lf-code,
+    .lf-menu.lf-theme-sepia .lf-option .lf-check { color: #b7791f; }
+
+.lf-menu.lf-theme-dark {
+    background: rgba(15, 23, 42, 0.96);
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+    .lf-menu.lf-theme-dark .lf-option { color: #e2e8f0; }
+    .lf-menu.lf-theme-dark .lf-option .lf-code,
+    .lf-menu.lf-theme-dark .lf-option .lf-check { color: #5eead4; }
+    .lf-menu.lf-theme-dark .lf-flag { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15); }
+
+@media (prefers-reduced-motion: reduce) {
+    .lf-menu { animation: none; }
+}
+
+/* ==========================================================================
+   THANH ĐIỀU KHIỂN (CHẾ ĐỘ THƯỜNG): 4 CỤM CAO BẰNG NHAU, CĂN GIỮA
+   ========================================================================== */
+@media (min-width: 769px) {
+    #fixedBottomBar:not(.focus-layout-active) {
+        align-items: center !important;
+    }
+
+        #fixedBottomBar:not(.focus-layout-active) > div {
+            height: 42px;
+            box-sizing: border-box !important;
+            align-items: center !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+}
+
+/* Cụm cờ: nút cờ không bị dải chữ gradient của rule cũ làm lệch dòng */
+#fixedBottomBar .lf-trigger {
+    vertical-align: middle;
+    height: 28px;
+}
+
+    #fixedBottomBar .lf-trigger .lf-code {
+        line-height: 1 !important;
+    }

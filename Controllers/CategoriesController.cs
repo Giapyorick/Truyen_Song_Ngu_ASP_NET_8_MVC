@@ -79,6 +79,8 @@ namespace WebTruyenTranh.Controllers
             string langPrefix = isVi ? "vi" : "en";
 
             var stories = await GetStoriesByCategoryId(categoryId, isVi, langPrefix);
+            // Gắn tiến độ đọc (huy hiệu "Chương X") nếu người dùng đã đăng nhập
+            await WebTruyenTranh.Helpers.ReadingProgressHelper.FillAsync(_context, stories, HttpContext.Session.GetInt32("UserId") ?? 0);
             return PartialView("_StoryCardsPartial", stories);
         }
 

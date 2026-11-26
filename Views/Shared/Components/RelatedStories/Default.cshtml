@@ -1,0 +1,21 @@
+@using WebTruyenTranh.ViewModels
+@model IList<StoryListViewModel>
+@{
+    bool relEn = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+@* Truyện liên quan (cùng thể loại) – Components/RelatedStoriesComponent.cs. Không có truyện nào thì không hiện gì *@
+@if (Model != null && Model.Any())
+{
+    <section class="sd-section sd-related" aria-labelledby="sdRelatedTitle">
+        <div class="chap-header">
+            <div class="chap-header-text">
+                <h2 class="chap-header-title" id="sdRelatedTitle">@(relEn ? "You may also like" : "Truyện liên quan")</h2>
+                <span class="chap-header-sub">@(relEn ? "Stories in the same genres" : "Cùng thể loại với truyện này")</span>
+            </div>
+        </div>
+
+        <div class="story-grid sd-related-grid">
+            <partial name="_StoryCardsPartial" model="Model" />
+        </div>
+    </section>
+}

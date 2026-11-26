@@ -24,11 +24,13 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly TruyenSongNguContext _context;
+        private readonly IAiCompletionService _ai;
 
-        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment)
+        public tblParagraphsController(TruyenSongNguContext context, IWebHostEnvironment webHostEnvironment, IAiCompletionService ai)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _ai = ai;
         }
 
         [HttpGet]
@@ -642,6 +644,12 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             }
         }
 
+        // =====================================================================
+        // IMPORT CÂU/ĐOẠN (file theo ngôn ngữ, Excel nhiều cột, AI dịch / căn chỉnh)
+        // Đọc file + tách câu: Helpers/ParagraphImportParser.cs
+        // Job AI (Hangfire):    Helpers/ParagraphAiProcessingService.cs
+        // =====================================================================
+
         [HttpGet]
         public IActionResult CheckJobStatus(string jobId)
         {
@@ -656,341 +664,326 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
                 return Json(new { completed = true, state = "NotFoundOrFinished" });
             }
 
-            var currentState = jobDetails.History.FirstOrDefault()?.StateName;
+            var lastState = jobDetails.History.FirstOrDefault();
+            var currentState = lastState?.StateName;
             bool isCompleted = currentState == "Succeeded" || currentState == "Failed" || currentState == "Deleted";
+
+            // Job lỗi: lấy thông báo lỗi Hangfire đã lưu để hiện cho admin (thay vì bảo "xem log Hangfire")
+            string? message = null;
+            if (currentState == "Failed" && lastState?.Data != null &&
+                lastState.Data.TryGetValue("ExceptionMessage", out var exMsg))
+            {
+                message = exMsg;
+            }
 
             return Json(new
             {
                 completed = isCompleted,
-                state = currentState
+                state = currentState,
+                message
             });
         }
 
+        /// <summary>Danh sách model AI cho ô chọn ở modal Import (model chưa có API key bị khóa)</summary>
+        [HttpGet]
+        public IActionResult GetAiModels()
+        {
+            var def = _ai.DefaultModel;
+            return Json(new
+            {
+                success = true,
+                defaultModel = def.Id,
+                models = _ai.Models.Select(m => new
+                {
+                    id = m.Id,
+                    provider = m.Provider,
+                    name = m.Name,
+                    note = m.Note,
+                    configured = _ai.IsConfigured(m.Provider)
+                })
+            });
+        }
+
+        /// <summary>Import có AI dịch (các ngôn ngữ còn lại lấy từ file / cột Excel)</summary>
         [HttpPost]
         [AdminRoleAuthorize]
-        public async Task<IActionResult> EnqueueImportAi(int chapterId, IFormFile? fileEnglish, string? serverFileNameEnglish, string targetLanguages = "Vietnamese")
-        {
-            // Đọc nội dung file từ máy tính HOẶC server storage
-            string rawEnText = ReadRawTextFromFileOrServer(fileEnglish, serverFileNameEnglish);
+        public Task<IActionResult> EnqueueImportAi(int chapterId, string? targetLanguages)
+            => RunImportAsync(chapterId, targetLanguages, allowAlign: false);
 
-            if (chapterId <= 0 || string.IsNullOrWhiteSpace(rawEnText))
+        /// <summary>Import trực tiếp từ file (không AI)</summary>
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public Task<IActionResult> ImportFromFilesDirect(int chapterId)
+            => RunImportAsync(chapterId, null, allowAlign: false);
+
+        /// <summary>Import có AI căn chỉnh bản dịch lệch số câu (+ AI dịch nếu có chọn)</summary>
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public Task<IActionResult> AiAutoAlignAndImport(int chapterId, string? targetLanguages)
+            => RunImportAsync(chapterId, targetLanguages, allowAlign: true);
+
+        /// <summary>
+        /// Phân tích số câu của các file (không ghi gì). Dùng chung dữ liệu form với nút Import.
+        /// </summary>
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public IActionResult AnalyzeImportFiles(string? targetLanguages)
+        {
+            try
             {
-                return Json(new { success = false, message = "Please select a valid Chapter and English source file!" });
+                var build = BuildImportPayload(0, ParseLanguageList(targetLanguages), allowAlign: true);
+                if (build.Error != null) return Json(new { success = false, message = build.Error });
+
+                bool isMismatched = build.Mismatched.Count > 0;
+                string details = string.Join(", ", build.Mismatched);
+                return Json(new
+                {
+                    success = true,
+                    isMismatched,
+                    counts = build.Counts,
+                    tableLanguages = build.TableLanguages,
+                    mismatchedDetails = details,
+                    message = isMismatched
+                        ? $"Số câu bị lệch so với tiếng Anh ({build.Payload!.English.Count} câu): {details}."
+                        : $"Tất cả file khớp nhau: {build.Payload!.English.Count} câu."
+                });
             }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi phân tích file: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Xem nhanh file tiếng Anh nguồn: có phải Excel nhiều cột không, có sẵn cột ngôn ngữ nào
+        /// (để giao diện đánh dấu các ngôn ngữ đó là "có sẵn trong file Excel").
+        /// </summary>
+        [HttpPost]
+        [AdminRoleAuthorize]
+        public IActionResult InspectImportFile()
+        {
+            try
+            {
+                var source = ReadImportSource("English");
+                if (source == null) return Json(new { success = false, message = "Chưa có file tiếng Anh nguồn." });
+
+                return Json(new
+                {
+                    success = true,
+                    isTable = source.IsTable,
+                    languages = source.TableLanguages.Select(LangDisplay).ToList(),
+                    rows = source.IsTable ? source.Rows.Count : 0
+                });
+            }
+            catch (ParagraphImportParser.ImportFileException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi đọc file: {ex.Message}" });
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // Xử lý chung cho 3 nút import
+        // ---------------------------------------------------------------------
+        private async Task<IActionResult> RunImportAsync(int chapterId, string? targetLanguages, bool allowAlign)
+        {
+            if (chapterId <= 0 || !await _context.TblChapters.AnyAsync(c => c.ChapterId == chapterId))
+                return Json(new { success = false, message = "Vui lòng chọn chương hợp lệ!" });
 
             try
             {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                var aiLanguages = ParseLanguageList(targetLanguages);
+                var build = BuildImportPayload(chapterId, aiLanguages, allowAlign);
+                if (build.Error != null) return Json(new { success = false, message = build.Error });
 
-                // Đặt tên file tạm thời
-                string fileName = fileEnglish != null ? fileEnglish.FileName : Path.GetFileName(serverFileNameEnglish ?? "en_source.txt");
-                var tempFilePath = Path.Combine(uploadsFolder, $"{Guid.NewGuid()}_{fileName}");
+                var payload = build.Payload!;
 
-                // Ghi dữ liệu ra temp file để Hangfire job đọc
-                await System.IO.File.WriteAllTextAsync(tempFilePath, rawEnText, Encoding.UTF8);
+                // Model AI admin chọn (chỉ cần khi có AI dịch / căn chỉnh)
+                string? aiModelId = Request.HasFormContentType ? Request.Form["aiModel"].ToString() : null;
+                var aiModel = _ai.Find(aiModelId) ?? _ai.DefaultModel;   // mã lạ / bỏ trống -> model mặc định
+                payload.AiModel = aiModel.Id;
 
-                var jobId = BackgroundJob.Enqueue<IParagraphAiProcessingService>(service =>
-                    service.ProcessChapterFileJob(chapterId, tempFilePath, targetLanguages));
+                // Lệch số câu mà chưa cho phép AI căn chỉnh -> JS hỏi người dùng có muốn AI căn chỉnh không
+                // (thông báo phải chứa chữ "lệch" để JS nhận ra)
+                if (!allowAlign && build.Mismatched.Count > 0)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        isMismatched = true,
+                        message = $"Số câu bị lệch so với tiếng Anh ({payload.English.Count} câu): {string.Join(", ", build.Mismatched)}."
+                    });
+                }
+
+                // Không cần AI -> ghi ngay
+                if (!payload.NeedsAi)
+                {
+                    int saved = await ParagraphImportParser.SaveAsync(_context, chapterId, payload.English, payload.Provided);
+                    return Json(new { success = true, message = $"Đã thêm {saved} câu vào chương!" });
+                }
+
+                // Cần AI -> kiểm tra API key của model đã chọn
+                if (!_ai.IsConfigured(aiModel.Provider))
+                    return Json(new { success = false, message = $"Chưa cấu hình API key cho {aiModel.Name}. Hãy chọn model khác hoặc thêm key ({(aiModel.Provider == AiCompletionService.Claude ? "Anthropic:ApiKey" : "Groq:ApiKey")})." });
+
+                // Cần AI -> lưu dữ liệu ra App_Data rồi giao cho Hangfire
+                string payloadPath = await ParagraphImportParser.SavePayloadAsync(payload, _webHostEnvironment.ContentRootPath);
+                var jobId = BackgroundJob.Enqueue<IParagraphAiProcessingService>(service => service.RunImportJob(payloadPath));
+
+                var tasks = new List<string>();
+                if (payload.AiLanguages.Count > 0) tasks.Add("dịch " + string.Join(", ", payload.AiLanguages.Select(LangDisplay)));
+                if (payload.ToAlign.Count > 0) tasks.Add("căn chỉnh " + string.Join(", ", payload.ToAlign.Keys.Select(LangDisplay)));
 
                 return Json(new
                 {
                     success = true,
                     jobId,
-                    message = "Sent to Hangfire background queue! System is automatically marking BlockType and translating."
+                    message = $"Đã gửi {payload.English.Count} câu cho {aiModel.Name} xử lý nền ({string.Join("; ", tasks)})."
                 });
+            }
+            catch (ParagraphImportParser.ImportFileException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"AI process creation error: {ex.Message}" });
+                var msg = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = $"Lỗi import: {msg}" });
             }
         }
 
-        [HttpPost]
-        [AdminRoleAuthorize]
-        public async Task<IActionResult> ImportFromFilesDirect(
-    int chapterId,
-    IFormFile? fileEnglish,
-    string? serverFileNameEnglish,
-    IFormFile? fileVietnamese,
-    string? serverFileNameVietnamese,
-    IFormFile? fileChinese,
-    string? serverFileNameChinese,
-    IFormFile? fileJapanese,
-    string? serverFileNameJapanese,
-    IFormFile? fileFrench,
-    string? serverFileNameFrench)
+        private class ImportBuildResult
         {
-            // Đọc nội dung file Tiếng Anh nguồn
-            string rawEnText = ReadRawTextFromFileOrServer(fileEnglish, serverFileNameEnglish);
+            public ParagraphImportParser.ImportPayload? Payload { get; set; }
+            public string? Error { get; set; }
+            public List<string> Mismatched { get; } = new();
+            public Dictionary<string, int> Counts { get; } = new();
+            public List<string> TableLanguages { get; set; } = new();
+        }
 
-            if (chapterId <= 0 || string.IsNullOrWhiteSpace(rawEnText))
+        /// <summary>
+        /// Đọc file tiếng Anh + các ngôn ngữ đích từ form (file tải lên hoặc serverFileName* từ kho lưu trữ),
+        /// ghép thành payload. Ngôn ngữ chọn AI dịch -> AiLanguages; file khớp số câu -> Provided;
+        /// file lệch -> ToAlign (nếu allowAlign) và luôn ghi vào Mismatched.
+        /// Ngôn ngữ không có file nhưng có cột trong Excel tiếng Anh nhiều cột -> lấy từ cột đó.
+        /// </summary>
+        private ImportBuildResult BuildImportPayload(int chapterId, List<string> aiLanguages, bool allowAlign)
+        {
+            var result = new ImportBuildResult();
+
+            var english = ReadImportSource("English");
+            if (english == null || english.IsEmpty)
             {
-                return Json(new { success = false, message = "Please select a Chapter and provide a valid English source file!" });
+                result.Error = "Vui lòng chọn file tiếng Anh nguồn (.xlsx hoặc .txt) có nội dung!";
+                return result;
             }
 
-            try
+            // Chỉ sửa lỗi OCR khi có AI dịch (giữ như hành vi cũ của chế độ AI)
+            var enBlocks = ParagraphImportParser.EnglishBlocks(english, sanitizeOcr: aiLanguages.Count > 0);
+            if (enBlocks.Count == 0)
             {
-                var enBlocks = SegmentRawTextToBlocks(rawEnText);
+                result.Error = "File tiếng Anh nguồn không có câu nào hợp lệ!";
+                return result;
+            }
 
-                if (enBlocks.Count == 0)
+            var payload = new ParagraphImportParser.ImportPayload { ChapterId = chapterId, English = enBlocks };
+            result.Payload = payload;
+            result.Counts["English"] = enBlocks.Count;
+            result.TableLanguages = english.TableLanguages.Select(LangDisplay).ToList();
+
+            foreach (var lang in ParagraphImportParser.TargetLanguages)
+            {
+                if (aiLanguages.Contains(lang))
                 {
-                    return Json(new { success = false, message = "The English source file does not contain any valid sentences!" });
+                    payload.AiLanguages.Add(lang);
+                    continue;
                 }
 
-                string rawViText = ReadRawTextFromFileOrServer(fileVietnamese, serverFileNameVietnamese);
-                string rawZhText = ReadRawTextFromFileOrServer(fileChinese, serverFileNameChinese);
-                string rawJaText = ReadRawTextFromFileOrServer(fileJapanese, serverFileNameJapanese);
-                string rawFrText = ReadRawTextFromFileOrServer(fileFrench, serverFileNameFrench);
-
-                var viBlocks = !string.IsNullOrWhiteSpace(rawViText) ? SegmentRawTextToBlocks(rawViText) : null;
-                var zhBlocks = !string.IsNullOrWhiteSpace(rawZhText) ? SegmentRawTextToBlocks(rawZhText) : null;
-                var jaBlocks = !string.IsNullOrWhiteSpace(rawJaText) ? SegmentRawTextToBlocks(rawJaText) : null;
-                var frBlocks = !string.IsNullOrWhiteSpace(rawFrText) ? SegmentRawTextToBlocks(rawFrText) : null;
-
-                var mismatchedLangs = new List<string>();
-
-                if (viBlocks != null && viBlocks.Count != enBlocks.Count)
-                    mismatchedLangs.Add($"Vietnamese ({viBlocks.Count}/{enBlocks.Count} sentences)");
-
-                if (zhBlocks != null && zhBlocks.Count != enBlocks.Count)
-                    mismatchedLangs.Add($"Chinese ({zhBlocks.Count}/{enBlocks.Count} sentences)");
-
-                if (jaBlocks != null && jaBlocks.Count != enBlocks.Count)
-                    mismatchedLangs.Add($"Japanese ({jaBlocks.Count}/{enBlocks.Count} sentences)");
-
-                if (frBlocks != null && frBlocks.Count != enBlocks.Count)
-                    mismatchedLangs.Add($"French ({frBlocks.Count}/{enBlocks.Count} sentences)");
-
-                if (mismatchedLangs.Count > 0)
+                List<string>? lines = null;
+                var source = ReadImportSource(LangDisplay(lang));
+                if (source != null && !source.IsEmpty)
                 {
-                    string details = string.Join(", ", mismatchedLangs);
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"Sentence count mismatch compared to English source ({enBlocks.Count} sentences)! Details: {details}."
-                    });
+                    lines = ParagraphImportParser.LanguageLines(source, lang);
+                }
+                else if (english.IsTable && english.TableLanguages.Contains(lang))
+                {
+                    // Excel tiếng Anh nhiều cột đã có sẵn cột ngôn ngữ này -> khớp 1-1 theo dòng
+                    lines = ParagraphImportParser.LanguageLines(english, lang);
                 }
 
-                // TÍNH TOÁN THỨ TỰ TỰ ĐỘNG NỐI TIẾP (APPEND)
-                int currentMaxOrder = await _context.TblParagraphs
-                    .Where(p => p.ChapterId == chapterId)
-                    .Select(p => (int?)p.ParagraphOrder)
-                    .MaxAsync() ?? -1;
+                if (lines == null) continue;
 
-                int orderTracker = currentMaxOrder >= 0 ? currentMaxOrder + 1 : 0;
-                var newEntities = new List<TblParagraph>();
-
-                for (int i = 0; i < enBlocks.Count; i++)
+                result.Counts[LangDisplay(lang)] = lines.Count;
+                if (lines.Count == enBlocks.Count)
                 {
-                    var enBlock = enBlocks[i];
-
-                    string viText = viBlocks != null ? viBlocks[i].English : "";
-                    string zhText = zhBlocks != null ? zhBlocks[i].English : "";
-                    string jaText = jaBlocks != null ? jaBlocks[i].English : "";
-                    string frText = frBlocks != null ? frBlocks[i].English : "";
-
-                    int finalBlockType = enBlock.BlockType;
-
-                    // CHỈ gán BlockType = 0 (mở đầu chương) khi chương NÀY CHƯA CÓ ĐOẠN NÀO
-                    if (i == 0 && currentMaxOrder == -1)
-                    {
-                        finalBlockType = 0;
-                    }
-
-                    newEntities.Add(new TblParagraph
-                    {
-                        ChapterId = chapterId,
-                        ParagraphOrder = orderTracker++,
-                        BlockType = finalBlockType,
-                        English = enBlock.English.Trim(),
-                        Vietnamese = CleanLeadingDash(viText),
-                        Chinese = string.IsNullOrWhiteSpace(zhText) ? null : CleanLeadingDash(zhText),
-                        Japanese = string.IsNullOrWhiteSpace(jaText) ? null : CleanLeadingDash(jaText),
-                        French = string.IsNullOrWhiteSpace(frText) ? null : CleanLeadingDash(frText)
-                    });
+                    payload.Provided[lang] = lines;
                 }
-
-                await _context.TblParagraphs.AddRangeAsync(newEntities);
-                await _context.SaveChangesAsync();
-
-                // Đánh lại số thứ tự chuẩn hóa
-                await _context.Database.ExecuteSqlInterpolatedAsync($"EXEC sp_ReindexParagraphOrder @ChapID = {chapterId}");
-
-                return Json(new
+                else
                 {
-                    success = true,
-                    message = $"Successfully appended {newEntities.Count} paragraphs to chapter!"
-                });
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return Json(new { success = false, message = $"File processing error: {msg}" });
-            }
-        }
-        // Hàm đọc nội dung đa năng (Hỗ trợ file FormFile upload trực tiếp HOẶC file từ Kho lưu trữ/assets/template)
-        private string ReadRawTextFromFileOrServer(IFormFile? file, string? serverFileName)
-        {
-            if (file != null && file.Length > 0)
-            {
-                return ReadRawTextFromFormFile(file);
-            }
-
-            if (!string.IsNullOrWhiteSpace(serverFileName))
-            {
-                string decodedFileName = System.Net.WebUtility.UrlDecode(serverFileName);
-                string fileNameOnly = Path.GetFileName(decodedFileName);
-
-                var possiblePaths = new[]
-                {
-                    Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
-                    Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
-                    Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads", fileNameOnly),
-                    Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly),
-                    Path.Combine(_webHostEnvironment.WebRootPath, fileNameOnly)
-                };
-
-                foreach (var path in possiblePaths)
-                {
-                    if (System.IO.File.Exists(path))
-                    {
-                        string ext = Path.GetExtension(path).ToLower();
-                        if (ext == ".txt")
-                        {
-                            return System.IO.File.ReadAllText(path, Encoding.UTF8);
-                        }
-
-                        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                        using var streamEx = System.IO.File.OpenRead(path);
-                        using var package = new ExcelPackage(streamEx);
-                        if (package.Workbook.Worksheets.Count > 0)
-                        {
-                            var sheet = package.Workbook.Worksheets[0];
-                            int rowCount = sheet.Dimension?.Rows ?? 0;
-                            var sb = new StringBuilder();
-                            for (int row = 1; row <= rowCount; row++)
-                            {
-                                string cell = sheet.Cells[row, 1].Text;
-                                if (!string.IsNullOrWhiteSpace(cell))
-                                {
-                                    sb.AppendLine(cell.Trim());
-                                }
-                            }
-                            return sb.ToString();
-                        }
-                    }
-                }
-            }
-
-            return string.Empty;
-        }
-
-        private static string CleanLeadingDash(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return "";
-            return Regex.Replace(text.Trim(), @"^[–-]\s*", "").Trim();
-        }
-
-        private static string ReadRawTextFromFormFile(IFormFile file)
-        {
-            string ext = Path.GetExtension(file.FileName).ToLower();
-            var sb = new StringBuilder();
-
-            if (ext == ".txt")
-            {
-                using var stream = file.OpenReadStream();
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                return reader.ReadToEnd();
-            }
-
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using var streamEx = file.OpenReadStream();
-            using var package = new ExcelPackage(streamEx);
-            if (package.Workbook.Worksheets.Count > 0)
-            {
-                var sheet = package.Workbook.Worksheets[0];
-                int rowCount = sheet.Dimension?.Rows ?? 0;
-                for (int row = 1; row <= rowCount; row++)
-                {
-                    string cell = sheet.Cells[row, 1].Text;
-                    if (!string.IsNullOrWhiteSpace(cell))
-                    {
-                        sb.AppendLine(cell.Trim());
-                    }
-                }
-            }
-            return sb.ToString();
-        }
-
-        private class ParsedBlockInfo
-        {
-            public int BlockType { get; set; } = 1;
-            public string English { get; set; } = "";
-        }
-
-        private static List<ParsedBlockInfo> SegmentRawTextToBlocks(string rawText)
-        {
-            var result = new List<ParsedBlockInfo>();
-            if (string.IsNullOrWhiteSpace(rawText)) return result;
-
-            rawText = rawText.Replace("\r\n", "\n").Replace("\r", "\n");
-            var rawParagraphs = rawText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-            bool isFirstParagraphInChapter = true;
-
-            foreach (var para in rawParagraphs)
-            {
-                if (string.IsNullOrWhiteSpace(para)) continue;
-
-                var sentences = Regex.Split(para, @"(?<=[\.!\?。！？][”""」』]?)\s*(?=[A-Z0-9“""ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸ–-]|[\u4e00-\u9fa5\u3040-\u30ff])")
-                    .Select(s => s.Trim())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .ToList();
-
-                bool isFirstInParagraph = true;
-
-                foreach (var sentence in sentences)
-                {
-                    string cleanSentence = sentence;
-                    int blockType = 1;
-
-                    bool startsWithDash = cleanSentence.StartsWith("-") || cleanSentence.StartsWith("–");
-
-                    if (startsWithDash)
-                    {
-                        blockType = 4;
-                        cleanSentence = Regex.Replace(cleanSentence, @"^[–-]\s*", "").Trim();
-                    }
-                    else if (isFirstParagraphInChapter)
-                    {
-                        blockType = 0;
-                        isFirstParagraphInChapter = false;
-                    }
-                    else if (Regex.IsMatch(cleanSentence, @"[""“][^""”]+[""”]"))
-                    {
-                        blockType = 4;
-                    }
-                    else if (isFirstInParagraph)
-                    {
-                        blockType = 2;
-                    }
-
-                    isFirstInParagraph = false;
-
-                    if (!string.IsNullOrWhiteSpace(cleanSentence))
-                    {
-                        result.Add(new ParsedBlockInfo
-                        {
-                            BlockType = blockType,
-                            English = cleanSentence
-                        });
-                    }
+                    result.Mismatched.Add($"{LangDisplay(lang)} ({lines.Count}/{enBlocks.Count} câu)");
+                    if (allowAlign) payload.ToAlign[lang] = lines;
                 }
             }
 
             return result;
         }
+
+        /// <summary>
+        /// Đọc file của 1 ngôn ngữ từ request: ưu tiên file tải lên (file{Lang}), sau đó file trong kho (serverFileName{Lang}).
+        /// null = không có file.
+        /// </summary>
+        private ParagraphImportParser.SourceFile? ReadImportSource(string langName)
+        {
+            if (!Request.HasFormContentType) return null;
+
+            var file = Request.Form.Files.GetFile("file" + langName);
+            if (file != null && file.Length > 0)
+            {
+                using var stream = file.OpenReadStream();
+                return ParagraphImportParser.Read(stream, file.FileName);
+            }
+
+            string? serverFileName = Request.Form["serverFileName" + langName];
+            if (string.IsNullOrWhiteSpace(serverFileName)) return null;
+
+            // Chỉ lấy tên file (chặn "../" trỏ ra ngoài thư mục cho phép)
+            string fileNameOnly = Path.GetFileName(System.Net.WebUtility.UrlDecode(serverFileName));
+            if (string.IsNullOrWhiteSpace(fileNameOnly)) return null;
+
+            var possiblePaths = new[]
+            {
+                Path.Combine(_webHostEnvironment.WebRootPath, "assets", "template", fileNameOnly),
+                Path.Combine(_webHostEnvironment.WebRootPath, "admin_storage", fileNameOnly),
+                Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "admin_repository", fileNameOnly),
+                Path.Combine(_webHostEnvironment.WebRootPath, "assets", "uploads", fileNameOnly)
+            };
+
+            var path = possiblePaths.FirstOrDefault(System.IO.File.Exists);
+            if (path == null)
+                throw new ParagraphImportParser.ImportFileException($"Không tìm thấy file \"{fileNameOnly}\" trong kho lưu trữ.");
+
+            using var fs = System.IO.File.OpenRead(path);
+            return ParagraphImportParser.Read(fs, fileNameOnly);
+        }
+
+        /// <summary>"Vietnamese,Chinese" -> ["vietnamese","chinese"] (bỏ English và tên lạ)</summary>
+        private static List<string> ParseLanguageList(string? languages)
+        {
+            if (string.IsNullOrWhiteSpace(languages)) return new List<string>();
+            return languages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(ParagraphImportParser.NormalizeLanguage)
+                .Where(l => l != null && l != ParagraphImportParser.English)
+                .Select(l => l!)
+                .Distinct()
+                .ToList();
+        }
+
+        /// <summary>"vietnamese" -> "Vietnamese" (trùng tên field form: fileVietnamese, serverFileNameVietnamese)</summary>
+        private static string LangDisplay(string lang) =>
+            string.IsNullOrEmpty(lang) ? lang : char.ToUpperInvariant(lang[0]) + lang.Substring(1);
 
         private static string? NormalizeQuillHtml(string? html)
         {
@@ -1012,125 +1005,6 @@ namespace WebTruyenTranh.Areas.Admin.Controllers
             public int TargetParagraphId { get; set; }
             public string Direction { get; set; } = "prev";
             public bool RemoveImages { get; set; } = true;
-        }
-
-        [HttpPost]
-        [AdminRoleAuthorize]
-        public async Task<IActionResult> AnalyzeImportFiles(
-            IFormFile fileEnglish,
-            IFormFile? fileVietnamese,
-            IFormFile? fileChinese,
-            IFormFile? fileJapanese,
-            IFormFile? fileFrench)
-        {
-            if (fileEnglish == null || fileEnglish.Length == 0)
-            {
-                return Json(new { success = false, message = "Please provide an English source file!" });
-            }
-
-            try
-            {
-                var enBlocks = SegmentRawTextToBlocks(ReadRawTextFromFormFile(fileEnglish));
-                int enCount = enBlocks.Count;
-
-                var result = new Dictionary<string, int> { { "English", enCount } };
-                var mismatched = new List<string>();
-
-                void CheckLang(string langName, IFormFile? file)
-                {
-                    if (file != null && file.Length > 0)
-                    {
-                        var blocks = SegmentRawTextToBlocks(ReadRawTextFromFormFile(file));
-                        result[langName] = blocks.Count;
-                        if (blocks.Count != enCount)
-                        {
-                            mismatched.Add($"{langName} ({blocks.Count}/{enCount} sentences)");
-                        }
-                    }
-                }
-
-                CheckLang("Vietnamese", fileVietnamese);
-                CheckLang("Chinese", fileChinese);
-                CheckLang("Japanese", fileJapanese);
-                CheckLang("French", fileFrench);
-
-                bool isMismatched = mismatched.Count > 0;
-
-                return Json(new
-                {
-                    success = true,
-                    isMismatched,
-                    counts = result,
-                    mismatchedDetails = string.Join(", ", mismatched),
-                    message = isMismatched
-                        ? $"Sentence count mismatch detected across files! Details: {string.Join(", ", mismatched)}."
-                        : $"All files matched perfectly with {enCount} sentences!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = $"File analysis error: {ex.Message}" });
-            }
-        }
-
-        [HttpPost]
-        [AdminRoleAuthorize]
-        public async Task<IActionResult> AiAutoAlignAndImport(
-            int chapterId,
-            IFormFile fileEnglish,
-            IFormFile? fileVietnamese,
-            IFormFile? fileChinese,
-            IFormFile? fileJapanese,
-            IFormFile? fileFrench)
-        {
-            if (chapterId <= 0 || fileEnglish == null || fileEnglish.Length == 0)
-            {
-                return Json(new { success = false, message = "Please select a Chapter and a valid English source file!" });
-            }
-
-            try
-            {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "temp_uploads");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                async Task<string?> SaveTempFileAsync(IFormFile? file)
-                {
-                    if (file == null || file.Length == 0) return null;
-                    var path = Path.Combine(uploadsFolder, $"{Guid.NewGuid()}_{file.FileName}");
-                    using (var stream = new FileStream(path, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                    return path;
-                }
-
-                // Lưu các file thực sự được upload
-                string? tempEn = await SaveTempFileAsync(fileEnglish);
-                string? tempVi = await SaveTempFileAsync(fileVietnamese);
-                string? tempZh = await SaveTempFileAsync(fileChinese);
-                string? tempJa = await SaveTempFileAsync(fileJapanese);
-                string? tempFr = await SaveTempFileAsync(fileFrench);
-
-                if (string.IsNullOrEmpty(tempEn))
-                {
-                    return Json(new { success = false, message = "Could not save temporary English source file!" });
-                }
-
-                // Đẩy tác vụ vào Hangfire queue
-                var jobId = BackgroundJob.Enqueue<IParagraphAiProcessingService>(service =>
-                    service.ProcessAiAlignAndImportJob(chapterId, tempEn, tempVi, tempZh, tempJa, tempFr));
-
-                return Json(new
-                {
-                    success = true,
-                    jobId,
-                    message = "Successfully submitted AI auto-alignment task to Hangfire background process!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = $"Hangfire process creation error: {ex.Message}" });
-            }
         }
 
         [HttpPost]

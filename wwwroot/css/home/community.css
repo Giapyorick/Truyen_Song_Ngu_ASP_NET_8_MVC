@@ -1,0 +1,265 @@
+/* ======================================================================
+   HOME - TRANG CỘNG ĐỒNG | Views/Community/Index.cshtml
+   ====================================================================== */
+/* Styling hiệu ứng Spoiler */
+.spoiler-container {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    background-color: #ffffff;
+}
+
+.spoiler-content-hidden {
+    filter: blur(4px) opacity(0.5);
+    user-select: none;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.spoiler-overlay-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    transition: all 0.3s ease;
+}
+
+    .spoiler-overlay-layer.hidden,
+    .btn-hide-spoiler.hidden {
+        display: none !important;
+    }
+
+.btn-hide-spoiler {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.625rem;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-hide-spoiler:hover {
+        background-color: #e2e8f0;
+        color: #334155;
+    }
+
+/* ==========================================================================
+   NÚT & HỘP BÁO CÁO VI PHẠM (js/home/community/community-report.js)
+   ========================================================================== */
+/* Chỉ dùng bộ màu của web: wait #FF8008→#FFC837, deny #F45C43→#EB3349 */
+.btn-report:hover,
+.btn-report:focus-visible {
+    color: #FF8008 !important;
+}
+
+.btn-report.is-reported {
+    color: #FF8008 !important;
+}
+
+.report-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+    .report-modal[hidden] {
+        display: none;
+    }
+
+.report-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.report-box {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 24px 60px -20px rgba(15, 23, 42, 0.45);
+    font-family: 'Inter', sans-serif;
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    transition: opacity 0.18s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.report-modal.is-open .report-backdrop { opacity: 1; }
+.report-modal.is-open .report-box { opacity: 1; transform: none; }
+
+.report-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+    .report-head h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        background-image: linear-gradient(135deg, #F45C43, #EB3349);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .report-head p {
+        margin: 2px 0 0;
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.45;
+    }
+
+.report-icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(235, 51, 73, 0.09);
+}
+
+    .report-icon i {
+        background-image: linear-gradient(135deg, #F45C43, #EB3349);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+.report-x {
+    margin-left: auto;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    color: #94a3b8;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+    .report-x:hover {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+.report-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+}
+
+.report-reason {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .report-reason:hover {
+        background: #f1f5f9;
+    }
+
+    .report-reason:has(input:checked) {
+        background: rgba(235, 51, 73, 0.07);
+        box-shadow: inset 0 0 0 1.5px rgba(235, 51, 73, 0.45);
+        color: #0f172a;
+    }
+
+    .report-reason input {
+        accent-color: #EB3349;
+    }
+
+.report-note {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+    .report-note textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        font: inherit;
+        font-weight: 400;
+        font-size: 0.86rem;
+        color: #0f172a;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .report-note textarea:focus {
+            border-color: #EB3349;
+            box-shadow: 0 0 0 3px rgba(235, 51, 73, 0.15);
+            background: #fff;
+        }
+
+.report-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* Hai nút cuối hộp: màu + hiệu ứng lấy từ buttons-fx.css
+   (.btn-grad-cus cho "Hủy", .btn-grad-deny cho "Gửi báo cáo") */
+.report-cancel,
+.report-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .report-backdrop,
+    .report-box {
+        transition: none;
+    }
+}

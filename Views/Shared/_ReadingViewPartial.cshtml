@@ -1,15 +1,28 @@
 ﻿<!-- Giao diện đọc truyện -->
-<div class="reading-wrapper transition-all max-w-5xl mx-auto duration-300" id="mainWrapper" data-reader-chapter="@SharedLocalizer["Story_Chapter"]" data-reader-focus="@SharedLocalizer["Reader_FocusMode"]" data-reader-exit-focus="@SharedLocalizer["Reader_ExitFocus"]" data-reader-translate-all="@SharedLocalizer["Reader_TranslateAll"]" data-reader-show="@SharedLocalizer["Reader_Show"]" data-reader-translation-error="@SharedLocalizer["Reader_TranslationLanguageError"]" data-story-read-continue="@SharedLocalizer["Story_ReadContinue"]">
-    <div id="storyChapterHeader" class="text-center py-6 px-4 border-b border-gray-100 bg-white rounded-t-2xl">
-        <h1 id="txtStoryTitle" class="text-2xl md:text-3xl font-bold text-cus tracking-tight mb-2">@SharedLocalizer["Reader_StoryLoading"]</h1>
-        <h2 id="txtChapterTitle" class="text-base md:text-lg font-medium text-teal-600">@SharedLocalizer["Reader_ChapterLoading"]</h2>
+<div class="reading-wrapper reader-kindle transition-all duration-300" id="mainWrapper" data-reader-chapter="@SharedLocalizer["Story_Chapter"]" data-reader-focus="@SharedLocalizer["Reader_FocusMode"]" data-reader-exit-focus="@SharedLocalizer["Reader_ExitFocus"]" data-reader-translate-all="@SharedLocalizer["Reader_TranslateAll"]" data-reader-show="@SharedLocalizer["Reader_Show"]" data-reader-translation-error="@SharedLocalizer["Reader_TranslationLanguageError"]" data-story-read-continue="@SharedLocalizer["Story_ReadContinue"]">
+    <!-- Thanh tiêu đề kiểu Kindle: nút quay lại · Tên truyện \ Tên chương · số chương -->
+    <div id="storyChapterHeader" class="reader-head">
+        <a id="btnReaderBack" href="javascript:history.back()" class="reader-back" title="@SharedLocalizer["Reading_BackToStory"]" aria-label="@SharedLocalizer["Reading_BackToStory"]">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="reader-head-row">
+            <div class="reader-crumb">
+                <h1 id="txtStoryTitle" class="reader-story">@SharedLocalizer["Reader_StoryLoading"]</h1>
+                <span class="reader-crumb-sep" aria-hidden="true">\</span>
+                <h2 id="txtChapterTitle" class="reader-chapter">@SharedLocalizer["Reader_ChapterLoading"]</h2>
+            </div>
+            <span id="txtChapterIndex" class="reader-chapter-no"></span>
+            <!-- Nghe truyện (Text-to-Speech) – xử lý ở js/home/reading/reading-tts.js -->
+            <button id="btnTtsToggle" type="button" class="tts-toggle" title="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "Listen to this chapter" : "Nghe chương này")">
+                <i class="fa-solid fa-headphones"></i>
+                <span class="btn-text">@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "Listen" : "Nghe")</span>
+            </button>
+        </div>
+        <p class="hint reader-hint">
+            <i class="fa-regular fa-hand-pointer"></i> @SharedLocalizer["Reader_DoubleClickHint"]
+        </p>
     </div>
-    <div class="text-center py-3 bg-gray-50 border-b border-gray-100 hint-bar">
-        <span class="hint text-xs text-gray-500 font-medium">
-            <i class="fa-solid fa-circle-info me-1 text-blue-500"></i> @SharedLocalizer["Reader_DoubleClickHint"]
-        </span>
-    </div>
-    <article id="paragraphList" class="reading-content p-8 min-h-[50vh] transition-all duration-300 pb-28" style="font-size: 18px;">
+    <article id="paragraphList" class="reading-content min-h-[50vh] transition-all duration-300" style="font-size: 18px;">
         <div class="text-center text-gray-400 py-16">
             <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
             <p>@SharedLocalizer["Reader_ContentLoading"]</p>
@@ -29,7 +42,10 @@
         <div class="flex items-center gap-1 px-1">
             <select id="srcLangSelect" class="bg-transparent font-semibold py-0.5 focus:outline-none cursor-pointer"></select>
         </div>
-        <span class="text-teal-500 font-bold">➔</span>
+        <!-- Đảo ngôn ngữ gốc <-> ngôn ngữ dịch (xử lý ở reading-lang-flags.js) -->
+        <button id="btnSwapLang" type="button" class="lf-swap" title="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "Swap languages" : "Đảo ngôn ngữ")" aria-label="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "Swap languages" : "Đảo ngôn ngữ")">
+            <i class="fa-solid fa-right-left"></i>
+        </button>
         <div class="flex items-center gap-1 px-1">
             <select id="targetLangSelect" class="bg-transparent font-semibold py-0.5 focus:outline-none cursor-pointer"></select>
         </div>

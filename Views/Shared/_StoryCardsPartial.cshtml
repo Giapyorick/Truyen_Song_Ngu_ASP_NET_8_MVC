@@ -2,6 +2,21 @@
 @model IList<StoryListViewModel>
 
 @functions {
+    // Cờ cho nhãn ngôn ngữ (ảnh SVG ở /assets/flags – thư viện flag-icons, MIT). null = không có cờ
+    public (string? Flag, string Name) GetLangFlag(string rawLang)
+    {
+        var key = (rawLang ?? "").Trim().ToLower();
+        return key switch
+        {
+            "tiếng việt" or "vietnamese" or "vi" or "vie" or "vn" => ("vn", "Tiếng Việt"),
+            "tiếng anh" or "english" or "en" or "eng" or "us" => ("us", "English"),
+            "tiếng trung" or "chinese" or "zh" or "cn" or "zho" => ("cn", "中文"),
+            "tiếng nhật" or "japanese" or "ja" or "jp" or "jpn" => ("jp", "日本語"),
+            "tiếng pháp" or "french" or "fr" or "fra" => ("fr", "Français"),
+            _ => (null, rawLang ?? "")
+        };
+    }
+
     public (string Code, string Icon, string GradientClass, string BorderGlow) GetLangTheme(string rawLang)
     {
         if (string.IsNullOrWhiteSpace(rawLang)) return ("?", "🌐", "from-slate-500/20 to-slate-700/20 text-slate-300", "border-slate-500/30");
@@ -37,6 +52,12 @@
             <div class="cover-box relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
                 <img src="/@t.Img" alt="@t.Title" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='/assets/image/placeholder.png';" />
                 <div class="gray-overlay"></div>
+
+                @if (!string.IsNullOrEmpty(t.StoryCode))
+                {
+                    <!-- MÃ ĐỊNH DANH TRUYỆN -->
+                    <span class="story-code" title="Mã truyện">#@t.StoryCode</span>
+                }
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none"></div>
 
                 <!-- RATE, LIKE, FOLLOWER -->
@@ -92,10 +113,18 @@
                         {
                             foreach (var item in rawLangs)
                             {
-                                var badge = GetLangTheme(item);
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r @badge.GradientClass border @badge.BorderGlow text-[9px] md:text-[10px] font-extrabold uppercase tracking-wider" title="@item">
-                                    <span>@badge.Code</span>
-                                </span>
+                                var flag = GetLangFlag(item);
+                                if (flag.Flag != null)
+                                {
+                                    <img class="lang-flag" src="/assets/flags/@(flag.Flag).svg" alt="@flag.Name" title="@flag.Name" width="22" height="16" loading="lazy" />
+                                }
+                                else
+                                {
+                                    var badge = GetLangTheme(item);
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r @badge.GradientClass border @badge.BorderGlow text-[9px] md:text-[10px] font-extrabold uppercase tracking-wider" title="@item">
+                                        <span>@badge.Code</span>
+                                    </span>
+                                }
                             }
                         }
                         else

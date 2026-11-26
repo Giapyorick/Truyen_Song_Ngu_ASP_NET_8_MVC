@@ -1,0 +1,696 @@
+﻿/* ======================================================================
+   ADMIN - AUDIO TRUYỆN (ElevenLabs) | Areas/Admin/Views/Audio/Index.cshtml
+   Dùng chung biến màu + khung (.mod-page, .mod-card, .mod-btn...) của moderation.css.
+   CHỈ DÙNG BỘ MÀU CỦA WEB:
+     main     #50C9C3 → #96DEDA   chọn, tiến độ, nút chính
+     field    #0250c5 → #d43f8d   số thứ tự bước, thông tin model
+     wait     #FF8008 → #FFC837   câu đã sửa (audio cũ), dọn file
+     accepted #93F9B9 → #1D976C   chương đủ audio
+     deny     #F45C43 → #EB3349   xóa, dừng, lỗi
+   ====================================================================== */
+
+.aud-page {
+    gap: 20px;
+}
+
+.aud-muted {
+    color: var(--soft);
+    font-size: 0.78rem;
+}
+
+/* ---------- Tiêu đề: hạn mức ---------- */
+.aud-head-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aud-quota {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+    padding: 10px 14px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--shadow);
+}
+
+    .aud-quota[hidden] {
+        display: none;
+    }
+
+.aud-quota-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+    .aud-quota-label i {
+        color: var(--wait-1);
+    }
+
+.aud-quota-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+    .aud-quota-bar span {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: inherit;
+        background: var(--g-main);
+        transition: width 0.4s ease;
+    }
+
+.aud-quota.is-low .aud-quota-bar span {
+    background: var(--g-deny);
+}
+
+.aud-quota small {
+    font-size: 0.74rem;
+    color: var(--text);
+}
+
+/* ---------- Cảnh báo chưa có key ---------- */
+.aud-alert {
+    display: flex;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--wait-1);
+}
+
+    .aud-alert > i {
+        font-size: 1.3rem;
+        color: var(--wait-1);
+        margin-top: 2px;
+    }
+
+    .aud-alert b {
+        color: var(--ink);
+    }
+
+    .aud-alert p {
+        margin: 6px 0;
+        font-size: 0.84rem;
+    }
+
+    .aud-alert code {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: var(--bg-soft);
+        border: 1px solid var(--line);
+        font-size: 0.8rem;
+        color: var(--ink);
+        user-select: all;
+    }
+
+.aud-alert-note {
+    color: var(--muted);
+    font-size: 0.78rem !important;
+}
+
+/* ---------- Bố cục 2 cột ---------- */
+.aud-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .aud-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aud-card {
+    padding: 22px;
+    overflow: visible;
+}
+
+.aud-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aud-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.aud-card-head .aud-card-title {
+    margin: 0;
+}
+
+.aud-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 9px;
+    background: var(--g-field);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+/* ---------- Trường nhập ---------- */
+.aud-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+    .aud-field > span {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+.aud-field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.aud-field select,
+.aud-voice-row select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-soft);
+    font: inherit;
+    font-size: 0.86rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+    .aud-field select:focus,
+    .aud-voice-row select:focus {
+        border-color: var(--main-1);
+        background: #fff;
+        box-shadow: 0 0 0 3px var(--t-main);
+    }
+
+    .aud-field select:disabled,
+    .aud-voice-row select:disabled {
+        opacity: 0.6;
+    }
+
+.aud-link {
+    color: var(--main-1);
+    font-size: 0.8rem;
+    padding: 2px 4px;
+}
+
+    .aud-link:hover {
+        color: var(--ok-2);
+    }
+
+/* Ngôn ngữ */
+.aud-langs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aud-lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+    .aud-lang img {
+        width: 18px;
+        height: 13px;
+        border-radius: 3px;
+        object-fit: cover;
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+    }
+
+    .aud-lang:hover {
+        border-color: var(--main-2);
+    }
+
+    .aud-lang.is-active {
+        border-color: var(--main-1);
+        background: var(--t-main);
+        color: var(--ink);
+        box-shadow: 0 0 0 2px var(--t-main);
+    }
+
+/* Model */
+.aud-models {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aud-model {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    text-align: left;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .aud-model:hover:not(:disabled) {
+        border-color: var(--main-2);
+    }
+
+    .aud-model.is-active {
+        border-color: var(--main-1);
+        background: var(--t-main);
+        box-shadow: 0 0 0 2px var(--t-main);
+    }
+
+    .aud-model:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+.aud-model-dot {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.aud-model.is-active .aud-model-dot {
+    border: 5px solid var(--main-1);
+}
+
+.aud-model b {
+    display: block;
+    font-size: 0.86rem;
+    color: var(--ink);
+}
+
+.aud-model small {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.74rem;
+    color: var(--muted);
+}
+
+.aud-model-warn {
+    color: var(--deny-2) !important;
+    font-weight: 600;
+}
+
+/* Giọng */
+.aud-voice-row {
+    display: flex;
+    gap: 8px;
+}
+
+.aud-icon-btn {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--t-main);
+    color: var(--main-1);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .aud-icon-btn:hover:not(:disabled) {
+        background: var(--g-main);
+        color: #fff;
+    }
+
+    .aud-icon-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+.aud-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+    .aud-check input {
+        width: 16px;
+        height: 16px;
+        margin-top: 1px;
+        accent-color: var(--main-1);
+        cursor: pointer;
+    }
+
+.aud-check--sm {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+/* ---------- Danh sách chương ---------- */
+.aud-chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 560px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+    .aud-chapter-list.is-loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+.aud-chapter {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+    .aud-chapter:hover {
+        border-color: var(--main-2);
+    }
+
+    .aud-chapter.is-selected {
+        border-color: var(--main-1);
+        background: rgba(80, 201, 195, 0.06);
+    }
+
+    .aud-chapter.is-empty {
+        cursor: default;
+        opacity: 0.55;
+    }
+
+    .aud-chapter input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--main-1);
+        cursor: pointer;
+    }
+
+.aud-chapter-main {
+    display: block;
+    min-width: 0;
+}
+
+.aud-chapter-name {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.aud-chapter-bar {
+    display: block;
+    position: relative;
+    height: 6px;
+    margin: 8px 0 6px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+    .aud-chapter-bar .is-done,
+    .aud-chapter-bar .is-old {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+
+    .aud-chapter-bar .is-done {
+        left: 0;
+        background: var(--g-ok);
+    }
+
+    .aud-chapter-bar .is-old {
+        background: var(--g-wait);
+    }
+
+.aud-chapter-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 0.74rem;
+    color: var(--muted);
+}
+
+.aud-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.aud-tag--ok {
+    color: var(--ok-2);
+    background: var(--t-ok);
+}
+
+.aud-tag--old {
+    color: var(--wait-1);
+    background: var(--t-wait);
+}
+
+.aud-tag--voice {
+    color: var(--field-1);
+    background: var(--t-field);
+}
+
+.aud-chapter-cost {
+    text-align: right;
+    font-size: 0.74rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+    .aud-chapter-cost b {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--ink);
+    }
+
+/* ---------- Tóm tắt + nút ---------- */
+.aud-summary {
+    position: sticky;
+    bottom: 16px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow);
+}
+
+.aud-summary-text {
+    font-size: 0.86rem;
+    color: var(--text);
+}
+
+    .aud-summary-text b {
+        color: var(--ink);
+    }
+
+.aud-summary-warn {
+    margin-left: 6px;
+    color: var(--deny-2);
+    font-weight: 700;
+}
+
+.aud-summary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+    .aud-summary-actions .mod-btn {
+        padding: 10px 18px;
+        font-size: 0.84rem;
+    }
+
+    .aud-summary-actions .mod-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+/* ---------- Tiến độ job ---------- */
+.aud-job {
+    padding: 18px 20px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: var(--shadow);
+}
+
+    .aud-job[hidden] {
+        display: none;
+    }
+
+.aud-job-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.aud-job-title {
+    font-weight: 800;
+    color: var(--ink);
+}
+
+    .aud-job-title i {
+        color: var(--main-1);
+    }
+
+.aud-job.is-running .aud-job-title i {
+    animation: aud-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes aud-pulse {
+    50% { opacity: 0.35; }
+}
+
+.aud-job-bar {
+    height: 10px;
+    margin: 14px 0 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+    .aud-job-bar span {
+        display: block;
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--g-main);
+        background-size: 200% 100%;
+        transition: width 0.5s ease;
+    }
+
+.aud-job.is-running .aud-job-bar span {
+    animation: aud-flow 2s linear infinite;
+}
+
+@keyframes aud-flow {
+    to { background-position: -200% 0; }
+}
+
+.aud-job.is-done .aud-job-bar span { background: var(--g-ok); }
+.aud-job.is-failed .aud-job-bar span { background: var(--g-deny); }
+.aud-job.is-cancelled .aud-job-bar span { background: var(--g-wait); }
+
+.aud-job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+    .aud-job-meta b {
+        color: var(--ink);
+    }
+
+.aud-job-failed {
+    color: var(--deny-2);
+    font-weight: 700;
+}
+
+.aud-job-error {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--t-deny);
+    color: var(--deny-2);
+    font-size: 0.8rem;
+}
+
+/* ---------- Hộp xác nhận ---------- */
+.aud-confirm-box h3 {
+    background-image: var(--g-main) !important;
+}
+
+.aud-confirm-box.is-danger h3 {
+    background-image: var(--g-deny) !important;
+}
+
+.aud-confirm-body {
+    margin: 10px 0 18px;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--text);
+}
+
+    .aud-confirm-body b {
+        color: var(--ink);
+    }
+
+    .aud-confirm-body small {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+    }
+
+.aud-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}

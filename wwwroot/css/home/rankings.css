@@ -1,0 +1,44 @@
+/* ======================================================================
+   HOME - TRANG BẢNG XẾP HẠNG | Views/Rankings/Index.cshtml
+   ====================================================================== */
+.rank-btn {
+    padding: 10px 22px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.5s ease;
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.rank-btn:hover:not(.active-rank) {
+    border-color: #50C9C3;
+    color: #0d9488;
+    box-shadow: 0 4px 14px rgba(80, 201, 195, 0.18);
+    transform: translateY(-2px);
+}
+.rank-btn.active-rank {
+    background-image: linear-gradient(to right, #50C9C3 0%, #96DEDA 51%, #50C9C3 100%);
+    background-size: 200% auto;
+    color: #ffffff !important;
+    border: 1.5px solid transparent;
+    box-shadow: 0 6px 18px rgba(80, 201, 195, 0.35);
+    transform: translateY(-2px);
+}
+.rank-btn.active-rank:hover {
+    background-position: right center;
+    color: #ffffff !important;
+}
+.rank-btn.active-rank i {
+    color: #ffffff !important;
+}
+#currentRankTitle {
+    background: linear-gradient(to right, #0d9488, #50C9C3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
